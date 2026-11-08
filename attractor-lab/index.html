@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attractor Lab</title>
+<meta name="description" content="Build fractals from a handful of rectangles: an interactive lab for iterated function systems, the chaos game, the collage theorem and fractal dimension.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 class="word" aria-label="Attractor Lab">
+      <span class="k">a</span><span>t</span><span class="a">t</span><span>r</span><span class="b">a</span><span>c</span><span class="a">t</span><span class="b">o</span><span class="k sw">r</span>
+    </h1>
+    <p class="tag-line">Place a few rectangles, roll a weighted die, and watch a fractal appear. Every rectangle is a map that shrinks the whole picture into itself.</p>
+  </div>
+  <div class="row">
+    <button class="icon-btn" id="themeBtn" aria-label="Toggle light and dark"><span class="ms">contrast</span></button>
+    <button class="icon-btn" id="helpBtn" aria-label="How it works"><span class="ms">help</span></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" id="playBtn" aria-label="Play"><span class="ms" id="playIcon">play_arrow</span><span class="lbl" id="playLbl">Play</span></button>
+      <button class="btn" id="stepBtn" aria-label="Step"><span class="ms">skip_next</span><span class="lbl" id="stepLbl">Step</span></button>
+      <button class="btn" id="clearBtn" title="Empty the canvas" aria-label="Clear"><span class="ms">delete_sweep</span><span class="lbl">Clear</span></button>
+      <div class="seg small" id="rateSeg" aria-label="Speed">
+        <button data-v="slow" title="Three points per second, one at a time">3/s</button><button data-v="med" title="Twelve points per second">12/s</button><button data-v="fast" title="Sixty points per second">60/s</button><button data-v="max" class="on" title="As fast as possible">Max</button>
+      </div>
+      <span class="grow"></span>
+      <button class="btn mob-help" id="helpBtn2" aria-label="How it works"><span class="ms">help</span></button>
+    </div>
+
+    <div class="canvas-wrap card" id="wrap">
+      <canvas id="cv" aria-label="Fractal"></canvas>
+      <canvas id="ov" aria-label="Maps editor"></canvas>
+      <div class="readout" id="readout"></div>
+      <div class="hint" id="hint"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+
+    <div class="quick card" id="quick">
+      <button class="lg on" data-opt="maps"><span class="ms">crop_rotate</span>Maps</button>
+      <button class="lg on" data-opt="glyph"><span class="ms">text_rotation_none</span>Orientation</button>
+      <button class="lg on" data-opt="frame"><span class="ms">crop_free</span>Frame</button>
+      <button class="lg" data-opt="night"><span class="ms">dark_mode</span>Night</button>
+      <span class="qsep"></span>
+      <button class="lg ic on" id="zOut" aria-label="Zoom out"><span class="ms">remove</span></button>
+      <button class="lg ic on" id="zIn" aria-label="Zoom in"><span class="ms">add</span></button>
+      <button class="lg on" id="zFit"><span class="ms">fit_screen</span>Fit</button>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="maps" role="tab"><span class="ms">crop_rotate</span>Maps</button>
+      <button class="tab" data-tab="build" role="tab"><span class="ms">construction</span>Build</button>
+      <button class="tab" data-tab="target" role="tab"><span class="ms">flag</span>Target</button>
+      <button class="tab" data-tab="view" role="tab"><span class="ms">tune</span>View</button>
+      <button class="icon-btn mob-help" id="helpBtn3" aria-label="How it works"><span class="ms">help</span></button>
+    </div>
+
+    <div class="tabpane card" id="pane-maps">
+      <h3 class="grp">Start from</h3>
+      <div class="gchips" id="presets"></div>
+      <p class="note" id="presetNote"></p>
+
+      <h3 class="grp">Maps</h3>
+      <div id="mapList"></div>
+      <div class="row">
+        <button class="btn" id="addMap"><span class="ms">add</span>Add map</button>
+        <button class="btn" id="randBtn"><span class="ms">casino</span>Random</button>
+      </div>
+
+      <h3 class="grp">Weights</h3>
+      <div class="row">
+        <button class="btn" id="wEqual" title="Every map gets the same probability"><span class="ms">drag_handle</span>Equal</button>
+        <button class="btn" id="wArea" title="Probability proportional to area, which gives an even density"><span class="ms">aspect_ratio</span>By area</button>
+        <button class="btn" id="wNorm" title="Rescale so that the probabilities sum to 1"><span class="ms">percent</span>Sum to 1</button>
+      </div>
+      <p class="note">Weights set how often each map is picked. They do not change the shape, only how evenly it fills in.</p>
+
+      <h3 class="grp">Analysis</h3>
+      <div id="analysis"></div>
+    </div>
+
+    <div class="tabpane card" id="pane-build" hidden>
+      <h3 class="grp">Method</h3>
+      <div class="seg" id="methodSeg">
+        <button data-v="chaos" class="on"><span class="ms">casino</span>Chaos game</button>
+        <button data-v="levels"><span class="ms">layers</span>Levels</button>
+      </div>
+      <p class="note" id="methodNote"></p>
+
+      <div id="chaosBox">
+        <h3 class="grp">Chaos game</h3>
+        <div class="ctl"><label for="ptsR">Points per step <b id="ptsL"></b></label><input type="range" id="ptsR" min="0" max="100" step="1"></div>
+        <div class="ctl"><label for="alphaR">Ink per point <b id="alphaL"></b></label><input type="range" id="alphaR" min="0.02" max="1" step="0.01"></div>
+        <div class="ctl"><label for="burnR">Burn-in points (not drawn) <b id="burnL"></b></label><input type="range" id="burnR" min="0" max="100" step="1"></div>
+        <div class="ctl"><label>Colour</label>
+          <div class="seg small" id="colorSeg"><button data-v="ink" class="on">Ink</button><button data-v="map">By map</button><button data-v="blend">Blend</button></div></div>
+        <p class="note">Use the 3/s speed with Clear to watch single points land. The first points, drawn hollow, are the burn-in: they are still on their way to the attractor.</p>
+      </div>
+
+      <div id="levelBox" hidden>
+        <h3 class="grp">Levels</h3>
+        <div class="ctl"><label for="lvlR">Level <b id="lvlL"></b></label><input type="range" id="lvlR" min="0" max="6" step="1"></div>
+        <div class="ctl"><label>Starting shape</label>
+          <div class="seg small" id="seedSeg"><button data-v="F" class="on">F</button><button data-v="square">Square</button><button data-v="triangle">Triangle</button></div></div>
+        <div class="ctl"><label>Colour</label>
+          <div class="seg small" id="colorSeg2"><button data-v="ink" class="on">Ink</button><button data-v="map">By map</button></div></div>
+        <p class="note">Play steps through the levels. Whatever shape you start with, the pictures converge to the same attractor.</p>
+      </div>
+    </div>
+
+    <div class="tabpane card" id="pane-target" hidden>
+      <h3 class="grp">Collage challenge</h3>
+      <p class="note">The collage theorem says: if copies of a shape, shrunk by your maps, cover that shape closely, then the attractor looks like it. Pick a target and cover its ghost.</p>
+      <div class="gchips" id="targets"></div>
+      <div id="targetInfo"></div>
+    </div>
+
+    <div class="tabpane card" id="pane-view" hidden>
+      <h3 class="grp">Display</h3>
+      <button class="tg" data-opt="maps"><span class="txt">Map rectangles<small>Drag to move, corners to resize, the round handle to rotate (Shift snaps)</small></span><span class="box"></span></button>
+      <button class="tg" data-opt="glyph"><span class="txt">Orientation marks<small>An F shows how each map turns or mirrors the frame</small></span><span class="box"></span></button>
+      <button class="tg" data-opt="frame"><span class="txt">Frame<small>The unit square that every map takes as input</small></span><span class="box"></span></button>
+      <button class="tg" data-opt="night"><span class="txt">Night canvas<small>Light ink on a dark ground</small></span><span class="box"></span></button>
+      <p class="note">Scroll or pinch to zoom, drag empty space to pan. Zoom into a map to see the same shape again.</p>
+
+      <h3 class="grp">Share and save</h3>
+      <div class="row">
+        <button class="btn" id="linkBtn"><span class="ms">link</span>Copy link</button>
+        <button class="btn" id="pngBtn"><span class="ms">image</span>Save image</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="saveBtn"><span class="ms">download</span>Save file</button>
+        <button class="btn" id="loadBtn"><span class="ms">folder_open</span>Load file</button>
+        <button class="btn" id="resetBtn"><span class="ms">restart_alt</span>Reset all</button>
+      </div>
+      <input type="file" id="fileInput" accept=".json,application/json" hidden>
+      <p class="note">The link stores the maps in the address, so anyone can open your fractal.</p>
+    </div>
+  </aside>
+</main>
+
+<dialog id="help">
+  <div class="word dlg-word" aria-hidden="true"><span class="k">a</span><span>t</span><span class="a">t</span><span>r</span><span class="b">a</span><span>c</span><span class="a">t</span><span class="b">o</span><span class="k">r</span></div>
+  <h2>How it works</h2>
+  <h3>Maps</h3>
+  <p>An <b>iterated function system</b> (IFS) is a handful of <i>affine maps</i>. Here each map is drawn as a rectangle: it takes the dashed frame and squeezes, turns and moves it onto that rectangle. The F inside shows the orientation. Drag a rectangle, pull its corners or turn it by the round handle, and the picture changes at once.</p>
+  <h3>The chaos game</h3>
+  <p>Start anywhere. Pick a map at random, with probability given by its weight p, and move the point to its image. Repeat, and plot every point. The first few points are thrown away (burn-in) because they are still on their way. The rest settle on the <b>attractor</b>: the one shape that the maps leave unchanged as a whole. Slow the speed to 3/s and press Clear to watch it happen point by point.</p>
+  <h3>Levels</h3>
+  <p>The other way to build the same shape: draw a starting shape, replace it by its images under every map, and repeat. Whatever you start with, the pictures converge to the same attractor. This is the Hutchinson operator, and the Levels method shows it.</p>
+  <h3>Contraction</h3>
+  <p>The maps must shrink distances, otherwise points fly away. The Analysis box checks every map and warns about the ones that stretch. A rectangle larger than the frame is such a map.</p>
+  <h3>Weights</h3>
+  <p>The weights only change how often each map is used. A tiny rectangle with a large weight is overexposed, a large one with a small weight is pale. <i>By area</i> gives an even density, and the fern is the classic example where uneven weights are what make it look right.</p>
+  <h3>Dimension</h3>
+  <p>If every map scales by r<sub>i</sub> and the copies hardly overlap, the dimension d solves Σ r<sub>i</sub><sup>d</sup> = 1. The gasket has three maps at ½, so 3·(½)<sup>d</sup> = 1 and d = log 3 / log 2 ≈ 1.585. For maps that stretch unevenly, the app uses the geometric mean of the stretches, which is only an estimate.</p>
+  <h3>Collage challenge</h3>
+  <p>Pick a target in the Target tab and cover its ghost with your rectangles. The score compares the two shapes on a coarse grid. This is how fractal compression was imagined to work: find maps whose collage reproduces the picture.</p>
+  <h3>Controls</h3>
+  <ul>
+    <li><kbd>Space</kbd> play or pause, <kbd>S</kbd> step, <kbd>C</kbd> clear</li>
+    <li><kbd>N</kbd> new map, <kbd>Del</kbd> remove the selected map, <kbd>M</kbd> show or hide the maps</li>
+    <li>Scroll or pinch to zoom, <kbd>0</kbd> to fit</li>
+  </ul>
+  <div class="row" style="margin-top:14px"><button class="btn primary" id="helpClose">Close</button></div>
+</dialog>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kit Lab</title>
+<meta name="description" content="Every component of the lab kit, in both themes, and the palette board of all the labs.">
+<meta name="theme-color" content="#8CCBEB">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A1630">
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+/* demo brand tokens (Pendulum Lab palette) */
+:root{--bg:#8CCBEB;--bgline:rgba(11,27,58,.12);--surface:#F5F9FC;--ink:#0B1B3A;--muted:#4D6585;--accent:#FF6A3D;--onaccent:#0B1B3A;--tile2:#FFC23D;--gridline:rgba(11,27,58,.16)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1630;--bgline:rgba(140,203,235,.07);--surface:#12213F;--ink:#E8F1FF;--muted:#9BB0CF;--accent:#FF7A50;--onaccent:#0A1630;--tile2:#E9A92A;--gridline:rgba(232,241,255,.14)}}
+:root[data-theme="dark"]{--bg:#0A1630;--bgline:rgba(140,203,235,.07);--surface:#12213F;--ink:#E8F1FF;--muted:#9BB0CF;--accent:#FF7A50;--onaccent:#0A1630;--tile2:#E9A92A;--gridline:rgba(232,241,255,.14)}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw-card{border:2px solid var(--ink);background:var(--surface);font-size:11px}
+.sw-card .bgc{height:54px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;gap:4px;padding:5px}
+.sw-card .bgc i{width:16px;height:16px;border:2px solid var(--ink)}
+.sw-card .lbl2{padding:5px 7px}
+.sw-card small{display:block;color:var(--muted)}
+.phys{display:flex;flex-wrap:wrap;gap:12px;font-size:12px}
+.phys span{display:inline-flex;align-items:center;gap:6px}
+.phys i{width:28px;height:4px;display:inline-block}
+.demo-plot{width:100%;height:220px;display:block}
+</style>
+</head>
+<body class="scrolls">
+<header class="top">
+  <h1 class="word" aria-label="Kit Lab"><span class="a">k</span><span>i</span><span class="b">t</span><b class="lab">lab</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="play" data-ic="play"><span class="lbl" data-i18n="play">Avvia</span></button>
+      <button class="btn" type="button" data-ic="step"><span class="lbl" data-i18n="step">Passo</span></button>
+      <button class="btn" type="button" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+      <div class="seg small" role="group" aria-label="speed"><button type="button">¼×</button><button type="button">½×</button><button type="button" class="on">1×</button><button type="button">2×</button></div>
+      <span class="grow"></span>
+      <span class="num-t" id="tRead">t = 0,00 s</span>
+    </div>
+    <div class="canvas-wrap card">
+      <canvas id="cv" aria-label="plot"></canvas>
+      <div class="readout"><span>s</span><b id="rs">0</b><span>v</span><b id="rv">0</b></div>
+      <div class="hint" data-i18n="hint">Trascina sul grafico · i cursori ignorano gli scorrimenti verticali</div>
+    </div>
+    <div class="card" style="padding:10px">
+      <div class="chips"><button class="lg on" type="button" style="color:var(--pos)"><i class="sw"></i>s</button><button class="lg on" type="button" style="color:var(--vel)"><i class="sw"></i>v</button><button class="lg" type="button" style="color:var(--acc)"><i class="sw"></i>a</button></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" type="button" data-ic="sliders"><span class="t" data-i18n="tab.controls">Comandi</span></button>
+      <button class="tab" role="tab" aria-selected="false" type="button" data-ic="palette"><span class="t" data-i18n="tab.palettes">Palette</span></button>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane0">
+      <h3 class="grp" data-i18n="g.sliders">Cursori</h3>
+      <div class="ctl"><label><span>m</span><b id="mOut">1,00 kg</b></label><input type="range" id="m" min="0.1" max="5" step="0.01" value="1"></div>
+      <div class="ctl"><label><span>g</span><b id="gOut">9,81 m/s²</b></label><input type="range" id="g" min="1" max="25" step="0.01" value="9.81"></div>
+      <h3 class="grp" data-i18n="g.numbers">Numeri</h3>
+      <div class="row">
+        <label class="num"><span>v₀</span><input type="text" value="2,5" data-step="0.1" data-min="-10" data-max="10"><span class="unit">m/s</span></label>
+        <label class="num"><span>x₀</span><input type="text" value="0"><span class="unit">m</span></label>
+      </div>
+      <h3 class="grp" data-i18n="g.choices">Scelte</h3>
+      <div class="row">
+        <div class="seg" role="group"><button type="button" class="on" data-i18n="opt.rod">Asta</button><button type="button" data-i18n="opt.string">Filo</button><button type="button" data-i18n="opt.spring">Molla</button></div>
+        <label class="sel"><select aria-label="planet"><option>Terra</option><option>Luna</option><option>Marte</option><option>Giove</option><option>Mercurio</option><option>Personalizzato</option></select></label>
+      </div>
+      <h3 class="grp" data-i18n="g.toggles">Interruttori</h3>
+      <button class="tg" type="button" aria-pressed="true"><span class="txt"><span data-i18n="tg.vectors">Vettori</span><small data-i18n="tg.vectorsHint">velocità e accelerazione sull'oggetto</small></span><span class="box"></span></button>
+      <button class="tg" type="button" aria-pressed="false"><span class="txt" data-i18n="tg.trail">Scia</span><span class="box"></span></button>
+      <div class="row" style="margin-top:8px">
+        <label class="chk"><input type="checkbox" checked><span data-i18n="chk.a">Mostra la tabella</span></label>
+        <label class="chk"><input type="checkbox"><span data-i18n="chk.b">Esporta in CSV</span></label>
+        <label class="chk"><input type="radio" name="r" checked><span>A</span></label>
+        <label class="chk"><input type="radio" name="r"><span>B</span></label>
+      </div>
+      <h3 class="grp" data-i18n="g.physics">Colori della fisica</h3>
+      <div class="phys" id="phys"></div>
+      <h3 class="grp" data-i18n="g.table">Tabella</h3>
+      <table class="ptable"><thead><tr><th>t (s)</th><th>s (m)</th><th>v (m/s)</th></tr></thead><tbody id="tb"></tbody></table>
+      <p class="note" data-i18n="note">Questa pagina mostra ogni componente del kit. Prova il menu delle impostazioni e il tema.</p>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane1" hidden>
+      <h3 class="grp" data-i18n="g.current">Palette attuali</h3>
+      <div class="board" id="boardNow"></div>
+      <h3 class="grp" data-i18n="g.proposed">Con le proposte</h3>
+      <div class="board" id="boardNew"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close aria-label="close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="a">k</span><span>i</span><span class="b">t</span><b class="lab">lab</b></h1>
+  <p data-i18n="info.p">Pagina di prova del kit condiviso dei laboratori di matematica e fisica.</p>
+  <h3 data-i18n="info.h">Come funziona</h3>
+  <ul><li data-i18n="info.l1">Tutti i laboratori usano lo stesso kit/.</li><li data-i18n="info.l2">Le regole sono in DESIGN.md.</li></ul>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script type="module">
+import { initKit, t, readColors, onTheme, onLang, fmtNum, niceTicks, toast, icon } from "./kit/kit.js";
+import { drawMath } from "./kit/mathtext.js";
+
+const strings = {
+  it: { play: "Avvia", step: "Passo", reset: "Azzera", hint: "Trascina sul grafico · i cursori ignorano gli scorrimenti verticali", "tab.controls": "Comandi", "tab.palettes": "Palette",
+    "g.sliders": "Cursori", "g.numbers": "Numeri", "g.choices": "Scelte", "g.toggles": "Interruttori", "g.physics": "Colori della fisica", "g.table": "Tabella", "g.current": "Palette attuali", "g.proposed": "Con le proposte",
+    "opt.rod": "Asta", "opt.string": "Filo", "opt.spring": "Molla", "tg.vectors": "Vettori", "tg.vectorsHint": "velocità e accelerazione sull'oggetto", "tg.trail": "Scia",
+    "chk.a": "Mostra la tabella", "chk.b": "Esporta in CSV", note: "Questa pagina mostra ogni componente del kit. Prova il menu delle impostazioni e il tema.",
+    "info.p": "Pagina di prova del kit condiviso dei laboratori di matematica e fisica.", "info.h": "Come funziona", "info.l1": "Tutti i laboratori usano lo stesso kit/.", "info.l2": "Le regole sono in DESIGN.md.",
+    "m.share": "Copia il link", "m.reset": "Ricomincia", "m.level": "Livello", copied: "Link copiato" },
+  en: { play: "Play", step: "Step", reset: "Reset", hint: "Drag on the plot · sliders ignore vertical swipes", "tab.controls": "Controls", "tab.palettes": "Palettes",
+    "g.sliders": "Sliders", "g.numbers": "Numbers", "g.choices": "Choices", "g.toggles": "Switches", "g.physics": "Physics colours", "g.table": "Table", "g.current": "Current palettes", "g.proposed": "With the proposals",
+    "opt.rod": "Rod", "opt.string": "String", "opt.spring": "Spring", "tg.vectors": "Vectors", "tg.vectorsHint": "velocity and acceleration on the object", "tg.trail": "Trail",
+    "chk.a": "Show the table", "chk.b": "Export as CSV", note: "This page shows every kit component. Try the settings menu and the theme.",
+    "info.p": "Test page of the shared kit of the math and physics labs.", "info.h": "How it works", "info.l1": "Every lab uses the same kit/.", "info.l2": "The rules are in DESIGN.md.",
+    "m.share": "Copy link", "m.reset": "Start over", "m.level": "Level", copied: "Link copied" },
+};
+let level = 1;
+initKit({ slug: "kit-lab", name: "Kit Lab", version: "0.1.0", strings, sw: false, menu: [
+  { icon: "link", label: "m.share", onClick: () => toast(t("copied")) },
+  { icon: "level", label: "m.level", value: () => "L" + level, onClick: () => (level = (level % 3) + 1), keepOpen: true },
+  { icon: "reset", label: "m.reset", onClick: () => toast("↺") },
+] });
+
+for (const b of document.querySelectorAll("[data-ic]")) b.insertAdjacentHTML("afterbegin", icon(b.dataset.ic));
+showSliders0();
+// tabs
+const tabs = [...document.querySelectorAll(".tab")];
+tabs.forEach((b, i) => b.addEventListener("click", () => { tabs.forEach((x, j) => { x.setAttribute("aria-selected", i === j); document.getElementById("pane" + j).hidden = i !== j; }); }));
+// segmented and toggles
+for (const s of document.querySelectorAll(".seg:not([data-kit-lang])")) s.addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b || s.closest(".menu")) return; s.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); });
+for (const g of document.querySelectorAll(".tg")) g.addEventListener("click", () => g.setAttribute("aria-pressed", g.getAttribute("aria-pressed") !== "true"));
+
+// sliders
+const m = document.getElementById("m"), g = document.getElementById("g");
+function showSliders0() { setTimeout(() => showSliders(), 0); }
+const showSliders = () => { document.getElementById("mOut").textContent = fmtNum(+m.value, 2, "kg"); document.getElementById("gOut").textContent = fmtNum(+g.value, 2, "m/s²"); draw(); };
+m.addEventListener("input", showSliders); g.addEventListener("input", showSliders);
+
+// physics colours
+const PH = [["pos", "s, Δs"], ["vel", "v"], ["acc", "a"], ["force", "F"], ["mom", "p"], ["ek", "K"], ["ep", "U"]];
+document.getElementById("phys").innerHTML = PH.map(([k, l]) => `<span><i style="background:var(--${k})"></i>--${k} ${l}</span>`).join("");
+
+// table
+const rows = () => { let h = ""; for (let i = 0; i <= 5; i++) { const tt = i * 0.2, s = 0.5 * +g.value * tt * tt; h += `<tr class="${i === 2 ? "cur" : ""}"><td>${fmtNum(tt, 1)}</td><td>${fmtNum(s, 3)}</td><td>${fmtNum(+g.value * tt, 2)}</td></tr>`; } document.getElementById("tb").innerHTML = h; };
+
+// plot following DESIGN.md §10
+const cv = document.getElementById("cv");
+function draw() {
+  const C = readColors(), r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  cv.width = r.width * dpr; cv.height = r.height * dpr;
+  const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
+  const L = 46, R = r.width - 16, T = 16, B = r.height - 34, tMax = 2, vMax = +g.value * tMax;
+  const X = (x) => L + (x / tMax) * (R - L), Y = (y) => B - (y / vMax) * (B - T);
+  ctx.strokeStyle = C.gridline; ctx.lineWidth = 1; ctx.font = '11px "Space Mono", monospace'; ctx.fillStyle = C.muted;
+  for (const x of niceTicks(0, tMax, 6)) { ctx.beginPath(); ctx.moveTo(X(x), T); ctx.lineTo(X(x), B); ctx.stroke(); ctx.textAlign = "center"; ctx.fillText(fmtNum(x, 1), X(x), B + 14); }
+  for (const y of niceTicks(0, vMax, 5)) { ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(R, Y(y)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(fmtNum(y, 0), L - 6, Y(y) + 4); }
+  ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.strokeRect(L, T, R - L, B - T);
+  ctx.fillStyle = C.vel; ctx.globalAlpha = 0.18; ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(1.2), Y(+g.value * 1.2)); ctx.lineTo(X(1.2), Y(0)); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.strokeStyle = C.vel; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(tMax), Y(vMax)); ctx.stroke();
+  ctx.fillStyle = C.pos; for (let i = 0; i <= 20; i++) { const tt = (i / 20) * tMax, y = 0.5 * +g.value * tt * tt; if (y <= vMax) ctx.fillRect(X(tt) - 2, Y(y) - 2, 4, 4); }
+  ctx.setLineDash([6, 4]); ctx.strokeStyle = C.acc; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(0), Y(+g.value)); ctx.lineTo(X(tMax), Y(+g.value)); ctx.stroke(); ctx.setLineDash([]);
+  drawMath(ctx, "t (s)", R, B + 28, { size: 11, align: "right", color: C.ink });
+  drawMath(ctx, "v (m/s), s (m)", L + 4, T + 14, { size: 11, color: C.ink, halo: C.surface });
+  document.getElementById("rs").textContent = fmtNum(0.5 * +g.value, 2, "m"); document.getElementById("rv").textContent = fmtNum(+g.value, 2, "m/s");
+  rows();
+}
+new ResizeObserver(draw).observe(cv); onTheme(draw); onLang(draw);
+
+// palette board from apps.json
+fetch("apps.json").then((r) => r.json()).then(({ apps }) => {
+  const card = (a, bg, note) => { const p = a.palette.light; return `<div class="sw-card"><div class="bgc" style="background:${bg}"><i style="background:${p.accent}"></i><i style="background:${p.tile2}"></i><i style="background:${p.surface}"></i></div><div class="lbl2"><b>${a.name}</b><small>${bg}${note ? " · " + note : ""}</small></div></div>`; };
+  const list = apps.filter((a) => a.palette);
+  document.getElementById("boardNow").innerHTML = list.map((a) => card(a, a.palette.light.bg, a.palette.clash ? "⚠ " + a.palette.clash : "")).join("");
+  document.getElementById("boardNew").innerHTML = list.map((a) => card(a, a.palette.proposed ? a.palette.proposed.bg : a.palette.light.bg, a.palette.proposed ? a.palette.proposed.note : "")).join("");
+}).catch(() => {});
+</script>
+</body>
+</html>

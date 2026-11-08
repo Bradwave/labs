@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>__NAME__</title>
+<meta name="description" content="__DESC_EN__">
+<meta name="theme-color" content="__BG__">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="__BG_DARK__">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="__NAME__">__TILES__<b class="lab">lab</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="playBtn" data-ic="play"><span class="lbl" data-i18n="play">Avvia</span></button>
+      <button class="btn" type="button" id="stepBtn" data-ic="step"><span class="lbl" data-i18n="step">Passo</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+      <span class="grow"></span>
+      <span class="num-t" id="clock">t = 0,00 s</span>
+    </div>
+    <div class="canvas-wrap card">
+      <canvas id="cv" data-i18n-aria="stage">Scena</canvas>
+      <div class="hint" data-i18n="hint">Trascina per cambiare la posizione iniziale</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" type="button" aria-selected="true" aria-controls="pane-setup" data-ic="sliders"><span class="t" data-i18n="tab.setup">Impostazioni</span></button>
+      <button class="tab" role="tab" type="button" aria-selected="false" aria-controls="pane-graphs" data-ic="chart"><span class="t" data-i18n="tab.graphs">Grafici</span></button>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane-setup">
+      <h3 class="grp" data-i18n="g.params">Parametri</h3>
+      <div class="ctl"><label><span data-i18n="p.speed">Velocità iniziale</span><b id="v0Out"></b></label><input type="range" id="v0" min="-5" max="5" step="0.1" value="2"></div>
+      <label class="num"><span>x₀</span><input type="text" id="x0" value="0" data-step="0.5" data-min="-10" data-max="10"><span class="unit">m</span></label>
+      <h3 class="grp" data-i18n="g.show">Mostra</h3>
+      <button class="tg" type="button" id="tgVec" aria-pressed="true"><span class="txt"><span data-i18n="tg.vectors">Vettori</span><small data-i18n="tg.vectorsHint">velocità sull'oggetto</small></span><span class="box"></span></button>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane-graphs" hidden>
+      <p class="note" data-i18n="graphs.todo">I grafici arriveranno qui.</p>
+    </div>
+  </section>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true">__TILES__<b class="lab">lab</b></h1>
+  <p data-i18n="info.about">__DESC_IT__</p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <ul>
+    <li data-i18n="info.how1">Premi Avvia per far partire il moto.</li>
+  </ul>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

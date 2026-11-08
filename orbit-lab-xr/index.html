@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orbit Lab XR</title>
+<meta name="description" content="Orbit Lab in WebXR: launch a ship from a tower, fly it from the cockpit in VR, and watch the orbit from outside in AR.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#8CCBEB">
+<style>
+/* Orbit Lab XR · token e stile della famiglia Orbit Lab / Quadrature / Pendulum Lab (tessere, bordi d'inchiostro, ombre dure). Nessun font o icona remoti: la Quest non è in rete. */
+:root{--bg:#8CCBEB;--bgline:rgba(11,27,58,.12);--surface:#F5F9FC;--ink:#0B1B3A;--muted:#4D6585;--accent:#FF6A3D;--onaccent:#0B1B3A;--tile2:#FFC23D;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A1630;--bgline:rgba(140,203,235,.07);--surface:#12213F;--ink:#E8F1FF;--muted:#9BB0CF;--accent:#FF7A50;--onaccent:#0A1630;--tile2:#E9A92A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A1630;--bgline:rgba(140,203,235,.07);--surface:#12213F;--ink:#E8F1FF;--muted:#9BB0CF;--accent:#FF7A50;--onaccent:#0A1630;--tile2:#E9A92A;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background-color:var(--bg);background-image:linear-gradient(var(--bgline) 1.5px,transparent 1.5px),linear-gradient(90deg,var(--bgline) 1.5px,transparent 1.5px);background-size:28px 28px;color:var(--ink);font-family:"Space Mono",ui-monospace,Menlo,Consolas,monospace;font-size:14px;line-height:1.45;display:flex;flex-direction:column;overflow:hidden}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;max-width:1400px;width:100%;margin:0 auto;padding:14px 16px 2px;flex:none}
+.word{display:flex;flex-wrap:wrap;margin:0;font-size:clamp(20px,3vw,34px);font-weight:700;line-height:1}
+.word span{width:1.32em;height:1.32em;display:grid;place-items:center;border:2px solid var(--ink);margin:0 -2px -2px 0;background:var(--surface);color:var(--ink)}
+.word span.a{background:var(--accent);color:var(--onaccent)}.word span.b{background:var(--tile2);color:#0B1B3A}.word span.k{background:var(--ink);color:var(--surface)}.word span.gap{width:.6em;border:none;background:none}
+.word span.sw{animation:orb 6s linear infinite;border-radius:50%}
+@keyframes orb{to{transform:rotate(360deg)}}
+.tag-line{margin:8px 0 0;font-size:12.5px;max-width:70ch}
+.icon-btn{border:2px solid var(--ink);background:var(--surface);color:var(--ink);min-width:42px;height:42px;display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink);cursor:pointer;font-weight:700}
+.icon-btn:active{transform:translate(3px,3px);box-shadow:none}
+.layout{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:22px;max-width:1400px;margin:0 auto;padding:12px 16px 18px}
+.card{background:var(--surface);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}
+.stagecol{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px;flex:none}
+.grow{flex:1}
+.btn{border:2px solid var(--ink);background:var(--surface);color:var(--ink);padding:6px 12px;box-shadow:3px 3px 0 var(--ink);display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:700;cursor:pointer;min-height:38px}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn.primary{background:var(--accent);color:var(--onaccent)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.seg{display:inline-flex;border:2px solid var(--ink);background:var(--surface)}
+.seg button{font-weight:700;font-size:12.5px;padding:6px 12px;background:transparent;color:var(--ink);border:none;cursor:pointer;min-height:34px}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button.on{background:var(--ink);color:var(--surface)}
+#stage{position:relative;flex:1 1 auto;min-height:260px;overflow:hidden;background:var(--surface)}
+#cv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#hudbox{position:absolute;left:10px;bottom:10px;width:min(340px,46%);pointer-events:none}
+#hud{display:block;width:100%;height:auto}
+#pipbox{position:absolute;right:10px;bottom:10px;width:min(240px,34%);border:2px solid var(--ink);background:#000;pointer-events:none}
+#camcv{display:block;width:100%;height:auto}
+.hint{position:absolute;left:10px;top:10px;font-size:11px;color:var(--muted);background:var(--surface);padding:2px 7px;border:1.5px solid var(--ink);max-width:60%}
+.toast{position:absolute;top:10px;left:50%;transform:translate(-50%,-8px);background:var(--ink);color:var(--surface);padding:8px 12px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:80%;text-align:center;z-index:5}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.side{display:flex;flex-direction:column;min-height:0;min-width:0;overflow:auto;align-items:center}
+#ui{width:100%;max-width:430px;height:auto;touch-action:none;display:block}
+.note{font-size:11.5px;color:var(--muted);margin:6px 0}
+dialog{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:var(--surface);color:var(--ink);max-width:min(660px,92vw);max-height:86dvh;padding:18px 20px;font-family:inherit}
+dialog::backdrop{background:rgba(10,22,48,.5)}
+dialog h2{margin:0 0 6px;font-size:22px}dialog h3{font-size:13px;color:var(--accent);margin:14px 0 4px}dialog p,dialog li{font-size:12.5px}
+kbd{font-family:inherit;font-size:10px;border:1px solid currentColor;padding:0 3px}
+@media (max-width:900px){body{overflow:auto}.layout{display:flex;flex-direction:column}#stage{min-height:340px;flex:none}.side{overflow:visible}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+body.inxr .top,body.inxr .layout{display:none}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 class="word" aria-label="Orbit Lab XR"><span class="k sw">o</span><span class="a">r</span><span>b</span><span class="b">i</span><span>t</span><span class="gap"></span><span class="k">x</span><span class="a">r</span></h1>
+    <p class="tag-line">Launch a ship from a tower, then <b>fly it from the cockpit</b> (VR) or <b>watch the orbit from outside</b> on your table (AR). Same physics as Orbit Lab.</p>
+  </div>
+  <div style="display:flex;gap:8px"><button class="icon-btn" id="themeBtn" aria-label="Toggle light and dark">◐</button><button class="icon-btn" id="helpBtn" aria-label="How it works">?</button></div>
+</header>
+<main class="layout">
+  <section class="stagecol">
+    <div class="toolbar card">
+      <button class="btn primary" id="vrBtn" disabled><span class="lbl">Enter VR · ship view</span></button>
+      <button class="btn" id="arBtn" disabled><span class="lbl">Enter AR · outside view</span></button>
+      <span class="grow"></span>
+      <div class="seg" id="viewSeg" aria-label="View"><button data-v="planet" class="on">Planet</button><button data-v="ship">Ship</button></div>
+    </div>
+    <div id="stage" class="card">
+      <canvas id="cv" aria-label="3D view"></canvas>
+      <div class="hint">drag: look around · wheel: zoom · W S D A: thrusters · Space: play · R: reset · V: view</div>
+      <div id="hudbox"><canvas id="hud" aria-label="Readouts and energy bars"></canvas></div>
+      <div id="pipbox"><canvas id="camcv" aria-label="Ship cam"></canvas></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+    <p class="note" id="vrnote"></p>
+  </section>
+  <aside class="side"><canvas id="ui" aria-label="Controls"></canvas></aside>
+</main>
+<dialog id="help">
+  <h2>How it works</h2>
+  <p><b>Free fall around a planet.</b> The ship starts at the top of a tower. Throw it sideways: gravity keeps pulling it toward the centre, and at one speed the ground curves away as fast as the ship falls. That is an orbit.</p>
+  <h3>Outside view (AR / screen)</h3><p>The planet floats in front of you. Pinch or grip near it to move, turn and (with two hands) scale it. Arrows: velocity (green), gravity (blue), thrust (magenta). The dashed curve is the predicted orbit.</p>
+  <h3>Ship view (VR)</h3><p>You sit in the cockpit: up is away from the planet, forward is the direction of motion. Green circle = prograde, red cross = retrograde. Objects in the cabin float while you coast and drift backward when you burn.</p>
+  <h3>Controls in the headset</h3><p>Trigger or hand-ray pinch presses panel buttons (hold a thruster to burn, tap for a small Δv step). Controllers: A/B burn prograde/retrograde, X/Y radial out/in, stick press hides the panel. Fingertip poke works too.</p>
+  <div style="margin-top:14px"><button class="btn primary" id="helpClose">Close</button></div>
+</dialog>
+<script src="three.min.js"></script>
+<script src="core.js"></script>
+<script src="sim.js"></script>
+<script src="grab.js"></script>
+<script src="pointer.js"></script>
+<script src="xrpanel.js"></script>
+<script src="hud.js"></script>
+<script src="app.js"></script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "units-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Scientific notation and unit conversions for the physics classroom. Runs in the browser, no dependencies.",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}

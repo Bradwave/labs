@@ -1,0 +1,12 @@
+{
+  "name": "impulse-lab",
+  "version": "1.1.0",
+  "description": "Interactive web app on impulse, momentum and collisions",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/",
+    "smoke": "python3 tests/smoke.py"
+  },
+  "type": "module"
+}

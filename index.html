@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Labs</title>
+<meta name="description" content="Interactive math and physics labs for the classroom, in Italian and English, by matephis.com.">
+<meta name="theme-color" content="#C9D3DD">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111A22">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kit/kit.css">
+<style>
+/* Labs home (placeholder until the real landing page): neutral palette, every lab as a card from apps.json */
+:root{--bg:#c9d3dd;--bgline:rgba(20,32,43,.12);--surface:#f7f9fb;--ink:#14202b;--muted:#4f5f6e;--accent:#e8553d;--onaccent:#14202b;--tile2:#ffd23f;--gridline:rgba(20,32,43,.14)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111a22;--bgline:rgba(201,211,221,.07);--surface:#1b2731;--ink:#e8eef3;--muted:#9fb0bf;--accent:#ff7a5c;--onaccent:#111a22;--tile2:#e9b92a;--gridline:rgba(232,238,243,.14)}}
+:root[data-theme="dark"]{--bg:#111a22;--bgline:rgba(201,211,221,.07);--surface:#1b2731;--ink:#e8eef3;--muted:#9fb0bf;--accent:#ff7a5c;--onaccent:#111a22;--tile2:#e9b92a;--gridline:rgba(232,238,243,.14)}
+.home{width:100%;max-width:1400px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-left,0px)) 40px}
+.intro{max-width:70ch;font-size:13px;margin:8px 0 18px}
+.filters{margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+.lab{display:flex;flex-direction:column;color:inherit;text-decoration:none}
+.lab:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.lab:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--ink)}
+.lab .shot{aspect-ratio:16/10;border-bottom:2px solid var(--ink);background:var(--sw,var(--bg));display:grid;place-items:center;overflow:hidden}
+.lab .shot img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+.lab .shot b{font-size:34px;letter-spacing:.04em;color:var(--ink)}
+.lab .body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.lab h2{font-size:15px;margin:0}
+.lab p{font-size:12px;margin:0;color:var(--muted);flex:1}
+.lab .tags{display:flex;gap:6px;flex-wrap:wrap}
+.lab .tags span{font-size:10.5px;font-weight:700;border:1.5px solid var(--ink);padding:1px 6px}
+.lab .tags .wip{border-style:dashed;opacity:.7}
+.foot{margin-top:28px;font-size:11.5px;color:var(--muted)}
+.foot a{color:inherit}
+</style>
+</head>
+<body class="scrolls">
+<header class="top">
+  <h1 class="word" aria-label="Labs"><span class="k">m</span><span>a</span><span class="a">t</span><span>e</span><span class="b">p</span><span>h</span><span class="a">i</span><span>s</span><b class="lab">labs</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+<main class="home">
+  <p class="intro" data-i18n="intro">Laboratori interattivi di matematica e fisica per la classe: funzionano su computer, tablet e telefoni, anche offline.</p>
+  <div class="seg small filters" id="filter" role="group" data-i18n-aria="filter">
+    <button type="button" data-v="all" class="on" data-i18n="f.all">Tutti</button><button type="button" data-v="physics" data-i18n="f.physics">Fisica</button><button type="button" data-v="mathematics" data-i18n="f.math">Matematica</button><button type="button" data-v="xr" data-i18n="f.xr">XR</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="foot"><span data-i18n="foot">Codice libero (MIT) su</span> <a href="https://github.com/Bradwave/labs">github.com/Bradwave/labs</a> · <a href="https://matephis.com">matephis.com</a></p>
+</main>
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h2 data-i18n="title">Laboratori di matematica e fisica</h2>
+  <p data-i18n="about">Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.</p>
+  <p data-i18n="wip">Le schede tratteggiate indicano i laboratori non ancora allineati al nuovo stile.</p>
+</dialog>
+<script type="module">
+import { initKit, t, getLang, onLang } from "./kit/kit.js";
+const strings = {
+  it: { intro: "Laboratori interattivi di matematica e fisica per la classe: funzionano su computer, tablet e telefoni, anche offline.", filter: "Filtra",
+    "f.all": "Tutti", "f.physics": "Fisica", "f.math": "Matematica", "f.xr": "XR", physics: "fisica", mathematics: "matematica", xr: "realtà virtuale",
+    wipTag: "in aggiornamento", foot: "Codice libero (MIT) su", title: "Laboratori di matematica e fisica",
+    about: "Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.",
+    wip: "Le schede tratteggiate indicano i laboratori non ancora allineati al nuovo stile." },
+  en: { intro: "Interactive math and physics labs for the classroom: they run on computers, tablets and phones, even offline.", filter: "Filter",
+    "f.all": "All", "f.physics": "Physics", "f.math": "Mathematics", "f.xr": "XR", physics: "physics", mathematics: "mathematics", xr: "virtual reality",
+    wipTag: "being updated", foot: "Open source (MIT) at", title: "Math and physics labs",
+    about: "Each lab is a small app that opens in the browser and can be installed. Everything runs on the device: no data is sent anywhere.",
+    wip: "Dashed tags mark the labs not yet updated to the new style." },
+};
+initKit({ slug: "labs", name: "Labs", version: "0.1.0", strings, sw: false, landing: "https://matephis.com" });
+let apps = [], filter = "all";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function render() {
+  const lang = getLang();
+  const shown = apps.filter((a) => filter === "all" || (filter === "xr" ? a.kind === "xr" : a.subject === filter && a.kind !== "xr"));
+  document.getElementById("grid").innerHTML = shown.map((a) => {
+    const pal = (a.palette && (a.palette.proposed?.approved ? { bg: a.palette.proposed.bg } : a.palette.light)) || (apps.find((b) => b.slug === a.sharesPaletteWith)?.palette?.light) || {};
+    const tags = [`<span>${t(a.subject)}</span>`];
+    if (a.kind === "xr") tags.push(`<span>${t("xr")}</span>`);
+    if (a.kit !== true) tags.push(`<span class="wip">${t("wipTag")}</span>`);
+    return `<a class="lab card" href="${a.slug}/"><div class="shot" style="--sw:${esc(pal.bg || "")}"><img src="${a.slug}/docs/screenshot.png" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'${esc(a.name.split(" ")[0])}'}))"></div><div class="body"><h2>${esc(a.name)}</h2><p>${esc(a.description?.[lang] || a.description?.en || "")}</p><div class="tags">${tags.join("")}</div></div></a>`;
+  }).join("");
+}
+document.getElementById("filter").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  filter = b.dataset.v;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.classList.toggle("on", x === b);
+  render();
+});
+fetch("apps.json").then((r) => r.json()).then((d) => { apps = d.apps; render(); });
+onLang(render);
+</script>
+</body>
+</html>

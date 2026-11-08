@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#8fd3c0">
+<title>Surface Lab XR</title>
+<style>
+  /* Linguaggio grafico condiviso con Quadrature e Pendulum Lab: carta a quadretti, tessere, bordi d’inchiostro, ombre dure.
+     Nessun font o icona remoti (la Quest non è in rete): si usa il monospace di sistema. */
+  :root {
+    --bg: #8fd3c0; --bgline: rgba(10,42,38,.13);
+    --surface: #f6fbf9; --field: #e1f3ee; --ink: #0a2a26; --muted: #41635d;
+    --accent: #d55e00; --onaccent: #ffffff; --tile2: #f0e442; --sky: #56b4e9; --err: #b3122f;   /* palette Okabe-Ito: sicura per il daltonismo */
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #06201c; --bgline: rgba(143,211,192,.07);
+      --surface: #0d3a33; --field: #0a2b26; --ink: #e8fbf5; --muted: #9bc7bb;
+      --accent: #ff8a3d; --onaccent: #06201c; --tile2: #f0e442; --sky: #56b4e9; --err: #ff9aa8;
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  body { margin: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden;
+    background-color: var(--bg);
+    background-image: linear-gradient(var(--bgline) 1.5px, transparent 1.5px), linear-gradient(90deg, var(--bgline) 1.5px, transparent 1.5px);
+    background-size: 28px 28px; color: var(--ink);
+    font: 14px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; -webkit-text-size-adjust: 100%; }
+  button, select, input { font-family: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* titolo fatto di tessere */
+  .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex: none; width: 100%; max-width: 1400px; margin: 0 auto;
+    padding: 14px max(16px, env(safe-area-inset-right, 0px)) 2px max(16px, env(safe-area-inset-left, 0px)); }
+  .word { display: flex; flex-wrap: wrap; margin: 0; font-size: clamp(18px, 2.6vw, 30px); font-weight: 700; line-height: 1; }
+  .word span { width: 1.32em; height: 1.32em; display: grid; place-items: center; border: 2px solid var(--ink); margin: 0 -2px -2px 0; background: var(--surface); color: var(--ink); }
+  .word span.a { background: var(--accent); color: var(--onaccent); }
+  .word span.b { background: var(--tile2); color: #0a2a26; }
+  .word span.c { background: var(--sky); color: #06201c; }
+  .word span.k { background: var(--ink); color: var(--surface); }
+  .word span.gap { visibility: hidden; width: .5em; border: 0; }
+  .tag-line { margin: 8px 0 0; font-size: 12.5px; max-width: 60ch; }
+  #ver { font-size: 11px; color: var(--muted); text-align: right; }
+
+  /* pulsanti, schede */
+  .ic { display: inline-flex; flex: none; }
+  .ic svg { display: block; }
+  button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; font: inherit; border: 2px solid var(--ink); border-radius: 0; background: var(--surface); color: var(--ink); padding: 7px 12px; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
+  button:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: none; }
+  button.primary { background: var(--accent); color: var(--onaccent); font-weight: 700; }
+  button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+  .card { background: var(--surface); border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
+
+  /* impaginazione: palco + colonna con scheda sezione e schede */
+  .layout { flex: 1; min-height: 0; width: 100%; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 410px); gap: 22px;
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) 18px max(16px, env(safe-area-inset-left, 0px)); }
+  .stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .toolbar, .quick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 10px; flex: none; }
+  .toolbar { border-bottom: 2px solid var(--ink); }
+  .quick { border-top: 2px solid var(--ink); }
+  #vrnote { font-size: 12px; color: var(--muted); padding: 6px 10px 0; flex: none; }
+  #vrnote:empty { display: none; }
+  #view { position: relative; flex: 1; min-height: 240px; overflow: hidden; }
+  #view canvas { display: block; width: 100%; height: 100%; }
+  .tog { display: flex; align-items: center; gap: 7px; padding: 6px 10px; border: 2px solid var(--ink); background: var(--field); color: var(--ink); font-size: 13px; cursor: pointer; }
+  .tog:has(input:checked) { background: var(--tile2); color: #0a2a26; font-weight: 700; }
+  .tog input { accent-color: var(--ink); width: 16px; height: 16px; margin: 0; }
+  #snaplabel { font-size: 12px; color: var(--muted); flex: 1 1 100%; min-height: 1.2em; }
+  #snaplabel:empty { display: none; }
+
+  .side { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+  #secbox { flex: none; padding: 10px; }
+  #sec { display: block; margin: 0 auto; width: min(100%, calc(34vh * .64)); height: auto; border: 2px solid var(--ink); }
+  .tabs { display: flex; flex: none; border-bottom: 2px solid var(--ink); }
+  .tabs button:not([aria-selected="true"]) .tl { display: none; }
+  #sc-qr { width: min(100%, 320px); image-rendering: pixelated; border: 2px solid var(--ink); background: #fff; display: block; margin: 0 auto; }
+  #sc-url, #sc-code { font: 12px/1.35 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: var(--field); border: 2px solid var(--ink); padding: 7px 9px; width: 100%; resize: vertical; }
+  #sc-msg[data-err="1"] { color: var(--err); font-weight: 700; }
+  .tabs button { flex: 1; gap: 5px; border: 0; border-right: 2px solid var(--ink); box-shadow: none; padding: 9px 4px; background: var(--field); font-size: 13px; }
+  .tabs button:last-child { border-right: 0; }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--onaccent); font-weight: 700; }
+  .tabs button:active:not(:disabled) { transform: none; }
+  .tabcard { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .tabpanel { padding: 12px; display: grid; gap: 10px; overflow-y: auto; align-content: start; min-height: 0; }
+
+  /* campi */
+  label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  label > span { color: var(--ink); font-variant-numeric: tabular-nums; }
+  select, input[type=text], input[type=number] { font: inherit; color: var(--ink); background: var(--field); border: 2px solid var(--ink); border-radius: 0; padding: 7px 9px; width: 100%; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .check { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: 14px; }
+  .seg { display: flex; gap: 14px; }
+  .seg label { display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: 14px; }
+  .grid { display: grid; gap: 10px; }
+  .mono { font-family: inherit; }
+  .hint { font-size: 12px; color: var(--muted); }
+  #status { font-size: 13px; color: var(--muted); min-height: 1.3em; }
+  #status[data-err="1"] { color: var(--err); font-weight: 700; }
+  #add, #apply, #del { padding: 8px 6px; white-space: nowrap; }
+  .plane-eq { font-weight: 700; font-size: 15px; padding: 7px 9px; background: var(--tile2); color: #0a2a26; border: 2px solid var(--ink); }
+  details { border: 2px solid var(--ink); background: var(--field); }
+  summary { cursor: pointer; padding: 8px 10px; font-weight: 700; }
+  details > .grid, details > .row3, details > .row, details > .hint { margin: 0 10px 10px; }
+
+  /* elenco delle superfici nella scena */
+  #chips { display: grid; gap: 8px; }
+  .chip { display: flex; align-items: center; gap: 8px; padding: 6px 9px; border: 2px solid var(--ink); background: var(--field); color: var(--ink); font-size: 14px; cursor: pointer; }
+  .chip.on { background: var(--surface); box-shadow: 4px 4px 0 var(--ink); transform: translate(-1px, -1px); font-weight: 700; }
+  .chip input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .chip input[type=checkbox] { accent-color: var(--ink); }
+  .chip:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .chip span:nth-of-type(2) { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dot { width: 14px; height: 14px; border: 2px solid var(--ink); flex: none; }
+
+  body.inxr .side { display: none; }
+
+  @media (max-width: 900px) {
+    html, body { height: auto; }
+    body { overflow: auto; }
+    .layout { display: flex; flex-direction: column; flex: none; gap: 18px; padding-bottom: 26px; }
+    #view { flex: none; height: 56vh; min-height: 280px; }
+    .side { gap: 16px; }
+    #sec { width: min(100%, 300px); }
+    .tabpanel { overflow: visible; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 class="word" aria-label="Surface Lab XR"><span>S</span><span>U</span><span class="a">R</span><span>F</span><span class="b">A</span><span>C</span><span class="c">E</span><span class="gap"></span><span class="k">X</span><span class="b">R</span></h1>
+    <p class="tag-line">Afferra le superfici, taglia con un piano e scopri le sezioni coniche.</p>
+  </div>
+  <div id="ver"></div>
+</header>
+
+<main class="layout">
+  <section class="stage card" aria-label="Scena 3D">
+    <div class="toolbar">
+      <button id="reset" title="Riporta il sistema di riferimento e la telecamera alla posizione iniziale"><span data-ic="reset"></span>Ripristina vista</button>
+      <button id="resetall" title="Riporta alla posizione originale il sistema di riferimento, il piano e tutte le superfici"><span data-ic="resetall"></span>Ripristina tutto</button>
+      <button id="vr" class="primary"><span data-ic="headset"></span><span class="lbl">Entra in VR</span></button>
+      <button id="ar"><span data-ic="room"></span><span class="lbl">Entra in realtà mista</span></button>
+    </div>
+    <div id="vrnote"></div>
+    <div id="view"></div>
+    <div class="quick">
+      <label class="tog"><input id="planeon" type="checkbox" checked><span data-ic="plane"></span> Piano</label>
+      <label class="tog"><input id="clip" type="checkbox" checked><span data-ic="clip"></span> Nascondi un lato</label>
+      <button id="flip"><span data-ic="flip"></span>Inverti lato</button>
+      <label class="tog"><input id="snap" type="checkbox" checked><span data-ic="snap"></span> Aggancio</label>
+      <div id="snaplabel"></div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div id="secbox" class="card">
+      <canvas id="sec" width="320" height="500" role="img" aria-label="Sezione piana della superficie con il piano"></canvas>
+    </div>
+
+    <div class="card tabcard">
+      <div class="tabs" role="tablist" aria-label="Impostazioni">
+        <button role="tab" id="t-sup" aria-controls="p-sup" aria-selected="true" title="Superfici"><span data-ic="cube"></span><span class="tl">Superfici</span></button>
+        <button role="tab" id="t-pia" aria-controls="p-pia" aria-selected="false" title="Piano"><span data-ic="plane"></span><span class="tl">Piano</span></button>
+        <button role="tab" id="t-pos" aria-controls="p-pos" aria-selected="false" title="Posizione"><span data-ic="move"></span><span class="tl">Posizione</span></button>
+        <button role="tab" id="t-sce" aria-controls="p-sce" aria-selected="false" title="Scene"><span data-ic="folder"></span><span class="tl">Scene</span></button>
+        <button role="tab" id="t-aiu" aria-controls="p-aiu" aria-selected="false" title="Aiuto"><span data-ic="help"></span><span class="tl">Aiuto</span></button>
+      </div>
+
+      <div class="tabpanel" id="p-sup" role="tabpanel" aria-labelledby="t-sup">
+        <div id="chips" role="radiogroup" aria-label="Superfici nella scena"></div>
+        <label>Libreria di superfici
+          <select id="preset" aria-label="Libreria di superfici"></select>
+        </label>
+        <div class="row3">
+          <button id="add" class="primary"><span data-ic="plus"></span>Aggiungi</button>
+          <button id="apply" title="Sostituisce la superficie selezionata con quella scelta nella libreria">Sostituisci</button>
+          <button id="del"><span data-ic="trash"></span>Elimina</button>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="Tipo di equazione">
+          <label><input type="radio" name="mode" id="m-imp" checked> Implicita</label>
+          <label><input type="radio" name="mode" id="m-par"> Parametrica</label>
+        </div>
+        <div id="improw" class="grid">
+          <label>Equazione
+            <input id="eq" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" value="x^2+y^2=z^2">
+          </label>
+          <div class="hint">Variabili x, y, z. Valgono ^ ² sqrt sin cos tan exp ln abs atan2(a,b) min(a,b) max(a,b) pi e e il prodotto implicito (2x, xy). Senza «=» si assume «… = 0».</div>
+          <label>Dominio cubico [−R, R]³
+            <input id="range" type="number" min="0.5" max="10" step="0.5" value="2">
+          </label>
+          <details>
+            <summary>Dominio per asse (scatola)</summary>
+            <div class="row"><label>x da<input id="dxl" type="number" step="0.25" value="-2"></label><label>x a<input id="dxh" type="number" step="0.25" value="2"></label></div>
+            <div class="row"><label>y da<input id="dyl" type="number" step="0.25" value="-2"></label><label>y a<input id="dyh" type="number" step="0.25" value="2"></label></div>
+            <div class="row"><label>z da<input id="dzl" type="number" step="0.25" value="-2"></label><label>z a<input id="dzh" type="number" step="0.25" value="2"></label></div>
+            <div class="row"><button id="dsym">Rendi cubico</button></div>
+            <div class="hint">La superficie è disegnata solo dentro la scatola. In VR le facce si spostano dalla scheda Oggetto → Dominio.</div>
+          </details>
+          <div id="parwrap" class="grid" hidden>
+            <div class="hint">Parametri: le lettere a, b, c, d, k, m, n nell’equazione diventano cursori (da −3 a 3 per le equazioni scritte da te).</div>
+            <div id="parsliders" class="grid"></div>
+          </div>
+        </div>
+        <div id="parrow" class="grid" hidden>
+          <label>x(u, v)<input id="fx" class="mono" type="text" autocomplete="off" spellcheck="false"></label>
+          <label>y(u, v)<input id="fy" class="mono" type="text" autocomplete="off" spellcheck="false"></label>
+          <label>z(u, v)<input id="fz" class="mono" type="text" autocomplete="off" spellcheck="false"></label>
+          <div class="row">
+            <label>u da<input id="u0" class="mono" type="text" autocomplete="off" value="0"></label>
+            <label>u a<input id="u1" class="mono" type="text" autocomplete="off" value="2*pi"></label>
+          </div>
+          <div class="row">
+            <label>v da<input id="v0" class="mono" type="text" autocomplete="off" value="0"></label>
+            <label>v a<input id="v1" class="mono" type="text" autocomplete="off" value="2*pi"></label>
+          </div>
+          <div class="hint">Parametri u e v; gli estremi accettano pi (ad es. 2*pi).</div>
+        </div>
+        <label>Risoluzione <span id="resv">48</span>
+          <input id="res" type="range" min="16" max="96" step="4" value="48">
+        </label>
+        <button id="draw" class="primary">Disegna</button>
+        <div id="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="tabpanel" id="p-pia" role="tabpanel" aria-labelledby="t-pia" hidden>
+        <div class="plane-eq"><span id="planeeq"></span></div>
+        <label>Inclinazione θ <span id="pthv"></span><input id="pth" type="range" min="0" max="180" step="1" value="0"></label>
+        <label>Direzione φ <span id="pphv"></span><input id="pph" type="range" min="0" max="360" step="1" value="0"></label>
+        <label>Distanza d <span id="pdv"></span><input id="pd" type="range" min="-2.5" max="2.5" step="0.05" value="0.5"></label>
+        <div id="pquick" class="row3">
+          <button data-a="0,0">Orizzontale</button><button data-a="90,0">Verticale ⟂ x</button><button data-a="90,90">Verticale ⟂ y</button>
+        </div>
+        <div class="hint">Piano, lato nascosto e aggancio si comandano anche dalla barra sotto la scena.</div>
+      </div>
+
+      <div class="tabpanel" id="p-pos" role="tabpanel" aria-labelledby="t-pos" hidden>
+        <div class="hint">La superficie scelta si muove nel sistema di riferimento; l’equazione non cambia. Le coordinate sono quelle del sistema (x, y, z).</div>
+        <div class="row3">
+          <label>x<input id="px" type="number" step="0.25" value="0"></label>
+          <label>y<input id="py" type="number" step="0.25" value="0"></label>
+          <label>z<input id="pz" type="number" step="0.25" value="0"></label>
+        </div>
+        <div class="row3">
+          <label>rot. x°<input id="rx" type="number" step="15" value="0"></label>
+          <label>rot. y°<input id="ry" type="number" step="15" value="0"></label>
+          <label>rot. z°<input id="rz" type="number" step="15" value="0"></label>
+        </div>
+        <div class="row">
+          <label>Scala<input id="sc" type="number" min="0.15" max="6" step="0.1" value="1"></label>
+          <button id="tzero" style="align-self:end" title="Riporta la superficie scelta a posizione, rotazione e scala originali"><span data-ic="home"></span>Pos. originale</button>
+        </div>
+      </div>
+
+      <div class="tabpanel" id="p-sce" role="tabpanel" aria-labelledby="t-sce" hidden>
+        <div class="row3">
+          <button id="sc-save" class="primary"><span data-ic="save"></span>Salva</button>
+          <button id="sc-new"><span data-ic="newfile"></span>Nuova</button>
+          <button id="sc-undo"><span data-ic="undo"></span>Annulla</button>
+        </div>
+        <label>Lezioni e mie scene
+          <select id="sc-list" aria-label="Lezioni e scene salvate"></select>
+        </label>
+        <div class="row">
+          <button id="sc-open"><span data-ic="folder"></span>Apri</button>
+          <button id="sc-del"><span data-ic="trash"></span>Elimina</button>
+        </div>
+        <label>Codice della scena
+          <textarea id="sc-code" rows="4" spellcheck="false" autocomplete="off" placeholder="s3d1.…"></textarea>
+        </label>
+        <div class="row">
+          <button id="sc-copy"><span data-ic="copy"></span>Copia codice</button>
+          <button id="sc-load"><span data-ic="newfile"></span>Carica codice</button>
+        </div>
+        <label>Indirizzo dell’app per il QR
+          <input id="sc-base" type="text" autocomplete="off" spellcheck="false" placeholder="vuoto = questo indirizzo (es. https://…)">
+        </label>
+        <div class="row">
+          <button id="sc-qrbtn"><span data-ic="qr"></span>Mostra QR</button>
+          <button id="sc-adb"><span data-ic="headset"></span>Comando Quest</button>
+        </div>
+        <canvas id="sc-qr" width="320" height="320" hidden aria-label="Codice QR della scena"></canvas>
+        <textarea id="sc-url" rows="4" readonly hidden spellcheck="false"></textarea>
+        <div id="sc-msg" class="hint" role="status"></div>
+        <div class="hint">Le scene salvate restano in questo browser (non passano da un dispositivo all’altro: usa il codice). Le lezioni sono sempre disponibili. «Annulla» riporta lo stato prima dell’ultima azione distruttiva.</div>
+      </div>
+
+      <div class="tabpanel" id="p-aiu" role="tabpanel" aria-labelledby="t-aiu" hidden>
+        <div class="hint">Desktop: trascina per ruotare, rotella o due dita per lo zoom.</div>
+        <div class="hint">In VR, mani: pizzica vicino a una superficie per spostare solo lei; su un asse per spostare tutta la scena; sul piano per spostare il piano; con l’altra mano pizzica ovunque per ingrandire o ruotare. Da lontano, punta col raggio e pizzica per premere un pulsante o selezionare una superficie.</div>
+        <div class="hint">In VR, controller: impugnatura (laterale) per afferrare; grilletto per premere i pulsanti col raggio o selezionare una superficie (tenuto premuto su una superficie apre il menu rapido); A/X tenuto premuto: sonda (punto, gradiente, normale; il grilletto lascia un segnaposto); B/Y per nascondere o mostrare il pannello (resta il pulsante «Menu»). Stick: su apre la galleria rapida, giù la chiude, sinistra/destra scorre le superfici (l’altro stick salta di famiglia), il grilletto sceglie.</div>
+        <div class="hint">Mani: palmo verso l’alto per circa mezzo secondo apre la galleria sul palmo; con l’altra mano tocca le frecce o l’anteprima. Pinza col raggio tenuta ferma su una superficie: menu rapido. «Sonda» nella scheda Vista attiva la sonda per le mani.</div>
+        <div class="hint">Il pannello di controllo in VR si sposta pizzicando la sua barra del titolo (due mani lo ingrandiscono); i pulsanti si premono anche con la punta dell’indice.</div>
+        <div class="hint">Parametri: se l’equazione contiene le lettere a, b, c, d, k, m, n compaiono dei cursori (nella scheda Superfici). Dominio: «Dominio per asse» definisce la scatola in cui la superficie è disegnata; in VR: scheda Oggetto → Dominio / Parametri.</div>
+        <div class="hint">La realtà mista (passthrough) richiede un’uscita e un nuovo ingresso: non si passa da VR a realtà mista dentro la sessione.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script src="three.min.js"></script>
+<script src="core.js"></script>
+<script src="grab.js"></script>
+<script src="icons.js"></script>
+<script src="panel.js"></script>
+<script src="scene.js"></script>
+<script src="probe.js"></script>
+<script src="qr.js"></script>
+<script src="pointer.js"></script>
+<script src="thumbs.js"></script>
+<script src="quick.js"></script>
+<script src="app.js"></script>
+<script>
+  Icons.mount();
+  // schede del pannello laterale (la scheda scelta si ricorda)
+  (function () {
+    var tabs = [].slice.call(document.querySelectorAll('.tabs [role=tab]'));
+    function show(t) {
+      tabs.forEach(function (b) {
+        var on = b === t; b.setAttribute('aria-selected', on ? 'true' : 'false');
+        document.getElementById(b.getAttribute('aria-controls')).hidden = !on;
+      });
+      try { localStorage.setItem('surface-lab-xr.tab', t.id); } catch (e) { /* ignora */ }
+    }
+    tabs.forEach(function (b) { b.addEventListener('click', function () { show(b); }); });
+    var saved = null; try { saved = localStorage.getItem('surface-lab-xr.tab'); } catch (e) { /* ignora */ }
+    var t0 = tabs.filter(function (b) { return b.id === saved; })[0]; if (t0) show(t0);
+  })();
+  // versione in uso (nome della cache del service worker): serve a controllare che la Quest non usi file vecchi
+  if (window.caches) caches.keys().then(function (ks) { var v = ks.filter(function (k) { return k.indexOf('surface-lab-xr') === 0; }).sort().pop(); document.getElementById('ver').textContent = v ? v.replace('superfici3d-', 'versione ') : ''; });
+  // Service worker: offline dopo il primo caricamento (richiede https o localhost)
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function (e) { console.warn('SW non registrato:', e); }); });
+  }
+</script>
+</body>
+</html>

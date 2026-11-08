@@ -1,0 +1,1 @@
+{ "name": "orbit-lab-xr-tests", "private": true, "scripts": { "test": "node test-core.js && node test-sim.js && node test-panel.js" } }

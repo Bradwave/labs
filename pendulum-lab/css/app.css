@@ -1,0 +1,312 @@
+/* Pendulum Lab · app.css
+   Brand tokens, pendulum-specific colours and the few styles the kit does not provide.
+   Shared look (base, header, layout, components, breakpoints) comes from ../kit/kit.css (DESIGN.md at the repository root). */
+:root {
+  --bg: #8ccbeb;
+  --bgline: rgba(11, 27, 58, 0.12);
+  --surface: #f5f9fc;
+  --ink: #0b1b3a;
+  --muted: #4d6585;
+  --accent: #ff6a3d;
+  --onaccent: #0b1b3a;
+  --tile2: #ffc23d;
+  --gridline: rgba(11, 27, 58, 0.13);
+  /* forces: weight uses the shared position blue, tension the shared force red */
+  --wt: var(--pos);
+  --ten: var(--force);
+  --drag: #9a6a00;
+  --app: #6e3fe0;
+  --liquid: #1aa7d1;
+  --liquid2: #8fddf3;
+  --glass: rgba(140, 203, 235, 0.22);
+  --ball: #ffc23d;
+  --ball2: #ff9e7a;
+  --spr: #5e7a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1630;
+    --bgline: rgba(140, 203, 235, 0.07);
+    --surface: #12213f;
+    --ink: #e8f1ff;
+    --muted: #9bb0cf;
+    --accent: #ff7a50;
+    --onaccent: #0a1630;
+    --tile2: #e9a92a;
+    --gridline: rgba(232, 241, 255, 0.1);
+    --drag: #e2b24a;
+    --app: #b79bff;
+    --liquid: #33c2ea;
+    --liquid2: #a3e9fa;
+    --glass: rgba(140, 203, 235, 0.1);
+    --ball: #f4b73a;
+    --ball2: #ff9e7a;
+    --spr: #c5d84e;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1630;
+  --bgline: rgba(140, 203, 235, 0.07);
+  --surface: #12213f;
+  --ink: #e8f1ff;
+  --muted: #9bb0cf;
+  --accent: #ff7a50;
+  --onaccent: #0a1630;
+  --tile2: #e9a92a;
+  --gridline: rgba(232, 241, 255, 0.1);
+  --drag: #e2b24a;
+  --app: #b79bff;
+  --liquid: #33c2ea;
+  --liquid2: #a3e9fa;
+  --glass: rgba(140, 203, 235, 0.1);
+  --ball: #f4b73a;
+  --ball2: #ff9e7a;
+  --spr: #c5d84e;
+}
+/* the accent orange is too light for text on the light surface: headings use the ink-darkened accent */
+:root:not([data-theme="dark"]) h3.grp,
+:root:not([data-theme="dark"]) dialog h3 {
+  color: #c2410c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) h3.grp,
+  :root:not([data-theme="light"]) dialog h3 {
+    color: var(--accent);
+  }
+}
+
+/* ---------- wordmark: the last tile is the bob, and it swings ---------- */
+.word span.b {
+  color: #0b1b3a;
+}
+.word span.sw {
+  transform-origin: 50% -60%;
+  animation: swing 2.2s ease-in-out infinite alternate;
+  border-radius: 50%;
+  margin-left: 4px;
+}
+@keyframes swing {
+  from {
+    transform: rotate(16deg);
+  }
+  to {
+    transform: rotate(-16deg);
+  }
+}
+
+/* ---------- stage ---------- */
+.canvas-wrap {
+  min-height: 200px;
+  touch-action: none;
+}
+#cv {
+  cursor: grab;
+}
+#cv.held {
+  cursor: grabbing;
+}
+#cv.locked {
+  cursor: default;
+}
+.readout {
+  left: 10px;
+  right: auto;
+  border-width: 2px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  padding: 6px 9px;
+  max-width: 58%;
+}
+.readout span:nth-child(odd) {
+  color: var(--muted);
+}
+.readout .full {
+  grid-column: 1 / -1;
+  color: var(--app) !important;
+  font-weight: 700;
+}
+#ebars {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  left: auto;
+  width: 196px;
+  height: 128px;
+  inset: 10px 10px auto auto;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  pointer-events: none;
+}
+
+/* quick toggles under the stage: chips with a small arrow in the quantity's colour */
+.quick {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  flex: none;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.quick .lg {
+  flex: none;
+}
+.lg .vs {
+  width: 16px;
+  height: 0;
+  border-top: 3px solid currentColor;
+  position: relative;
+  flex: none;
+}
+.lg .vs::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -6px;
+  border: 4.5px solid transparent;
+  border-left: 6px solid currentColor;
+}
+
+/* swatches inside the switch rows: an arrow for vectors, a dot for the rest */
+.tg .sw {
+  width: 26px;
+  height: 0;
+  border-top: 3px solid currentColor;
+  position: relative;
+  flex: none;
+}
+.tg .sw::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -6.5px;
+  border: 5px solid transparent;
+  border-left: 7px solid currentColor;
+}
+.tg .sw.dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  margin: 0 6px;
+}
+.tg .sw.dot::after {
+  display: none;
+}
+.ctl > .seg {
+  margin-top: 6px;
+}
+.dim {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------- graphs tab ---------- */
+.gtop {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.gchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0;
+}
+.gchips .lg {
+  font-size: 11px;
+  padding: 3px 7px;
+  min-height: 30px;
+}
+.gchips .lg i {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border: 1.5px solid var(--ink);
+  flex: none;
+}
+#gcv {
+  width: 100%;
+  height: 300px;
+  display: block;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  touch-action: pan-y;
+}
+#ptable {
+  margin-top: 10px;
+}
+#ptable td {
+  padding: 5px 4px;
+  text-align: left;
+}
+#ptable td:last-child {
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: top;
+}
+#ptable td small {
+  display: block;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 400;
+}
+.csvrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+#csvOut {
+  height: 110px;
+  font-size: 11px;
+  margin-top: 8px;
+  background: var(--bg);
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 920px) and (orientation: portrait) {
+  .panel {
+    height: clamp(250px, 40dvh, 560px);
+  }
+  #ebars {
+    width: 150px;
+    height: 104px;
+  }
+  .readout {
+    font-size: 10.5px;
+    padding: 4px 7px;
+  }
+  .quick {
+    padding: 6px 8px;
+  }
+  #gcv {
+    height: 220px;
+  }
+}
+@media (max-height: 600px) and (orientation: landscape) {
+  .quick {
+    display: none;
+  }
+  #ebars {
+    width: 150px;
+    height: 104px;
+  }
+  #gcv {
+    height: 200px;
+  }
+}
+@media (max-width: 440px) {
+  .seg.view .t {
+    display: none;
+  }
+  #stepBtn {
+    display: none;
+  }
+  .readout .wide {
+    display: none !important;
+  }
+}

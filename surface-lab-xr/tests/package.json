@@ -1,0 +1,1 @@
+{ "name": "surface-lab-xr-tests", "private": true, "scripts": { "test": "node test.js && node test2.js && node test3.js && node test4.js && node test5.js && node test6.js && node test7.js && node test8.js && node test9.js && node test10.js && node test11.js" }, "devDependencies": { "three": "0.128.0" } }

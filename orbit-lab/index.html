@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orbit Lab</title>
+<meta name="description" content="Launch a ship from a tower, watch the free fall around a planet, change the orbit with thrusters, and read the physics from vectors, energy bars and the predicted conic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 class="word" aria-label="Orbit Lab">
+      <span class="k sw">o</span><span class="a">r</span><span>b</span><span class="b">i</span><span>t</span><span class="gap"></span><span class="k">l</span><span class="a">a</span><span class="b">b</span>
+    </h1>
+    <p class="tag-line" id="tagLine"></p>
+  </div>
+  <button class="icon-btn" id="helpBtn" aria-label="How it works"><span class="ms">help</span></button>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" id="playBtn" aria-label="Play"><span class="ms" id="playIcon">play_arrow</span><span class="lbl" id="playLbl">Play</span></button>
+      <button class="btn" id="stepBtn" aria-label="Step forward"><span class="ms">skip_next</span><span class="lbl">Step</span></button>
+      <button class="btn" id="resetBtn" aria-label="Reset to launch"><span class="ms">replay</span><span class="lbl">Reset</span></button>
+      <div class="seg small" id="speedSeg" aria-label="Time speed">
+        <button data-v="0.25">¼×</button><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button><button data-v="4">4×</button><button data-v="8">8×</button><button data-v="16">16×</button><button data-v="32">32×</button>
+      </div>
+      <span class="grow"></span>
+      <button class="btn" id="fitBtn" title="Fit the predicted orbit in view" aria-label="Fit orbit"><span class="ms">fit_screen</span><span class="lbl">Fit</span></button>
+      <button class="btn" id="followBtn" title="Keep the ship in view" aria-label="Follow ship" aria-pressed="false"><span class="ms">my_location</span><span class="lbl">Follow</span></button>
+      <div class="seg view" id="viewSeg" aria-label="Main view" data-feat="shipcam">
+        <button data-v="planet" class="on" title="Planet view"><span class="ms">public</span><span class="t">Planet</span></button>
+        <button data-v="ship" title="Ship cam"><span class="ms">rocket</span><span class="t">Ship</span></button>
+      </div>
+      <button class="btn mob-help" id="helpBtn2" aria-label="How it works"><span class="ms">help</span></button>
+    </div>
+
+    <div class="canvas-wrap card" id="wrap">
+      <canvas id="cv" aria-label="Orbit simulation"></canvas>
+      <div id="camwrap" data-feat="shipcam"><canvas id="camcv" aria-label="Ship cam"></canvas></div>
+      <div class="readout" id="readout"></div>
+      <canvas id="ebars" aria-label="Energy bars"></canvas>
+      <div class="hint" id="hint"></div>
+      <div class="status" id="status" hidden></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+
+    <div class="scrub card"><span class="ms" title="Rewind">history</span><input type="range" id="scrub" min="0" max="0" step="1" value="0" aria-label="Scrub through the flight"><b id="tLabel">t = 0.00</b></div>
+    <div class="quick card" id="quick"></div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="launch" role="tab"><span class="ms">rocket_launch</span><span class="tl">Launch</span></button>
+      <button class="tab" data-tab="fly" role="tab"><span class="ms">sports_esports</span><span class="tl">Fly</span></button>
+      <button class="tab" data-tab="chase" role="tab"><span class="ms">radar</span><span class="tl">Chase</span></button>
+      <button class="tab" data-tab="plots" role="tab"><span class="ms">show_chart</span><span class="tl">Plots</span></button>
+      <button class="tab" data-tab="show" role="tab"><span class="ms">layers</span><span class="tl">Show</span></button>
+      <button class="tab" data-tab="goals" role="tab"><span class="ms">flag</span><span class="tl">Missions</span></button>
+      <button class="tab" data-tab="setup" role="tab"><span class="ms">tune</span><span class="tl">Setup</span></button>
+    </div>
+
+    <div class="tabpane card" id="pane-launch">
+      <h3 class="grp" id="gTower"></h3>
+      <div class="ctl"><label for="hR"><span id="hLab"></span> <b id="hL"></b></label><input type="range" id="hR" min="0" max="1.5" step="0.01" value="0.5"></div>
+      <div class="row"><label class="num"><span id="hNumLab">h/R</span> <input type="number" id="hN" min="0" max="1.5" step="0.01" value="0.5" inputmode="decimal"></label>
+        <div class="seg small" id="hPre"><button data-v="0">0</button><button data-v="0.05">0.05</button><button data-v="0.2">0.2</button><button data-v="0.5">0.5</button><button data-v="1">1</button></div></div>
+      <p class="note" id="hNote"></p>
+
+      <h3 class="grp" id="gMode"></h3>
+      <div class="seg" id="modeSeg"><button data-v="cannon" class="on" id="modeCannon"></button><button data-v="program" data-feat="program" id="modeProg"></button></div>
+
+      <div id="cannonBox">
+        <div class="ctl sl"><label for="vR"><span id="vLab"></span> <b id="vL"></b></label><input type="range" id="vR" min="0" max="1.6" step="0.01" value="0">
+          <div class="marks" id="vMarks"></div></div>
+        <div class="row" data-feat="numbers"><label class="num"><span>v/v<sub>c0</sub></span> <input type="number" id="vN" min="0" max="1.6" step="0.01" value="0" inputmode="decimal"></label>
+          <div class="seg small" id="vFine" aria-label="Fine adjust"><button data-d="-0.001">−.001</button><button data-d="0.001">+.001</button><button data-d="-0.01">−.01</button><button data-d="0.01">+.01</button></div></div>
+        <div class="ctl"><label for="aR"><span id="aLab"></span> <b id="aL"></b></label><input type="range" id="aR" min="-10" max="90" step="1" value="0"></div>
+        <div class="row" data-feat="numbers"><label class="num"><span>θ</span> <input type="number" id="aN" min="-10" max="90" step="1" value="0" inputmode="decimal"> °</label>
+          <div class="seg small" id="aPre"><button data-v="0">0°</button><button data-v="30">30°</button><button data-v="45">45°</button><button data-v="90">90°</button></div></div>
+      </div>
+
+      <div id="progBox" hidden>
+        <div class="ctl"><label for="bR"><span id="bLab"></span> <b id="bL"></b></label><input type="range" id="bR" min="0.5" max="20" step="0.1" value="6"></div>
+        <div class="note" id="progA"></div><canvas class="pcv prog" id="pcA" aria-label="Thrust over time"></canvas>
+        <div class="note" id="progT"></div><canvas class="pcv prog" id="pcT" aria-label="Pitch over time"></canvas>
+        <p class="note" id="progNote"></p>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="launchBtn"><span class="ms">rocket_launch</span><span id="launchLbl">Launch</span></button>
+        <button class="btn" id="resetBtn2"><span class="ms">restart_alt</span><span>Reset</span></button>
+      </div>
+      <p class="note" id="launchNote"></p>
+    </div>
+
+    <div class="tabpane card" id="pane-fly" hidden>
+      <h3 class="grp" id="gThr"></h3>
+      <div class="thr-grid" id="thrGrid">
+        <button class="btn" data-k="pro"><span class="ms">arrow_upward</span><span id="tPro"></span><kbd>W</kbd></button>
+        <button class="btn" data-k="retro"><span class="ms">arrow_downward</span><span id="tRetro"></span><kbd>S</kbd></button>
+        <button class="btn" data-k="out" data-feat="radial"><span class="ms">north</span><span id="tOut"></span><kbd>D</kbd></button>
+        <button class="btn" data-k="in" data-feat="radial"><span class="ms">south</span><span id="tIn"></span><kbd>A</kbd></button>
+      </div>
+      <p class="note" id="thrNote"></p>
+      <div class="ctl"><label for="tlR"><span id="tlLab"></span> <b id="tlL"></b></label><input type="range" id="tlR" min="0.02" max="1" step="0.01" value="0.2"></div>
+      <div class="ctl"><label for="dvS"><span id="dvLab"></span></label>
+        <div class="seg small" id="dvSeg"><button data-v="0.005">0.005</button><button data-v="0.02" class="on">0.02</button><button data-v="0.05">0.05</button><button data-v="0.1">0.1</button></div></div>
+      <div class="ctl" data-feat="budget"><label for="bgR"><span id="bgLab"></span> <b id="bgL"></b></label><input type="range" id="bgR" min="0" max="2" step="0.05" value="2"></div>
+      <div class="row"><span class="note" id="dvUsed"></span></div>
+    </div>
+
+    <div class="tabpane card" id="pane-chase" hidden>
+      <h3 class="grp" id="gChase"></h3>
+      <p class="note" id="chaseNote"></p>
+      <div class="ctl"><label for="leadR"><span id="leadLab"></span> <b id="leadL"></b></label><input type="range" id="leadR" min="15" max="150" step="5" value="40"></div>
+      <div class="seg small" id="sideSeg"><button data-v="1" class="on">Target ahead</button><button data-v="-1">Target behind</button></div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" id="chaseStart"><span class="ms">radar</span><span id="chaseStartLbl"></span></button><button class="btn" id="chaseExit"><span class="ms">close</span><span id="chaseExitLbl"></span></button></div>
+      <table class="ptable" id="chTable"></table>
+      <div id="chRes"></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="chHintBtn"><span class="ms">lightbulb</span><span>Hint</span></button></div>
+      <p class="note" id="chHint" hidden></p>
+    </div>
+
+    <div class="tabpane card" id="pane-plots" hidden>
+      <h3 class="grp">r(t)</h3><canvas class="pcv" id="gR"></canvas>
+      <h3 class="grp">v(t)</h3><canvas class="pcv" id="gV"></canvas>
+      <h3 class="grp">K, U, E (t)</h3><canvas class="pcv" id="gE"></canvas>
+      <div data-feat="veff"><h3 class="grp" id="gVeffT"></h3><canvas class="pcv" id="gVeff"></canvas></div>
+      <table class="ptable" id="ptable" data-feat="advread"></table>
+    </div>
+
+    <div class="tabpane card" id="pane-show" hidden>
+      <div id="showList"></div>
+      <div class="ctl"><label id="sclLab"></label><div class="seg small" id="sclSeg"><button data-v="lin" class="on">linear</button><button data-v="sqrt">√</button></div></div>
+      <div class="ctl" data-feat="kepler"><label for="kepR"><span id="kepLab"></span> <b id="kepL"></b></label><input type="range" id="kepR" min="0.2" max="3" step="0.1" value="1"></div>
+      <div class="row"><button class="btn" id="clearGhost"><span class="ms">delete_sweep</span><span id="clrLbl"></span></button></div>
+    </div>
+
+    <div class="tabpane card" id="pane-goals" hidden><div id="misList"></div></div>
+
+    <div class="tabpane card" id="pane-setup" hidden>
+      <h3 class="grp" id="gLevel"></h3>
+      <div class="seg" id="lvSeg"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button></div>
+      <p class="note" id="lvNote"></p>
+      <h3 class="grp" id="gPlanet"></h3>
+      <div class="seg small" id="plSeg"></div>
+      <p class="note" id="plNote"></p>
+      <h3 class="grp" id="gData"></h3>
+      <div class="row"><button class="btn" id="csvBtn"><span class="ms">content_copy</span><span id="csvLbl"></span></button><button class="btn" id="csvDl"><span class="ms">download</span><span id="csvDlLbl"></span></button></div>
+      <textarea id="csvOut" hidden readonly aria-label="CSV data"></textarea>
+      <h3 class="grp" id="gTeach"></h3>
+      <p class="note" id="teachNote"></p>
+      <div id="teachList"></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="teachReset"><span class="ms">restart_alt</span><span id="trLbl"></span></button><button class="btn" id="linkBtn"><span class="ms">link</span><span id="linkLbl"></span></button></div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="help">
+  <div class="word dlg-word" aria-hidden="true"><span class="k">o</span><span class="a">r</span><span>b</span><span class="b">i</span><span>t</span></div>
+  <h2 id="helpTitle"></h2>
+  <div id="helpBody"></div>
+  <div class="row" style="margin-top:14px"><button class="btn primary" id="helpClose">Close</button></div>
+</dialog>
+</body>
+</html>

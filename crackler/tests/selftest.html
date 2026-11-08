@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crackler: video loading check</title>
+    <style>
+      body { font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; margin: 16px; max-width: 760px; color: #10230f; background: #f7fbef; }
+      h1 { font-size: 18px; margin: 0 0 8px; }
+      button, input, select { font: inherit; padding: 8px 10px; margin: 4px 4px 4px 0; }
+      table { border-collapse: collapse; margin: 10px 0; }
+      td, th { border-bottom: 1px solid #10230f33; padding: 3px 12px 3px 0; text-align: left; vertical-align: top; }
+      .ok { color: #0a7a4b; font-weight: 700; }
+      .bad { color: #c0132f; font-weight: 700; }
+      pre { background: #10230f0d; padding: 8px; overflow: auto; max-height: 260px; }
+    </style>
+  </head>
+  <body>
+    <h1>Crackler: video loading check</h1>
+    <p>
+      Pick a video from this device. The page loads it exactly like Crackler does and reports frame count, real
+      frame rate, gaps and repeats. Nothing is uploaded. Keep this tab in front while it runs; it takes about as long
+      as the video.
+    </p>
+    <input type="file" id="file" accept="video/*,.mp4,.mov,.m4v,.webm" />
+    <label>Max width <select id="w"><option>320</option><option>480</option><option selected>640</option><option>960</option><option>1280</option></select></label>
+    <label>Keep <select id="s"><option value="1" selected>every frame</option><option value="2">1 in 2</option><option value="4">1 in 4</option></select></label>
+    <button id="go" disabled>Run</button>
+    <div id="out"></div>
+    <script type="module">
+      import { createFrames, probe, supported } from "../js/frames.js";
+      import { analyzeTimes } from "../js/timing.js";
+      const $ = (s) => document.querySelector(s);
+      let file = null;
+      $("#file").onchange = (e) => {
+        file = e.target.files[0];
+        $("#go").disabled = !file;
+      };
+      const row = (k, v, cls = "") => `<tr><th>${k}</th><td class="${cls}">${v}</td></tr>`;
+      $("#go").onclick = async () => {
+        const out = $("#out");
+        if (!supported()) return (out.innerHTML = '<p class="bad">requestVideoFrameCallback is not available in this browser.</p>');
+        out.textContent = "Reading the video…";
+        const t0 = performance.now();
+        try {
+          const info = await probe(file);
+          const src = createFrames();
+          out.textContent = "Loading frames…";
+          let pass = 0;
+          await src.load(file, {
+            info,
+            maxWidth: +$("#w").value,
+            step: +$("#s").value,
+            budget: 600e6,
+            onProgress: (f, n, a) => {
+              pass = a;
+              out.textContent = `Loading frames… ${Math.round(f * 100)}% (${n} frames, pass ${a + 1})`;
+            },
+          });
+          const times = Array.from({ length: src.frameCount }, (_, i) => src.timeOf(i));
+          const an = analyzeTimes(times);
+          const bad = src.warnings.length > 0;
+          const deltas = times.slice(1).map((t, i) => t - times[i]);
+          out.innerHTML =
+            "<table>" +
+            row("file", `${file.name} (${(file.size / 1e6).toFixed(1)} MB)`) +
+            row("size in video", `${info.width}×${info.height}`) +
+            row("duration", info.duration.toFixed(3) + " s") +
+            row("frame rate from probe", info.fps + " Hz" + (info.fpsMeasured ? "" : " (guess)")) +
+            row("frames loaded", `${src.frameCount} at ${src.width}×${src.height}`) +
+            row("frame rate of loaded frames", src.fps.toFixed(3) + " Hz") +
+            row("passes needed", pass + 1, pass ? "bad" : "ok") +
+            row("repeats / gaps", `${an.duplicates.length} / ${an.dropped.length}`, bad ? "bad" : "ok") +
+            row("warnings", src.warnings.length ? JSON.stringify(src.warnings) : "none", bad ? "bad" : "ok") +
+            row("min / max frame gap", `${Math.min(...deltas).toFixed(4)} / ${Math.max(...deltas).toFixed(4)} s`) +
+            row("time taken", ((performance.now() - t0) / 1000).toFixed(1) + " s") +
+            "</table><p>First timestamps (s):</p><pre>" +
+            times.slice(0, 40).map((t) => t.toFixed(4)).join("\n") +
+            "</pre>";
+          src.dispose();
+        } catch (e) {
+          out.innerHTML = `<p class="bad">Failed: ${e.message}</p>`;
+        }
+      };
+    </script>
+  </body>
+</html>

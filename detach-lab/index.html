@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Detach Lab</title>
+<meta name="description" content="Interactive exploration of the dissociative photodetachment of an I₂⁻ beam: Galilean and relativistic velocity composition, laboratory and ion frames.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,500,0,0&display=block" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1 class="word" id="word" aria-label="Detach Lab"></h1>
+    <p class="tag-line" data-en="An iodine atom shoots out of a molecule in flight. Where does it land on the detector, and when? Switch reference frame and compare Galileo with Einstein.">Un atomo di iodio schizza fuori da una molecola in volo. Dove arriva sul rivelatore, e quando? Cambia sistema di riferimento e confronta Galileo con Einstein.</p>
+  </div>
+  <div class="hbtns">
+    <button class="icon-btn" id="shareBtn" data-share aria-label="Copia il link a questa configurazione" data-en-label="Copy a link to this setup"><span class="ms">link</span></button>
+    <button class="icon-btn" id="helpBtn" aria-label="Come funziona e lingua" data-en-label="How it works and language"><span class="ms">help</span></button>
+  </div>
+</header>
+
+<main class="layout" id="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <div class="trow">
+        <button class="btn primary" id="play" aria-label="Pausa"><span class="ms" id="playIcon">pause</span><span class="lbl" id="playLbl">Pausa</span></button>
+        <button class="btn" id="stepBtn" aria-label="Avanza di un passo" data-en-label="Advance one step"><span class="ms">skip_next</span><span class="lbl" data-en="Step">Passo</span></button>
+        <button class="btn" id="resetBtn" aria-label="Dall'inizio" data-en-label="Restart"><span class="ms">replay</span><span class="lbl" data-en="Restart">Da capo</span></button>
+        <div class="seg small" id="seg-spd" aria-label="Velocità dell'animazione" data-en-label="Animation speed">
+          <button data-v="0.25">¼×</button><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button>
+        </div>
+        <span class="grow"></span>
+        <div class="seg" id="seg-frame" aria-label="Sistema di riferimento" data-en-label="Reference frame">
+          <button data-f="lab" class="on"><span class="ms">public</span><span class="t">Lab</span></button>
+          <button data-f="ion"><span class="ms">center_focus_strong</span><span class="t" data-en="Ion">Ione</span></button>
+        </div>
+        <button class="btn mob-help" id="helpBtn2" aria-label="Come funziona" data-en-label="How it works"><span class="ms">help</span></button>
+      </div>
+      <div class="trow">
+        <div class="seg" id="seg-model" aria-label="Modello" data-en-label="Model">
+          <button data-m="gal" class="on">Galileo</button><button data-m="rel">Einstein</button><button data-m="both" data-en="Compare">Confronto</button>
+        </div>
+        <div class="tlrow"><input type="range" id="tl" min="0" max="1000" value="0" aria-label="Tempo" data-en-label="Time"><span class="clock" id="clock"></span></div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap card" id="wrap">
+      <canvas id="cv-a" role="img" aria-label="Apparato sperimentale animato" data-en-label="Animated experimental setup"></canvas>
+      <canvas id="cv-b" role="img" aria-label="Apparato nel sistema dello ione" data-en-label="Setup in the ion frame" hidden></canvas>
+      <div class="pick" id="pick" hidden></div>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="quick card" id="quick">
+      <span class="qlabel" data-en="Setup">Setup</span>
+      <div class="seg small" id="seg-setup">
+        <button data-s="real" class="on" data-en="Realistic">Realistico</button><button data-s="simple" data-en="Simplified">Semplificato</button>
+      </div>
+      <span class="qlabel" data-en="Show">Mostra</span>
+      <button class="lg on" data-q="anions" data-en="Anion beam">Fascio di anioni</button>
+      <button class="lg on" data-q="fan" data-en="Emission rays">Raggi di emissione</button>
+      <button class="lg on" data-q="partner" data-en="Partner atom">Atomo partner</button>
+      <button class="lg on" data-q="exag" data-en="Exaggerated scene">Scena esagerata</button>
+      <button class="lg" data-q="flow" data-en="Continuous flow">Flusso continuo</button>
+      <button class="lg" data-q="split" data-en="Side by side">Vista affiancata</button>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="vel" role="tab"><span class="ms">arrow_right_alt</span><span data-en="Velocity">Velocità</span></button>
+      <button class="tab" data-tab="setup" role="tab"><span class="ms">tune</span>Setup</button>
+      <button class="tab" data-tab="eq" role="tab"><span class="ms">function</span><span data-en="Equations">Equazioni</span></button>
+      <button class="tab" data-tab="stats" role="tab"><span class="ms">bar_chart</span><span data-en="Statistics">Statistica</span></button>
+      <button class="icon-btn mob-help" id="helpBtn3" aria-label="Come funziona" data-en-label="How it works"><span class="ms">help</span></button>
+    </div>
+
+    <div class="tabpane card" id="pane-vel">
+      <div class="gtop"><span id="vel-title">Velocità</span><button class="lg plain" id="zoomv" data-en="Zoom">Ingrandisci</button></div>
+      <canvas id="cv-v" class="vcv" tabindex="0" role="img" aria-label="Piano delle velocità" data-en-label="Velocity plane"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--ok)"></i><span data-en="detected">rivelato</span></span>
+        <span><i style="background:var(--weak)"></i><span data-en="below threshold">sotto soglia</span></span>
+        <span><i style="background:var(--miss)"></i><span data-en="off the detector">fuori dal rivelatore</span></span>
+        <span><i style="background:var(--muted);opacity:.5"></i><span data-en="never arrives">non arriva</span></span>
+      </div>
+      <div class="ctl">
+        <label for="th"><span data-en="Emission direction θ′ (in the ion frame)">Direzione di emissione θ′ (nello ione)</span><output id="th-o"></output></label>
+        <input type="range" id="th" min="-180" max="180" step="0.5" value="60">
+      </div>
+      <div class="btns">
+        <button class="btn" data-th="0">0°</button>
+        <button class="btn" data-th="90">90°</button>
+        <button class="btn" data-th="180">180°</button>
+        <button class="btn" data-th="tan" id="th-tan" data-en="Tangent">Tangente</button>
+      </div>
+      <p class="note" data-en="Drag the point on the curve, or use the arrow keys with the plane focused.">Trascina il punto sulla curva, oppure usa le frecce con il piano selezionato.</p>
+      <h3 class="grp" data-en="Selected fragment">Frammento selezionato</h3>
+      <p class="note" style="margin-top:0" data-en="u in 10⁴ m/s; r is the distance from the axis on the detector.">u in 10⁴ m/s; r è la distanza dall'asse sul rivelatore.</p>
+      <div class="tblwrap" id="readout"></div>
+      <h3 class="grp" data-en="Detector summary">Riepilogo sul rivelatore</h3>
+      <p class="note" style="margin-top:0" data-en="Isotropic emission in the ion frame.">Emissione isotropa nello ione.</p>
+      <div class="tblwrap" id="summary"></div>
+    </div>
+
+    <div class="tabpane card" id="pane-setup" hidden>
+      <h3 class="grp" data-en="Apparatus">Apparato</h3>
+      <div id="sliders"></div>
+      <p class="note" id="umin-note"></p>
+      <h3 class="grp" data-en="Speed of light">Velocità della luce</h3>
+      <button class="tg" id="creal" aria-pressed="true"><span class="txt"><span data-en="Use the real c">Usa c reale</span><small data-en="3.00·10⁸ m/s: the two models almost coincide">3,00·10⁸ m/s: i due modelli coincidono quasi del tutto</small></span><span class="box"></span></button>
+      <div class="ctl">
+        <label for="beta"><span data-en="β = v/c with reduced c">β = v/c con c ridotta</span><output id="beta-o"></output></label>
+        <input type="range" id="beta" min="0" max="1000" value="800">
+      </div>
+      <p class="note" id="c-note"></p>
+      <h3 class="grp" data-en="Presets">Configurazioni</h3>
+      <div class="btns">
+        <button class="btn" data-preset="cone" data-en="Narrow cone (u′ &lt; v)">Cono stretto (u′ &lt; v)</button>
+        <button class="btn" data-preset="slow" data-en="Slow beam (u′ &gt; v)">Fascio lento (u′ &gt; v)</button>
+        <button class="btn" data-preset="small" data-en="Small detector">Rivelatore piccolo</button>
+        <button class="btn" data-preset="thr" data-en="High threshold">Soglia alta</button>
+        <button class="btn" data-preset="rel" data-en="Relativistic (β = 0.6)">Relativistico (β = 0,6)</button>
+        <button class="btn" data-preset="stream" data-en="Continuous stream">Flusso continuo</button>
+      </div>
+      <p class="note" data-en="Speeds in 10⁴ m/s (equal to 1 cm/µs), distances in cm, times in µs.">Velocità in 10⁴ m/s (equivale a 1 cm/µs), distanze in cm, tempi in µs.</p>
+    </div>
+
+    <div class="tabpane card" id="pane-stats" hidden>
+      <div class="gtop"><span data-en="Time of flight of the detected fragments">Tempo di volo dei frammenti rivelati</span></div>
+      <canvas id="cv-h" class="hcv" role="img" aria-label="Istogramma dei tempi di volo" data-en-label="Histogram of times of flight"></canvas>
+      <div class="gtop" style="margin-top:12px"><span data-en="Distance from the axis on the detector">Distanza dall'asse sul rivelatore</span></div>
+      <canvas id="cv-h2" class="hcv" role="img" aria-label="Istogramma delle distanze d'impatto" data-en-label="Histogram of impact distances"></canvas>
+      <p class="note" id="stats-note"></p>
+      <p class="note" data-en="Each emission direction is equally likely in the ion frame, yet the arrivals pile up near the extreme values: that is the signature of the two solutions for a given r. Click a mark on the detector in the scene to read its t, r, E and θ′.">Ogni direzione di emissione è equiprobabile nello ione, ma gli arrivi si addensano vicino ai valori estremi: è la firma delle due soluzioni per un dato r. Clicca un segno sul rivelatore nella scena per leggerne t, r, E e θ′.</p>
+    </div>
+
+    <div class="tabpane card" id="pane-eq" hidden>
+      <div class="gtop"><span data-en="The detector along the x axis">Il rivelatore sull'asse x</span></div>
+      <canvas id="cv-e" class="ecv" role="img" aria-label="Distanza d'impatto in funzione di x" data-en-label="Impact distance as a function of x"></canvas>
+      <p class="note" data-en="Blue curve: Galilean model. Orange dashes: relativistic composition with the chosen c.">Curva blu: modello galileiano. Tratteggio arancione: composizione relativistica con la c scelta.</p>
+      <div class="gtop" style="margin-top:14px"><span data-en="The time of flight along the x axis">Il tempo di volo sull'asse x</span></div>
+      <canvas id="cv-e2" class="ecv tcv" role="img" aria-label="Tempo di volo in funzione di x" data-en-label="Time of flight as a function of x"></canvas>
+      <p class="note" data-en="t = L/x: the faster the fragment along x, the sooner it arrives. The two solutions for the measured r have different times of flight (t₁, t₂).">t = L/x: più il frammento è veloce lungo x, prima arriva. Le due soluzioni per l'r misurato hanno tempi di volo diversi (t₁, t₂).</p>
+      <div class="rowr">
+        <label for="rm" data-en="Measured distance r">Distanza misurata r</label>
+        <input type="range" id="rm" min="0.5" max="15" step="0.1" value="6">
+        <output id="rm-o"></output>
+      </div>
+      <div id="eq-body" style="margin-top:14px"></div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="help">
+  <div class="word dlg-word" id="dlg-word" aria-hidden="true"></div>
+  <div class="trow" style="justify-content:space-between;margin-bottom:6px">
+    <h2 data-en="How it works" style="margin:0">Come funziona</h2>
+    <div class="seg small" id="seg-lang" aria-label="Lingua / Language"><button data-l="it" class="on">Italiano</button><button data-l="en">English</button></div>
+  </div>
+  <p data-en="A beam of I₂⁻ anions travels along x with speed <b>v</b>. At O a laser detaches an electron and the neutral molecule breaks up: an iodine atom leaves with speed <b>u′</b> in the ion frame, in any direction. A flat detector at distance <b>L</b> records where and when the fragments arrive.">Un fascio di anioni I₂⁻ viaggia lungo x con velocità <b>v</b>. In O un laser stacca un elettrone e la molecola neutra si spezza: un atomo di iodio parte con velocità <b>u′</b> nel sistema dello ione, in una direzione qualsiasi. Un rivelatore piano, a distanza <b>L</b>, registra dove e quando arrivano i frammenti.</p>
+  <h3 data-en="The setup and the anion beam">L'apparato e il fascio di anioni</h3>
+  <p data-en="The anions come out of the accelerator in bunches. Each bunch crosses the laser: a few lose the electron (the electron flies off and is collected), the others stay anions and are bent by the electric field of the deflector until they hit the Faraday cup. Only the neutrals reach the detector. «Realistic» draws the chambers, the laser ports, the electron detector, the cup and the MCP with its anode; «Simplified» keeps only laser, deflector and detector. Only L, R and the deflector geometry are to scale in the lengths along x: the rest is schematic and not the exact geometry of the cited paper.">Gli anioni escono dall'acceleratore a pacchetti. Ogni pacchetto attraversa il laser: alcuni perdono l'elettrone (che vola via e viene raccolto), gli altri restano anioni e vengono piegati dal campo elettrico del deflettore fino alla coppa di Faraday. Al rivelatore arrivano solo i neutri. «Realistico» disegna le camere, le finestre del laser, il rivelatore di elettroni, la coppa e l'MCP con il suo anodo; «Semplificato» tiene solo laser, deflettore e rivelatore. Lungo x sono in scala solo L, R e la posizione del deflettore: il resto è schematico e non riproduce la geometria esatta dell'articolo citato.</p>
+  <h3 data-en="Continuous flow">Flusso continuo</h3>
+  <p data-en="With «Continuous flow» the time never stops: bunches of anions keep arriving at the laser, about half of them lose the electron and the neutral fragments fly off in random directions, leaving brief marks on the detector, while the remaining anions are bent by the deflector into the cup. In the ion frame the whole apparatus sweeps past the anions and the scene restarts when it has gone by.">Con «Flusso continuo» il tempo non si ferma: i pacchetti di anioni continuano ad arrivare al laser, circa la metà perde l'elettrone e i frammenti neutri partono in direzioni casuali, lasciando brevi tracce sul rivelatore, mentre gli anioni restanti vengono deviati dal deflettore verso la coppa. Nel sistema dello ione tutto l'apparato scorre davanti agli anioni e la scena riparte quando è passato.</p>
+  <h3 data-en="Two reference frames">Due sistemi di riferimento</h3>
+  <p data-en="<b>Lab</b>: the detector is at rest and the ion moves at v. <b>Ion</b>: the ion is at rest, the fragments leave in all directions with the same speed, and the detector (with laser and deflector) comes towards it at −v. The other anions of the beam are at rest in this frame. «Side by side» shows both."><b>Lab</b>: il rivelatore è fermo e lo ione si muove a v. <b>Ione</b>: lo ione è fermo, i frammenti partono in tutte le direzioni con la stessa velocità e il rivelatore (con laser e deflettore) viene incontro a −v. Gli altri anioni del fascio sono fermi in questo sistema. «Vista affiancata» mostra i due sistemi insieme.</p>
+  <h3 data-en="The velocity plane">Il piano delle velocità</h3>
+  <p data-en="In the lab <b>u = v + u′</b>: the tips of the u vectors lie on a circle of radius u′ centred at (v, 0). Drag the point to choose the emission direction θ′. The two dashed lines from O are the steepest direction possible in the lab (θmax). The colour of the dots tells whether the fragment is detected, is below the energy threshold, ends up off the detector or never arrives.">Nel laboratorio <b>u = v + u′</b>: le punte dei vettori u stanno su una circonferenza di raggio u′ centrata in (v, 0). Trascina il punto per scegliere la direzione di emissione θ′. Le due semirette tratteggiate da O sono la direzione più inclinata possibile nel laboratorio (θmax). Il colore dei punti dice se il frammento viene rivelato, è sotto soglia di energia, finisce fuori dal rivelatore o non arriva.</p>
+  <h3 data-en="Galileo, Einstein, Compare">Galileo, Einstein, Confronto</h3>
+  <p data-en="Galileo adds velocities. Einstein uses the relativistic composition: the circle becomes an ellipse, angles and times change and in the ion frame the detector distance contracts to L/γ. With the real c the difference is about one part in 10⁷ and cannot be seen: in Setup turn off «Use the real c» and bring β to values like 0.5 to make it visible. That reduced c is a teaching device, not the real speed of light.">Galileo somma le velocità. Einstein usa la composizione relativistica: la circonferenza diventa un'ellisse, gli angoli e i tempi cambiano e nel sistema dello ione il rivelatore si contrae a L/γ. Con la c reale la differenza è circa una parte su 10⁷ e non si vede: nel Setup togli «Usa c reale» e porta β a valori come 0,5 per renderla visibile. Quella c ridotta è uno strumento didattico, non la vera velocità della luce.</p>
+  <h3 data-en="Tables and summary">Tabelle e riepilogo</h3>
+  <p data-en="The table shows components, energy, angle, time of flight and impact distance of the chosen fragment. In Compare the relative difference appears too. The summary assumes isotropic emission in the ion frame to estimate the share of fragments detected.">La tabella mostra componenti, energia, angolo, tempo di volo e distanza d'impatto del frammento scelto. In Confronto compare anche la differenza relativa. Il riepilogo usa un'emissione isotropa nello ione per stimare la percentuale di frammenti rivelati.</p>
+  <h3 data-en="Equations">Equazioni</h3>
+  <p data-en="This tab walks through the algebra: the circle, t = L/x, r = Ly/x, the two solutions for a given r, the energy threshold, the condition r ≤ R and the minimum detector radius. The plot ties the solutions to the curve r(x).">La scheda ripercorre la risoluzione algebrica: circonferenza, t = L/x, r = Ly/x, le due soluzioni per un r dato, la soglia d'energia, la condizione r ≤ R e il raggio minimo del rivelatore. Il grafico lega le soluzioni alla curva r(x).</p>
+  <h3 data-en="Statistics, picking and sharing">Statistica, selezione e condivisione</h3>
+  <p data-en="The Statistics tab histograms the times of flight and impact distances of an isotropic sample of emissions (it grows with time in Continuous flow). Click a mark on the detector, or an emission ray dot, to read the details of that fragment. The link button copies an address that stores the current setup: send it to share exactly what you see.">La scheda Statistica mostra gli istogrammi dei tempi di volo e delle distanze d'impatto per un campione isotropo di emissioni (cresce nel tempo con il Flusso continuo). Clicca un segno sul rivelatore, o un punto dei raggi di emissione, per leggere i dettagli di quel frammento. Il pulsante del link copia un indirizzo che conserva la configurazione attuale: invialo per condividere esattamente ciò che vedi.</p>
+  <div class="btns" style="margin-top:14px"><button class="btn" id="shareBtn2" data-share><span class="ms">link</span><span class="lbl" data-en="Copy link">Copia link</span></button><button class="btn primary" id="helpClose" data-en="Close">Chiudi</button></div>
+</dialog>
+
+<script>
+window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]},svg:{fontCache:'global'},startup:{typeset:false}};
+</script>
+<script src="js/state.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/anions.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/velocity.js"></script>
+<script src="js/tables.js"></script>
+<script src="js/equations.js"></script>
+<script src="js/equation-plot.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/share.js"></script>
+<script src="js/ui.js"></script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" onload="window.__mj&&window.__mj()"></script>
+</body>
+</html>

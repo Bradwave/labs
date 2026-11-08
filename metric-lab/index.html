@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metric Lab</title>
+<meta name="description" content="Explore and compare distances: Euclidean, Manhattan, Chebyshev, Minkowski, discrete, railway and polygonal metrics.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+  <header class="top">
+    <h1 class="word" aria-label="Metric Lab"><span class="a">m</span><span>e</span><span class="b">t</span><span>r</span><span>i</span><span>c</span><span>l</span><span class="k">a</span><span>b</span><svg class="trail" viewBox="0 0 240 14" preserveAspectRatio="none" aria-hidden="true"><path class="p1" pathLength="1" d="M6 2H70V6H138V10H234V12"/><path class="p2" pathLength="1" d="M6 2L234 12"/><path class="p3" pathLength="1" d="M6 2L36 12H234"/><circle cx="6" cy="2" r="3.2"/><circle cx="234" cy="12" r="3.2"/></svg></h1>
+    <div class="tools">
+      <button class="icon-btn" id="themeBtn" type="button" data-i18n-title="ui.theme" title="Tema"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4V20"/><path class="fill" d="M12 4A8 8 0 0 1 12 20Z"/></svg></button>
+      <button class="icon-btn" id="langBtn" type="button" data-i18n-title="ui.lang" title="Lingua"><b id="langCur">IT</b></button>
+    </div>
+  </header>
+
+  <nav class="metrics" id="metricBar" aria-label="Metrica"></nav>
+  <div class="mparams" id="mParams"></div>
+
+  <main class="stage">
+    <section class="view" id="view">
+      <canvas id="cv" aria-label="Piano cartesiano"></canvas>
+      <div class="hud" id="hud"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="dock" role="toolbar">
+        <button class="icon-btn" id="gridBtn" aria-pressed="true" data-i18n-title="ui.grid" title="Griglia"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg></button>
+        <button class="icon-btn" id="snapBtn" aria-pressed="true" data-i18n-title="ui.snap" title="Aggancia"><svg class="ic" viewBox="0 0 24 24"><path d="M6 3v8a6 6 0 0 0 12 0V3M6 7h4M14 7h4"/></svg></button>
+        <button class="icon-btn" id="latBtn" aria-pressed="false" data-i18n-title="ui.lattice" title="Reticolo"><svg class="ic" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="6" cy="6" r="1.8"/><circle cx="12" cy="6" r="1.8"/><circle cx="18" cy="6" r="1.8"/><circle cx="6" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18" cy="12" r="1.8"/><circle cx="6" cy="18" r="1.8"/><circle cx="12" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></g></svg></button>
+        <button class="icon-btn" id="diceBtn" type="button" data-i18n-title="ui.dice" title="Altro percorso"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/><circle cx="9" cy="9" r="1.2" class="fill"/><circle cx="15" cy="15" r="1.2" class="fill"/><circle cx="15" cy="9" r="1.2" class="fill"/><circle cx="9" cy="15" r="1.2" class="fill"/></svg></button>
+        <label class="stepbox" data-i18n-title="ui.step" title="Passo"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px;margin:auto 0 auto 8px"><path d="M4 12h16M4 8v8M20 8v8M10 12l-2-2M10 12l-2 2M14 12l2-2M14 12l2 2"/></svg><select id="stepSel" aria-label="Passo della griglia"><option value="2">2</option><option value="1" selected>1</option><option value="0.5">0,5</option><option value="0.25">0,25</option><option value="0.1">0,1</option></select></label>
+        <button class="icon-btn" id="centerBtn" data-i18n-title="ui.center" title="Centra"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-dist" data-tab="dist" aria-selected="true" data-i18n-title="tab.dist" title="Distanze"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18 20 6M4 18v-4M4 18h4M20 6v4M20 6h-4"/></svg><span data-i18n="tab.dist">Distanze</span></button>
+        <button class="tab" role="tab" id="tab-paths" data-tab="paths" aria-selected="false" data-i18n-title="tab.paths" title="Percorsi"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19h7v-7h9V5"/><circle cx="4" cy="19" r="1.6"/><circle cx="20" cy="5" r="1.6"/></svg><span data-i18n="tab.paths">Percorsi</span></button>
+        <button class="tab" role="tab" id="tab-loci" data-tab="loci" aria-selected="false" data-i18n-title="tab.loci" title="Luoghi"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="12" r="5"/><path d="M13 5c5 2 7 12 0 14"/></svg><span data-i18n="tab.loci">Luoghi</span></button>
+        <button class="tab" role="tab" id="tab-scene" data-tab="scene" aria-selected="false" data-i18n-title="tab.scene" title="Scena"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="10" r="6"/><path d="M12 8h9v11H9v-3"/></svg><span data-i18n="tab.scene">Scena</span></button>
+        <button class="tab" role="tab" id="tab-pred" data-tab="pred" aria-selected="false" data-i18n-title="tab.pred" title="Prevedi"><svg class="ic" viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.4M12 18v.5"/><circle cx="12" cy="12" r="9"/></svg><span data-i18n="tab.pred">Prevedi</span></button>
+        <button class="tab" role="tab" id="tab-sets" data-tab="sets" aria-selected="false" data-i18n-title="tab.sets" title="Insiemi"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="12" r="5"/><rect x="14" y="8" width="7" height="8"/></svg><span data-i18n="tab.sets">Insiemi</span></button>
+        <button class="tab" role="tab" id="tab-vor" data-tab="vor" aria-selected="false" data-i18n-title="tab.vor" title="Voronoi"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM12 3l-2 8-7 3M10 11l5 3 6-2M15 14l-3 7"/></svg><span data-i18n="tab.vor">Voronoi</span></button>
+        <button class="tab" role="tab" id="tab-ax" data-tab="ax" aria-selected="false" data-i18n-title="tab.ax" title="Assiomi"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4 3 20h18z"/><path d="m9 14 2.2 2.2L15.5 11"/></svg><span data-i18n="tab.ax">Assiomi</span></button>
+      </div>
+      <div class="panel">
+      <section class="pane" id="pane-dist">
+        <p class="hint" data-i18n="dist.hint"></p>
+        <div class="coords"><span id="coordA"></span><span id="coordB"></span></div>
+        <div class="dtable" id="dtable"></div>
+        <div class="block">
+          <h3 data-i18n="dist.chain"></h3>
+          <div class="chain" id="chain"></div>
+        </div>
+        <p class="note" data-i18n="dist.orient"></p>
+      </section>
+
+      <section class="pane" id="pane-paths" hidden>
+        <div class="info" id="pathInfo"></div>
+        <label class="tgl"><input type="checkbox" id="pRegion" checked><span data-i18n="paths.region"></span></label>
+        <label class="tgl"><input type="checkbox" id="pExtremes" checked><span data-i18n="paths.extremes"></span></label>
+        <div class="block">
+          <label class="tgl"><input type="checkbox" id="pFamily"><span data-i18n="paths.family"></span></label>
+          <div class="row"><input type="range" id="pK" min="1" max="8" step="1" value="3"><output id="pKv">3</output><span class="unit" data-i18n="paths.bends"></span></div>
+          <button class="btn" id="pSeed" data-i18n="paths.seed"></button>
+        </div>
+        <div class="block" id="grpStair">
+          <h3 data-i18n="paths.stair"></h3>
+          <div class="row"><input type="range" id="pStair" min="0" max="30" step="1" value="0"><output id="pStairV">0</output><span class="unit" data-i18n="paths.steps"></span></div>
+          <div class="out" id="stairOut"></div>
+        </div>
+        <div class="block">
+          <label class="tgl"><input type="checkbox" id="pProbe"><span data-i18n="paths.probe"></span></label>
+          <div class="out" id="probeOut"></div>
+        </div>
+        <div class="block">
+          <label class="tgl"><input type="checkbox" id="pOwn"><span data-i18n="paths.own"></span></label>
+          <div class="row wrap" id="ownRow"><button class="btn" id="ownAdd" data-i18n="paths.add"></button><button class="btn" id="ownDel" data-i18n="paths.del"></button><button class="btn" id="ownReset" data-i18n="paths.reset"></button></div>
+          <div class="out" id="ownOut"></div>
+        </div>
+        <div class="block">
+          <h3 data-i18n="paths.lat"></h3>
+          <div class="out" id="latOut"></div>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-loci" hidden>
+        <div class="seg" id="locusType" role="group"></div>
+        <div class="def" id="locusDef"></div>
+        <div class="params">
+          <div class="row" id="rowR"><label for="lR" data-i18n="loci.r"></label><input type="range" id="lR" min="0.25" max="14" step="0.25" value="5"><output id="lRv"></output></div>
+          <button class="btn" id="lThrough" data-i18n="loci.through"></button>
+          <div class="row" id="rowE"><label for="lE" data-i18n="loci.e"></label><input type="range" id="lE" min="0.25" max="14" step="0.25" value="2"><output id="lEv"></output></div>
+          <div class="row" id="rowF"><label for="lF" data-i18n="loci.f"></label><input type="range" id="lF" min="0" max="0.98" step="0.01" value="0.5"><output id="lFv"></output></div>
+        </div>
+        <div class="block">
+          <label class="tgl"><input type="checkbox" id="lConstruct"><span data-i18n="loci.construct"></span></label>
+          <div class="row" id="rowT"><button class="btn icon" id="lPlay" aria-pressed="false" data-i18n-title="loci.play" title="Anima"><svg class="ic" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" fill="currentColor"/></svg></button><input type="range" id="lT" min="0" max="14" step="0.05" value="3"><output id="lTv"></output></div>
+        </div>
+        <div class="block">
+          <h3 data-i18n="loci.test"></h3>
+          <div class="out" id="testOut"></div>
+        </div>
+        <p class="note" id="locusNote"></p>
+        <p class="note" data-i18n="loci.limit"></p>
+      </section>
+
+      <section class="pane" id="pane-scene" hidden>
+        <div class="tbar">
+          <button class="icon-btn" id="undoBtn" type="button" data-i18n-title="sc.undo" title="Annulla"><svg class="ic" viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h10a6 6 0 0 1 0 8"/></svg></button>
+          <button class="icon-btn" id="redoBtn" type="button" data-i18n-title="sc.redo" title="Ripeti"><svg class="ic" viewBox="0 0 24 24"><path d="m15 7 5 5-5 5M20 12H10a6 6 0 0 0 0 8"/></svg></button>
+          <select class="sel" id="presetSel" aria-label="Esempi"></select>
+          <button class="icon-btn" id="svgBtn" type="button" data-i18n-title="sc.svg" title="Esporta SVG"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg></button>
+        </div>
+        <div class="block">
+          <h3 data-i18n="sc.add"></h3>
+          <div class="row wrap" id="addRow" role="group"></div>
+        </div>
+        <div class="olist" id="olist" data-empty=""></div>
+        <div class="block" id="selBox">
+          <h3 data-i18n="sc.sel"></h3>
+          <div class="def" id="selDef"></div>
+          <div class="params">
+            <div class="row" id="sRowR"><label for="sR" data-i18n="loci.r"></label><input type="range" id="sR" min="0.25" max="14" step="0.25" value="3"><output id="sRv"></output></div>
+            <div class="row" id="sRowE"><label for="sE" data-i18n="loci.e"></label><input type="range" id="sE" min="0.25" max="14" step="0.25" value="2"><output id="sEv"></output></div>
+            <div class="row" id="sRowF"><label for="sF" data-i18n="loci.f"></label><input type="range" id="sF" min="0" max="0.98" step="0.01" value="0.5"><output id="sFv"></output></div>
+          </div>
+          <div class="row wrap">
+            <button class="btn" id="dupBtn" type="button"><svg class="ic" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/></svg><span data-i18n="sc.dup"></span></button>
+            <button class="btn" id="dupAllBtn" type="button"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/><path d="M13 7h4v4M11 17H7v-4"/></svg><span data-i18n="sc.dupall"></span></button>
+          </div>
+          <p class="note" data-i18n="sc.metrichint"></p>
+        </div>
+        <div class="block">
+          <label class="tgl"><input type="checkbox" id="sInter" checked><span data-i18n="sc.inter"></span></label>
+          <div class="out" id="interOut"></div>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-pred" hidden>
+        <div class="seg" id="prKind" role="group"></div>
+        <div class="def" id="prQ"></div>
+        <div class="row wrap">
+          <button class="btn primary" id="prReveal" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="prRevealT"></span></button>
+          <button class="btn" id="prUndo" type="button" data-i18n-title="pr.undo" title="Togli punto"><svg class="ic" viewBox="0 0 24 24"><path d="M9 7 4 12l5 5M4 12h10a6 6 0 0 1 0 8"/></svg></button>
+          <button class="btn" id="prClear" type="button" data-i18n-title="pr.clear" title="Azzera"><svg class="ic" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+          <button class="btn" id="prNew" type="button" data-i18n-title="pr.new" title="Nuova sfida"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4"/></svg></button>
+        </div>
+        <div class="out" id="prOut"></div>
+        <div class="block" id="prDisc" hidden>
+          <h3 data-i18n="pr.discuss"></h3>
+          <div class="out"><span data-i18n="pr.d1"></span><br><br><span data-i18n="pr.d2"></span><br><br><span data-i18n="pr.d3"></span></div>
+        </div>
+        <p class="note" data-i18n="pr.note"></p>
+      </section>
+
+      <section class="pane" id="pane-sets" hidden>
+        <p class="hint" data-i18n="st.hint"></p>
+        <div class="params"><h3>X</h3><div class="seg" id="stX" role="group"></div><h3>Y</h3><div class="seg" id="stY" role="group"></div></div>
+        <div class="block">
+          <div class="row"><h3 style="flex:1" data-i18n="st.cols"></h3><span class="unit">d</span><span class="unit">d<sub>H</sub></span></div>
+          <div class="dtable" id="stTable"></div>
+        </div>
+        <div class="out" id="stOut"></div>
+        <p class="note" data-i18n="st.note"></p>
+      </section>
+
+      <section class="pane" id="pane-vor" hidden>
+        <p class="hint" data-i18n="vor.hint"></p>
+        <div class="row wrap">
+          <button class="btn" id="vAdd" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="vor.add"></span></button>
+          <button class="btn" id="vDel" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span data-i18n="vor.del"></span></button>
+          <button class="btn" id="vRand" type="button" data-i18n-title="vor.rand" title="Casuale"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16"/><circle cx="9" cy="9" r="1.3" class="fill"/><circle cx="15" cy="15" r="1.3" class="fill"/></svg></button>
+        </div>
+        <label class="tgl"><input type="checkbox" id="vTie" checked><span data-i18n="vor.tie"></span></label>
+        <div class="out" id="vOut"></div>
+        <p class="note" data-i18n="vor.note"></p>
+      </section>
+
+      <section class="pane" id="pane-ax" hidden>
+        <p class="hint" data-i18n="ax.hint"></p>
+        <div class="seg" id="axFn" role="group"></div>
+        <div class="dtable" id="axOut"></div>
+        <div class="out" id="axVerdict"></div>
+        <p class="note" data-i18n="ax.note"></p>
+      </section>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<dialog id="dlgSvg">
+  <h2 data-i18n="sc.svg"></h2>
+  <textarea id="svgText" readonly></textarea>
+  <div class="dlg-actions"><button class="btn primary" id="svgCopy" type="button"><span data-i18n="sc.copy"></span></button><button class="btn" id="svgClose" type="button"><span data-i18n="sc.close"></span></button></div>
+</dialog>
+
+<script src="js/metrics.js"></script>
+<script src="js/field.js"></script>
+<script src="js/paths.js"></script>
+<script src="js/loci.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/axioms.js"></script>
+<script src="js/modes.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

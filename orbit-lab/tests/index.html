@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Lab · core tests</title>
+<style>
+body{font-family:'Space Mono',ui-monospace,Menlo,Consolas,monospace;margin:24px;max-width:860px}
+h1{font-size:20px}
+table{border-collapse:collapse;width:100%}
+td{border-bottom:1px solid #8884;padding:6px 8px;font-size:13px}
+.ok{color:#0F9A63;font-weight:700}.bad{color:#E2412A;font-weight:700}
+#sum{font-weight:700;margin:12px 0}
+</style>
+</head>
+<body>
+<h1>Orbit Lab · core tests</h1>
+<div id="sum">Running…</div>
+<table id="t"></table>
+<script type="module">
+import { runTests } from './core-tests.js';
+const res = runTests();
+const bad = res.filter(r => !r.ok);
+document.getElementById('sum').textContent = bad.length ? bad.length + ' of ' + res.length + ' tests FAILED' : 'All ' + res.length + ' tests passed';
+document.getElementById('t').innerHTML = res.map(r => `<tr><td class="${r.ok ? 'ok' : 'bad'}">${r.ok ? 'PASS' : 'FAIL'}</td><td>${r.name}</td></tr>`).join('');
+</script>
+</body>
+</html>

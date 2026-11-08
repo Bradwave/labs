@@ -1,0 +1,20 @@
+# OS and editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependencies, builds, logs
+node_modules/
+dist/
+__pycache__/
+*.log
+
+# Claude Code: share the launch and project settings, keep the rest local
+.claude/*
+!.claude/launch.json
+!.claude/settings.json
+
+# CI site folder and Impulse Lab's old build check
+_site/
+.build-check.js

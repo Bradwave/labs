@@ -1,0 +1,38 @@
+/* Orbit Lab · design tokens and styles (same family as Quadrature and Pendulum Lab: tiles, ink borders, hard shadows) */
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#8CCBEB; --bgline:rgba(11,27,58,.12);
+  --surface:#F5F9FC; --ink:#0B1B3A; --muted:#4D6585;
+  --accent:#FF6A3D; --onaccent:#0B1B3A; --tile2:#FFC23D;
+  --gridline:rgba(11,27,58,.13);
+  /* roles: kinetic = blue solid, potential = orange hatched, total = ink dotted */
+  --kin:#2350D8; --pot:#D2570F; --tot:#0B1B3A;
+  --vel:#0F9A63; --grav:#2350D8; --thr:#B42BA0; --net:#0B1B3A;
+  --c-circle:#0F9A63; --c-ellipse:#2350D8; --c-parab:#9A6A00; --c-hyper:#B42BA0; --c-crash:#E2412A;
+  --planet:#BFE6F6; --planet2:#7DC4E4; --space:#F5F9FC; --ship:#FFC23D;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1630; --bgline:rgba(140,203,235,.07);
+    --surface:#12213F; --ink:#E8F1FF; --muted:#9BB0CF;
+    --accent:#FF7A50; --onaccent:#0A1630; --tile2:#E9A92A;
+    --gridline:rgba(232,241,255,.10);
+    --kin:#86A6FF; --pot:#FF9A5C; --tot:#E8F1FF;
+    --vel:#3DDC97; --grav:#86A6FF; --thr:#F27ADF; --net:#E8F1FF;
+    --c-circle:#3DDC97; --c-ellipse:#86A6FF; --c-parab:#E2B24A; --c-hyper:#F27ADF; --c-crash:#FF7C60;
+    --planet:#1E4A7C; --planet2:#2E6AA8; --space:#0B1830; --ship:#F4B73A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1630; --bgline:rgba(140,203,235,.07);
+  --surface:#12213F; --ink:#E8F1FF; --muted:#9BB0CF;
+  --accent:#FF7A50; --onaccent:#0A1630; --tile2:#E9A92A;
+  --gridline:rgba(232,241,255,.10);
+  --kin:#86A6FF; --pot:#FF9A5C; --tot:#E8F1FF;
+  --vel:#3DDC97; --grav:#86A6FF; --thr:#F27ADF; --net:#E8F1FF;
+  --c-circle:#3DDC97; --c-ellipse:#86A6FF; --c-parab:#E2B24A; --c-hyper:#F27ADF; --c-crash:#FF7C60;
+  --planet:#1E4A7C; --planet2:#2E6AA8; --space:#0B1830; --ship:#F4B73A;
+  color-scheme:dark;
+}

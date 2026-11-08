@@ -1,0 +1,12 @@
+{
+  "name": "carts-lab",
+  "version": "1.0.0",
+  "description": "Two carts on a rail with position sensors: simulate collisions and learn to read x-t and v-t graphs.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/physics.test.mjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

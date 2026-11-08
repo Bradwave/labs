@@ -1,0 +1,11 @@
+{
+  "name": "metric-lab",
+  "version": "1.0.0",
+  "description": "Interactive laboratory to explore and compare definitions of distance on the plane.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node tests/core.test.js",
+    "start": "python3 -m http.server 8000"
+  }
+}

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Units Lab</title>
+<meta name="description" content="Units Lab: scientific notation, unit conversions and equivalences for the physics classroom, with a mountain to climb.">
+<meta name="theme-color" content="#A98BFF">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="top">
+  <h1 class="word" aria-label="Units Lab"><span class="a">U</span><span>n</span><span>i</span><span class="b">t</span><span>s</span><span>l</span><span class="k">a</span><span class="bal">b</span></h1>
+  <div class="tools">
+    <button class="icon-btn" id="btnStats" data-i18n-title="stats" type="button"><span class="ms">assignment</span></button>
+    <button class="icon-btn" id="btnTheme" data-i18n-title="theme" type="button"><svg viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="8"/><path d="M12 4 V20" /><path class="fill" d="M12 4 A8 8 0 0 1 12 20 Z"/></svg></button>
+    <button class="icon-btn" id="btnLang" data-i18n-title="language" type="button"><span class="ms">translate</span></button>
+    <button class="icon-btn" id="btnHelp" data-i18n-title="help" type="button"><span class="ms">help</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- home -->
+  <section id="home" class="screen">
+    <p class="tag-line" data-i18n="tagline"></p>
+    <div class="card mount-card">
+      <div id="homeMount"></div>
+      <div class="alt" id="homeAlt"></div>
+    </div>
+    <div class="card lvl-card">
+      <div class="lbl-row"><span class="lbl" data-i18n="level"></span><span class="lock" id="lvlLock" hidden data-i18n="lockedLevel"></span></div>
+      <div class="seg" id="lvlSeg" role="group">
+        <button type="button" data-lv="1" data-i18n="l1"></button>
+        <button type="button" data-lv="2" data-i18n="l2"></button>
+        <button type="button" data-lv="3" data-i18n="l3"></button>
+      </div>
+      <div class="lvl-desc" id="lvlDesc"></div>
+    </div>
+    <h2 class="sec" data-i18n="pickModule"></h2>
+    <div class="mods" id="mods"></div>
+    <footer class="foot" data-i18n="footer"></footer>
+  </section>
+
+  <!-- play -->
+  <section id="play" class="screen" hidden>
+    <div class="playbar card">
+      <button class="icon-btn small" id="btnBack" data-i18n-title="back" type="button"><svg viewBox="0 0 24 24" class="ic"><path d="M15 5 L8 12 L15 19"/></svg></button>
+      <div class="ptitle"><b id="pTitle"></b><span id="pLevel" class="chip"></span></div>
+      <div class="pmount" id="pMount"></div>
+    </div>
+
+    <div class="card qcard" id="qcard">
+      <div class="ctx" id="qCtx"></div>
+      <div class="stmt" id="qStmt"></div>
+      <div class="ask" id="qAsk"></div>
+      <div class="ask2" id="qAsk2"></div>
+      <div class="sfl" id="qSf"></div>
+    </div>
+
+    <div class="card pred" id="pred" hidden></div>
+    <div class="assist" id="assist" hidden></div>
+
+    <div class="card answer" id="answer"></div>
+
+    <div class="card fb" id="fb" hidden></div>
+    <div class="card sol" id="sol" hidden></div>
+
+    <div class="actions" id="actions">
+      <button class="btn" id="btnHint" type="button" hidden><span data-i18n="hint"></span></button>
+      <button class="btn primary" id="btnCheck" type="button"><span class="ms">check</span><span data-i18n="check"></span></button>
+      <button class="btn primary" id="btnNext" type="button" hidden><span data-i18n="next"></span></button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="dlgHelp">
+  <h2 data-i18n="helpTitle"></h2>
+  <div id="helpBody"></div>
+  <div class="dlg-actions"><button class="btn" type="button" data-close><span class="ms">close</span></button></div>
+</dialog>
+
+<dialog id="dlgStats">
+  <h2 data-i18n="summaryTitle"></h2>
+  <div id="statsBody"></div>
+  <div class="dlg-actions noprint">
+    <button class="btn" id="btnPrint" type="button"><span class="ms">download</span><span data-i18n="printSummary"></span></button>
+    <button class="btn" id="btnJson" type="button"><span class="ms">download</span><span data-i18n="exportJson"></span></button>
+    <button class="btn" id="btnCopy" type="button"><span class="ms">content_copy</span><span data-i18n="copyJson"></span></button>
+    <button class="btn" id="btnReset" type="button"><span class="ms">restart_alt</span><span data-i18n="resetStats"></span></button>
+    <button class="btn" type="button" data-close><span class="ms">close</span></button>
+  </div>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

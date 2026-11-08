@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Impulse Lab</title>
+<meta name="description" content="Impulse, momentum and collisions for the physics classroom: the area under F(t) is Δp. Impact on a force sensor, draw a force, a rain of impulses, the ballistic pendulum. In Italian and English.">
+<meta name="theme-color" content="#B9A3F2">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#170C33">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+<!-- the kit first (module), then the app scripts in order; all are deferred, so they run in this order after parsing -->
+<script type="module" src="js/boot.js"></script>
+<script defer src="js/01-core.js"></script>
+<script defer src="js/02-scene-impact.js"></script>
+<script defer src="js/03-scene-draw.js"></script>
+<script defer src="js/04-scene-rain.js"></script>
+<script defer src="js/05-scene-ballistic.js"></script>
+<script defer src="js/06-app.js"></script>
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Impulse Lab"><span class="k">i</span><span>m</span><span class="a">p</span><span>u</span><span class="b">l</span><span class="p">s</span><span class="bn a">e</span><b class="lab">lab</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" id="playBtn" type="button" data-i18n-aria="play"><span id="playIcon"></span><span class="lbl" id="playLbl"></span></button>
+      <button class="btn" id="stepBtn" type="button" data-ic="step" data-i18n-title="step_t" data-i18n-aria="step_t"><span class="lbl" data-i18n="step">Passo</span></button>
+      <button class="btn" id="resetBtn" type="button" data-ic="reset" data-i18n-title="reset_t" data-i18n-aria="reset_t"><span class="lbl" data-i18n="restart">Da capo</span></button>
+      <div class="seg small" id="speedSeg" data-i18n-aria="speed"></div>
+      <span class="grow"></span>
+      <div class="seg view" id="sceneSeg" data-i18n-aria="scene"></div>
+    </div>
+
+    <div class="canvas-wrap card" id="wrap">
+      <canvas id="cv" data-i18n-aria="canvas"></canvas>
+      <canvas id="ebars" data-i18n-aria="bars"></canvas>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="quick card" id="quick"></div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab on" type="button" data-tab="graphs" role="tab" data-ic="chart"><span class="t" data-i18n="t_graphs">Grafici</span></button>
+      <button class="tab" type="button" data-tab="show" role="tab" data-ic="layers"><span class="t" data-i18n="t_show">Mostra</span></button>
+      <button class="tab" type="button" data-tab="setup" role="tab" data-ic="sliders"><span class="t" data-i18n="t_setup">Setup</span></button>
+    </div>
+
+    <div class="tabpane card" id="pane-graphs" role="tabpanel">
+      <div id="gtop"></div>
+      <canvas id="g1" class="gc" data-i18n-aria="graph1"></canvas>
+      <canvas id="g2" class="gc" data-i18n-aria="graph2"></canvas>
+      <div class="gchips" id="gchips"></div>
+      <div id="tables"></div>
+      <div class="csvrow"><button class="btn" id="csvBtn" type="button" data-ic="copy"><span data-i18n="csv">Copia dati</span></button><span class="note" data-i18n="csv_n"></span></div>
+      <textarea id="csvOut" class="field" hidden readonly aria-label="CSV"></textarea>
+    </div>
+
+    <div class="tabpane card" id="pane-show" role="tabpanel" hidden>
+      <div id="showHost"></div>
+      <div class="ctl"><label for="arrowR"><span data-i18n="arrow_size">Dimensione frecce</span><b id="arrowL"></b></label><input type="range" id="arrowR" min="0.5" max="2" step="0.05" value="1"></div>
+      <h3 class="grp" data-i18n="inset">Barre in alto a destra</h3>
+      <div id="insetSeg"></div>
+    </div>
+
+    <div class="tabpane card" id="pane-setup" role="tabpanel" hidden><div id="setupHost"></div></div>
+  </aside>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="k">i</span><span>m</span><span class="a">p</span><span>u</span><span class="b">l</span><span class="p">s</span><span class="a">e</span><b class="lab">lab</b></h1>
+  <p data-i18n="info.about"></p>
+  <div id="helpBody" data-i18n-html="help.body"></div>
+  <p class="meta kit-meta"></p>
+</dialog>
+</body>
+</html>

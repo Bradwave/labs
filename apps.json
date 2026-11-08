@@ -1,0 +1,124 @@
+{
+  "$comment": "Registry of the labs: names, slugs, palettes, ports, test commands (run from the lab folder by tools/test-all.mjs; surface-lab-xr needs npm install in tests/ and is left out). Read by tools/*.mjs and, later, by the landing page. Palettes: current brand tokens; 'proposed' only where two apps clash today (DESIGN.md §2). 'kit' becomes true once an app has been migrated to the kit.",
+  "kitVersion": "0.1.0",
+  "apps": [
+    {
+      "slug": "attractor-lab", "name": "Attractor Lab", "kind": "2d", "subject": "mathematics", "port": 8101, "kit": false,
+      "description": { "it": "Costruisci frattali con i sistemi di funzioni iterate e guarda comparire l'attrattore.", "en": "Build fractals with iterated function systems and watch the attractor appear." },
+      "palette": {
+        "light": { "bg": "#8CCBEB", "surface": "#F5F9FC", "ink": "#0B1B3A", "accent": "#FF6A3D", "tile2": "#FFC23D" },
+        "dark": { "bg": "#0A1630", "surface": "#12213F", "ink": "#E8F1FF", "accent": "#FF7A50", "tile2": "#E9A92A" },
+        "clash": "same palette as Pendulum Lab",
+        "proposed": { "approved": "2026-11-08", "bg": "#E39BE6", "note": "orchid" }
+      }
+    },
+    {
+      "slug": "carts-lab", "test": "node tests/physics.test.mjs", "name": "Carts Lab", "kind": "2d", "subject": "physics", "port": 8102, "kit": false,
+      "description": { "it": "Due carrelli su una rotaia: urti, grafici x–t e v–t, conservazione della quantità di moto.", "en": "Two carts on a rail: collisions, x–t and v–t graphs, momentum conservation." },
+      "palette": {
+        "light": { "bg": "#FF2E88", "surface": "#FFF7FB", "ink": "#2A0524", "accent": "#C6F500", "tile2": "#FFD60A" },
+        "dark": { "bg": "#17041F", "surface": "#2B0D3C", "ink": "#FFE9F4", "accent": "#C6F500", "tile2": "#FFD60A" }
+      }
+    },
+    {
+      "slug": "crackler", "test": "node --test tests/", "name": "Crackler", "kind": "2d", "subject": "physics", "port": 8103, "kit": false, "coinedName": true,
+      "description": { "it": "Videoanalisi per la fisica: calibra, segna l'oggetto fotogramma per fotogramma, misura e interpola.", "en": "Video analysis for physics: calibrate, mark the object frame by frame, measure and fit." },
+      "palette": {
+        "light": { "bg": "#BFE88A", "surface": "#F7FBEF", "ink": "#10230F", "accent": "#E8344E", "tile2": "#FFD23F" },
+        "dark": { "bg": "#0F1D12", "surface": "#182A1B", "ink": "#E9F7DC", "accent": "#FF5D73", "tile2": "#E9B92A" }
+      }
+    },
+    {
+      "slug": "detach-lab", "name": "Detach Lab", "kind": "2d", "subject": "physics", "port": 8104, "kit": false,
+      "description": { "it": "Fotodistacco di un fascio di I₂⁻: dove e quando arrivano gli atomi, Galileo contro Einstein.", "en": "Photodetachment of an I₂⁻ beam: where and when the atoms land, Galileo vs Einstein." },
+      "palette": {
+        "light": { "bg": "#B9A8F6", "surface": "#F8F5FF", "ink": "#1B1038", "accent": "#F0457F", "tile2": "#FFB547" },
+        "dark": { "bg": "#150C2E", "surface": "#231648", "ink": "#EEE8FF", "accent": "#FF6B9D", "tile2": "#FFC15E" },
+        "clash": "almost the same lavender as Impulse Lab and Units Lab",
+        "proposed": { "approved": "2026-11-08", "bg": "#9EE6A0", "note": "mint" }
+      }
+    },
+    {
+      "slug": "impulse-lab", "test": "node --test tests/", "name": "Impulse Lab", "kind": "2d", "subject": "physics", "port": 8105, "kit": true,
+      "description": { "it": "Impulso, quantità di moto e urti: l'area sotto F(t) è Δp.", "en": "Impulse, momentum and collisions: the area under F(t) is Δp." },
+      "palette": {
+        "light": { "bg": "#B9A3F2", "surface": "#F7F3FF", "ink": "#1D0E42", "accent": "#FF7A3D", "tile2": "#FFD23F" },
+        "dark": { "bg": "#170C33", "surface": "#241648", "ink": "#EFE7FF", "accent": "#FF8A55", "tile2": "#E9B52A" }
+      }
+    },
+    {
+      "slug": "metric-lab", "test": "node tests/core.test.js", "name": "Metric Lab", "kind": "2d", "subject": "mathematics", "port": 8106, "kit": false,
+      "description": { "it": "Esplora e confronta diverse definizioni di distanza nel piano.", "en": "Explore and compare definitions of distance on the plane." },
+      "palette": {
+        "light": { "bg": "#FFC93C", "surface": "#FFF8E6", "ink": "#2B1B00", "accent": "#E8456B", "tile2": "#7BDCC0" },
+        "dark": { "bg": "#1F1600", "surface": "#332300", "ink": "#FFF1CC", "accent": "#FF7A98", "tile2": "#3DDC97" },
+        "clash": "close to Quadrature's amber",
+        "proposed": { "approved": "2026-11-08", "bg": "#FF8C7A", "note": "coral" }
+      }
+    },
+    {
+      "slug": "motus1d-lab", "name": "Motus 1D Lab", "kind": "2d", "subject": "physics", "port": 8107, "kit": false,
+      "description": { "it": "Moto su una retta con i grafici s–t, v–t e a–t collegati.", "en": "Motion along a line with linked s–t, v–t and a–t graphs." },
+      "palette": {
+        "light": { "bg": "#4D7BFF", "surface": "#F3F6FF", "ink": "#0A1240", "accent": "#FF4B2B", "tile2": "#FFD23F" },
+        "dark": { "bg": "#050A2C", "surface": "#141F5E", "ink": "#E9EEFF", "accent": "#FF6A4D", "tile2": "#F2C230" }
+      }
+    },
+    {
+      "slug": "orbit-lab", "test": "node tests/core-tests.js", "name": "Orbit Lab", "kind": "2d", "subject": "physics", "port": 8108, "kit": false,
+      "description": { "it": "Lancia una navicella attorno a un pianeta e scopri che cos'è un'orbita.", "en": "Launch a ship around a planet and discover what an orbit is." },
+      "palette": {
+        "light": { "bg": "#8CCBEB", "surface": "#F5F9FC", "ink": "#0B1B3A", "accent": "#FF6A3D", "tile2": "#FFC23D" },
+        "dark": { "bg": "#0A1630", "surface": "#12213F", "ink": "#E8F1FF", "accent": "#FF7A50", "tile2": "#E9A92A" },
+        "clash": "same palette as Pendulum Lab",
+        "proposed": { "approved": "2026-11-08", "bg": "#2E2A6B", "note": "deep space indigo, also for Orbit Lab XR; needs a contrast check" }
+      }
+    },
+    {
+      "slug": "orbit-lab-xr", "test": "node tests/test-core.js && node tests/test-panel.js && node tests/test-sim.js", "name": "Orbit Lab XR", "kind": "xr", "subject": "physics", "port": 8109, "kit": false, "sharesPaletteWith": "orbit-lab",
+      "description": { "it": "Orbit Lab in realtà virtuale, per Meta Quest.", "en": "Orbit Lab in WebXR, for Meta Quest." }
+    },
+    {
+      "slug": "pendulum-lab", "test": "node --test tests/", "name": "Pendulum Lab", "kind": "2d", "subject": "physics", "port": 8110, "kit": true,
+      "description": { "it": "Fai oscillare un pendolo, guarda ogni forza e la sua coppia del terzo principio.", "en": "Swing a pendulum, watch every force and its third-law partner." },
+      "palette": {
+        "light": { "bg": "#8CCBEB", "surface": "#F5F9FC", "ink": "#0B1B3A", "accent": "#FF6A3D", "tile2": "#FFC23D" },
+        "dark": { "bg": "#0A1630", "surface": "#12213F", "ink": "#E8F1FF", "accent": "#FF7A50", "tile2": "#E9A92A" }
+      }
+    },
+    {
+      "slug": "quadrature", "name": "Quadrature", "kind": "2d", "subject": "mathematics", "port": 8111, "kit": false, "coinedName": true,
+      "description": { "it": "Misura l'area di una figura contando i quadretti, e scopri quanto puoi esserne sicuro.", "en": "Measure an area by counting grid squares, and see how sure you can be." },
+      "palette": {
+        "light": { "bg": "#F2B632", "surface": "#FFF4DF", "ink": "#3A0E12", "accent": "#B8262F", "tile2": "#F2B632" },
+        "dark": { "bg": "#2A0F0E", "surface": "#3A1714", "ink": "#FFE7C2", "accent": "#F2B632", "tile2": "#F2B632" }
+      }
+    },
+    {
+      "slug": "relative-motion-lab", "name": "Relative Motion Lab", "kind": "2d", "subject": "physics", "port": 8112, "kit": false,
+      "description": { "it": "Un solo moto visto da due sistemi di riferimento.", "en": "One motion seen from two reference frames." },
+      "palette": {
+        "light": { "bg": "#3C9A5F", "surface": "#F4F8EC", "ink": "#0E2A1C", "accent": "#12603A", "tile2": "#F2C230" },
+        "dark": { "bg": "#0E2219", "surface": "#163126", "ink": "#E3F3DA", "accent": "#5FD08A", "tile2": "#F2C230" }
+      }
+    },
+    {
+      "slug": "surface-lab-xr", "name": "Surface Lab XR", "kind": "xr", "subject": "mathematics", "port": 8113, "kit": false,
+      "description": { "it": "Superfici quadriche e sezioni coniche in 3D, sul computer o con Meta Quest.", "en": "Quadric surfaces and conic sections in 3D, on desktop or Meta Quest." },
+      "palette": {
+        "light": { "bg": "#8FD3C0", "surface": "#F6FBF9", "ink": "#0A2A26", "accent": "#D55E00", "tile2": "#F0E442" },
+        "dark": { "bg": "#06201C", "surface": "#0D3A33", "ink": "#E8FBF5", "accent": "#FF8A3D", "tile2": "#F0E442" }
+      }
+    },
+    {
+      "slug": "units-lab", "test": "node --test tests/", "name": "Units Lab", "kind": "2d", "subject": "physics", "port": 8114, "kit": false,
+      "description": { "it": "Notazione scientifica ed equivalenze tra unità di misura, una risposta giusta alla volta.", "en": "Scientific notation and unit conversions, one correct answer at a time." },
+      "palette": {
+        "light": { "bg": "#A98BFF", "surface": "#F6F2FF", "ink": "#1A0F45", "accent": "#FF4F8B", "tile2": "#FFD23F" },
+        "dark": { "bg": "#150C36", "surface": "#261756", "ink": "#EFE9FF", "accent": "#FF7AA5", "tile2": "#F2C230" },
+        "clash": "almost the same lavender as Impulse Lab and Detach Lab",
+        "proposed": { "approved": "2026-11-08", "bg": "#E3F06A", "note": "lemon-lime" }
+      }
+    }
+  ]
+}

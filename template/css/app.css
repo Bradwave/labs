@@ -1,0 +1,39 @@
+/* __NAME__ · app.css
+   Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
+:root {
+  --bg: __BG__;
+  --bgline: rgba(0, 0, 0, 0.12);
+  --surface: __SURFACE__;
+  --ink: __INK__;
+  --muted: color-mix(in srgb, __INK__ 65%, __SURFACE__);
+  --accent: __ACCENT__;
+  --onaccent: __INK__;
+  --tile2: __TILE2__;
+  --gridline: color-mix(in srgb, __INK__ 16%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: __BG_DARK__;
+    --bgline: rgba(255, 255, 255, 0.07);
+    --surface: __SURFACE_DARK__;
+    --ink: __INK_DARK__;
+    --muted: color-mix(in srgb, __INK_DARK__ 65%, __SURFACE_DARK__);
+    --accent: __ACCENT_DARK__;
+    --onaccent: __BG_DARK__;
+    --tile2: __TILE2_DARK__;
+    --gridline: color-mix(in srgb, __INK_DARK__ 14%, transparent);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: __BG_DARK__;
+  --bgline: rgba(255, 255, 255, 0.07);
+  --surface: __SURFACE_DARK__;
+  --ink: __INK_DARK__;
+  --muted: color-mix(in srgb, __INK_DARK__ 65%, __SURFACE_DARK__);
+  --accent: __ACCENT_DARK__;
+  --onaccent: __BG_DARK__;
+  --tile2: __TILE2_DARK__;
+  --gridline: color-mix(in srgb, __INK_DARK__ 14%, transparent);
+}
+
+/* ---------- app-specific styles below ---------- */

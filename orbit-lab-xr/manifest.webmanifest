@@ -1,0 +1,3 @@
+{ "name": "Orbit Lab XR", "short_name": "Orbit Lab XR", "description": "Orbit Lab in WebXR: fly from the cockpit (VR), watch from outside (AR)",
+  "start_url": "./index.html", "scope": "./", "display": "standalone", "background_color": "#0A1630", "theme_color": "#8CCBEB",
+  "icons": [ { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" } ] }

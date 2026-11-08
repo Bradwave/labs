@@ -1,0 +1,53 @@
+# Labs · CI and deploy
+# On every push to main: run the kit tests, every lab's tests and the conformance check of the migrated labs
+# (tools/test-all.mjs); if they pass, publish the site to GitHub Pages (labs.matephis.com).
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/test-all.mjs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the site folder (everything that is served; tools, templates and tests stay out)
+        run: |
+          mkdir _site
+          rsync -a ./ _site/ \
+            --exclude '.git' --exclude '.github' --exclude '.claude' --exclude '_site' \
+            --exclude 'tools' --exclude 'template' --exclude 'tests' --exclude 'node_modules' --exclude '*.md' --exclude '.DS_Store'
+          # the one-file starter for prototyping stays downloadable
+          mkdir -p _site/template && cp template/single-file.html _site/template/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
