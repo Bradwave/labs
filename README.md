@@ -44,6 +44,7 @@ Labs marked *being updated* still have their previous look; they are being broug
 ## How this repository works
 
 ```
+ROADMAP.md       what is done and what comes next; docs/LANDING.md is the landing page plan
 DESIGN.md        the design standard every lab follows (look, components, language, plots, PWA, files)
 MIGRATION.md     how an existing lab is brought in line with the standard, with notes for each lab
 apps.json        the list of labs: names, descriptions, palettes, test commands
