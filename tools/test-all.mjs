@@ -17,7 +17,7 @@ function run(label, cmd, cwd) {
   }
 }
 
-run("kit tests", "node --test tests/", KIT_ROOT);
+run("kit tests", "node --test 'tests/**/*.test.*'", KIT_ROOT);
 const apps = loadApps();
 for (const a of apps) if (a.test) run(`${a.slug} tests`, a.test, appDir(a.slug));
 const migrated = apps.filter((a) => a.kit === true).map((a) => a.slug);
