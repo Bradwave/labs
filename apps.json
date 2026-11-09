@@ -160,6 +160,40 @@
       }
     },
     {
+      "slug": "force-lab-xr",
+      "test": "node tests/physics.test.mjs && node tests/tracks.test.mjs && node tests/input.test.mjs && node tests/panel.test.mjs",
+      "name": "Force Lab XR",
+      "kind": "xr",
+      "subject": "physics",
+      "port": 8115,
+      "kit": true,
+      "description": {
+        "it": "Lancia una palla e guidala tra le porte con zone di forza e un elastico: forza, accelerazione e velocità in realtà virtuale.",
+        "en": "Throw a ball and steer it through gates with force zones and a rubber band: force, acceleration and velocity in VR."
+      },
+      "palette": {
+        "light": {
+          "bg": "#2BA3B4",
+          "surface": "#F2FBFC",
+          "ink": "#062A30",
+          "muted": "#3F646A",
+          "accent": "#C2410C",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD23F"
+        },
+        "dark": {
+          "bg": "#04242A",
+          "surface": "#0B3A42",
+          "ink": "#E6FAFC",
+          "muted": "#9CC3C9",
+          "accent": "#FF9F45",
+          "onaccent": "#04242A",
+          "tile2": "#F2C230"
+        },
+        "note": "petrol; burnt-orange accent, yellow ball (2026-11-09, prototype)"
+      }
+    },
+    {
       "slug": "impulse-lab",
       "test": "node --test 'tests/**/*.test.*'",
       "name": "Impulse Lab",

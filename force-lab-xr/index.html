@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Force Lab XR</title>
+<meta name="description" content="Throw a ball and steer it through gates with force zones and a rubber band: force, acceleration and velocity in VR.">
+<meta name="theme-color" content="#2BA3B4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#04242A">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Force Lab XR"><span>f</span><span class="a">o</span><span>r</span><span class="b">c</span><span class="k">e</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="vrBtn" disabled><span class="lbl" data-i18n="vr">Entra in VR</span></button>
+      <button class="btn" type="button" id="arBtn" disabled><span class="lbl" data-i18n="ar">Realtà mista</span></button>
+      <span class="grow"></span>
+      <button class="btn" type="button" id="retryBtn" data-ic="reset"><span class="lbl" data-i18n="retry">Riprova</span></button>
+      <button class="btn" type="button" id="zoneBtn"><span class="lbl" data-i18n="addZone">Nuova zona</span></button>
+      <button class="btn" type="button" id="delZoneBtn" disabled><span class="lbl" data-i18n="delZone">Elimina zona</span></button>
+    </div>
+    <div class="canvas-wrap card" id="view">
+      <canvas id="cv" data-i18n-aria="stage">Scena 3D</canvas>
+      <div class="hint" data-i18n="hint">Trascina la palla per lanciarla</div>
+      <canvas class="x-hud" id="hudcv" aria-hidden="true"></canvas>
+      <div class="x-toast" id="toast" aria-live="polite"></div>
+    </div>
+    <p class="note" id="xrnote"></p>
+  </section>
+
+  <section class="panel">
+    <div class="card side">
+      <h3 class="grp" data-i18n="tracks">Piste</h3>
+      <div class="x-tracks" id="trackList"></div>
+      <h3 class="grp" data-i18n="options">Opzioni</h3>
+      <canvas id="optcv" class="x-optcv"></canvas>
+    </div>
+  </section>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span>f</span><span class="a">o</span><span>r</span><span class="b">c</span><span class="k">e</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <p data-i18n="info.about"></p>
+  <h3 data-i18n="info.how">Come si gioca</h3>
+  <ul>
+    <li data-i18n="info.how1"></li>
+    <li data-i18n="info.how2"></li>
+    <li data-i18n="info.how3"></li>
+    <li data-i18n="info.how4"></li>
+  </ul>
+  <h3 data-i18n="info.ctrl">Comandi</h3>
+  <ul>
+    <li data-i18n="info.c1"></li>
+    <li data-i18n="info.c2"></li>
+    <li data-i18n="info.c3"></li>
+  </ul>
+  <p class="note" data-i18n="info.unverified"></p>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script src="js/three.min.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/tracks.js"></script>
+<script src="js/input.js"></script>
+<script src="js/grab.js"></script>
+<script src="js/pointer.js"></script>
+<script src="js/xrpanel.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

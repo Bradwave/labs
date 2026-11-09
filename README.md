@@ -17,24 +17,28 @@ By [matephis.com](https://matephis.com). Vibecoded with Claude, with <3.
 <td width="50%" valign="top"><a href="detach-lab/"><img src="detach-lab/docs/screenshot.png" alt="Detach Lab" width="400"></a><br><b><a href="https://labs.matephis.com/detach-lab/">Detach Lab</a></b> · <a href="detach-lab/">code</a><br>Photodetachment of an I₂⁻ beam: where and when the atoms land, Galileo vs Einstein.<br><i>Fotodistacco di un fascio di I₂⁻: dove e quando arrivano gli atomi, Galileo contro Einstein.</i><br><sub>physics · <i>being updated</i></sub></td>
 </tr>
 <tr>
+<td width="50%" valign="top"><a href="force-lab-xr/"><img src="force-lab-xr/docs/screenshot.png" alt="Force Lab XR" width="400"></a><br><b><a href="https://labs.matephis.com/force-lab-xr/">Force Lab XR</a></b> · <a href="force-lab-xr/">code</a><br>Throw a ball and steer it through gates with force zones and a rubber band: force, acceleration and velocity in VR.<br><i>Lancia una palla e guidala tra le porte con zone di forza e un elastico: forza, accelerazione e velocità in realtà virtuale.</i><br><sub>physics · XR</sub></td>
 <td width="50%" valign="top"><a href="impulse-lab/"><img src="impulse-lab/docs/screenshot.png" alt="Impulse Lab" width="400"></a><br><b><a href="https://labs.matephis.com/impulse-lab/">Impulse Lab</a></b> · <a href="impulse-lab/">code</a><br>Impulse, momentum and collisions: the area under F(t) is Δp.<br><i>Impulso, quantità di moto e urti: l'area sotto F(t) è Δp.</i><br><sub>physics</sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><a href="metric-lab/"><img src="metric-lab/docs/screenshot.png" alt="Metric Lab" width="400"></a><br><b><a href="https://labs.matephis.com/metric-lab/">Metric Lab</a></b> · <a href="metric-lab/">code</a><br>Explore and compare definitions of distance on the plane.<br><i>Esplora e confronta diverse definizioni di distanza nel piano.</i><br><sub>mathematics · <i>being updated</i></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><a href="motus1d-lab/"><img src="motus1d-lab/docs/screenshot.png" alt="Motus 1D Lab" width="400"></a><br><b><a href="https://labs.matephis.com/motus1d-lab/">Motus 1D Lab</a></b> · <a href="motus1d-lab/">code</a><br>Motion along a line with linked s–t, v–t and a–t graphs.<br><i>Moto su una retta con i grafici s–t, v–t e a–t collegati.</i><br><sub>physics · <i>being updated</i></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><a href="orbit-lab/"><img src="orbit-lab/docs/screenshot.png" alt="Orbit Lab" width="400"></a><br><b><a href="https://labs.matephis.com/orbit-lab/">Orbit Lab</a></b> · <a href="orbit-lab/">code</a><br>Launch a ship around a planet and discover what an orbit is.<br><i>Lancia una navicella attorno a un pianeta e scopri che cos'è un'orbita.</i><br><sub>physics · <i>being updated</i></sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><a href="orbit-lab-xr/"><img src="orbit-lab-xr/docs/screenshot.png" alt="Orbit Lab XR" width="400"></a><br><b><a href="https://labs.matephis.com/orbit-lab-xr/">Orbit Lab XR</a></b> · <a href="orbit-lab-xr/">code</a><br>Orbit Lab in WebXR, for Meta Quest.<br><i>Orbit Lab in realtà virtuale, per Meta Quest.</i><br><sub>physics · XR · <i>being updated</i></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><a href="pendulum-lab/"><img src="pendulum-lab/docs/screenshot.png" alt="Pendulum Lab" width="400"></a><br><b><a href="https://labs.matephis.com/pendulum-lab/">Pendulum Lab</a></b> · <a href="pendulum-lab/">code</a><br>Swing a pendulum, watch every force and its third-law partner.<br><i>Fai oscillare un pendolo, guarda ogni forza e la sua coppia del terzo principio.</i><br><sub>physics</sub></td>
-</tr>
-<tr>
 <td width="50%" valign="top"><a href="quadrature/"><img src="quadrature/docs/screenshot.png" alt="Quadrature" width="400"></a><br><b><a href="https://labs.matephis.com/quadrature/">Quadrature</a></b> · <a href="quadrature/">code</a><br>Measure an area by counting grid squares, and see how sure you can be.<br><i>Misura l'area di una figura contando i quadretti, e scopri quanto puoi esserne sicuro.</i><br><sub>mathematics · <i>being updated</i></sub></td>
-<td width="50%" valign="top"><a href="relative-motion-lab/"><img src="relative-motion-lab/docs/screenshot.png" alt="Relative Motion Lab" width="400"></a><br><b><a href="https://labs.matephis.com/relative-motion-lab/">Relative Motion Lab</a></b> · <a href="relative-motion-lab/">code</a><br>One motion seen from two reference frames.<br><i>Un solo moto visto da due sistemi di riferimento.</i><br><sub>physics · <i>being updated</i></sub></td>
 </tr>
 <tr>
+<td width="50%" valign="top"><a href="relative-motion-lab/"><img src="relative-motion-lab/docs/screenshot.png" alt="Relative Motion Lab" width="400"></a><br><b><a href="https://labs.matephis.com/relative-motion-lab/">Relative Motion Lab</a></b> · <a href="relative-motion-lab/">code</a><br>One motion seen from two reference frames.<br><i>Un solo moto visto da due sistemi di riferimento.</i><br><sub>physics · <i>being updated</i></sub></td>
 <td width="50%" valign="top"><a href="surface-lab-xr/"><img src="surface-lab-xr/docs/screenshot.png" alt="Surface Lab XR" width="400"></a><br><b><a href="https://labs.matephis.com/surface-lab-xr/">Surface Lab XR</a></b> · <a href="surface-lab-xr/">code</a><br>Quadric surfaces and conic sections in 3D, on desktop or Meta Quest.<br><i>Superfici quadriche e sezioni coniche in 3D, sul computer o con Meta Quest.</i><br><sub>mathematics · XR · <i>being updated</i></sub></td>
+</tr>
+<tr>
 <td width="50%" valign="top"><a href="units-lab/"><img src="units-lab/docs/screenshot.png" alt="Units Lab" width="400"></a><br><b><a href="https://labs.matephis.com/units-lab/">Units Lab</a></b> · <a href="units-lab/">code</a><br>Scientific notation and unit conversions, one correct answer at a time.<br><i>Notazione scientifica ed equivalenze tra unità di misura, una risposta giusta alla volta.</i><br><sub>physics · <i>being updated</i></sub></td>
+<td width="50%" valign="top"></td>
 </tr>
 <tr>
 <td width="50%" valign="top"><b><a href="https://labs.matephis.com/series-lab/">Series Lab</a></b> · <a href="series-lab/">code</a><br>Partial sums of a complex series in the Argand plane: write the general term and watch the polygonal path converge (or not).<br><i>Somme parziali di una serie complessa nel piano di Gauss: scrivi il termine generale e guarda la spezzata convergere (o no).</i><br><sub>mathematics</sub></td>
