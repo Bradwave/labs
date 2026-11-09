@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+<rect x="4" y="4" width="112" height="112" fill="#FF8C7A" stroke="#2E0C06" stroke-width="6"/>
+<rect x="14" y="14" width="92" height="92" fill="#FFF6F3" stroke="#2E0C06" stroke-width="4"/>
+<path d="M18 18 V102 M18 18 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/><path d="M35 18 V102 M18 35 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/><path d="M52 18 V102 M18 52 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/><path d="M69 18 V102 M18 69 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/><path d="M86 18 V102 M18 86 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/><path d="M103 18 V102 M18 103 H102" stroke="#2E0C06" stroke-width="1.5" opacity=".3"/>
+<path d="M35 86 H52 V69 H69 V52 H86 V35" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" fill="none" stroke="#1F5FD1" stroke-width="5"/>
+<path d="M35 86 L86 35" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" fill="none" stroke="#2E0C06" stroke-width="4"/>
+<rect x="29" y="80" width="12" height="12" fill="#7BDCC0" stroke="#2E0C06" stroke-width="3"/>
+<rect x="80" y="29" width="12" height="12" fill="#7BDCC0" stroke="#2E0C06" stroke-width="3"/>
+</svg>

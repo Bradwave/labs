@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Units Lab">
+<title>Units Lab</title>
+<style>
+.flag { animation: climb 4s infinite; }
+@keyframes climb { 0% { transform: translate(0, 0); animation-timing-function: steps(5, end); } 80%, 100% { transform: translate(40px, -60px); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#E3F06A" stroke="#232A05" stroke-width="6"/>
+<path d="M10 104 L60 22 L110 104 Z" fill="#FCFDF0" stroke="#232A05" stroke-width="5" stroke-linejoin="round"/>
+<path d="M48 41.7 L60 22 L72 41.7 L66 38 L60 44 L54 38 Z" fill="#E3F06A" stroke="#232A05" stroke-width="3" stroke-linejoin="round"/>
+<path d="M22 100 L30 96 L38 88 L46 80 L54 72 L62 60" fill="none" stroke="#232A05" stroke-width="2.5" stroke-dasharray="3 4"/>
+<g class="flag" transform="translate(24 -36)">
+  <line x1="22" y1="100" x2="22" y2="76" stroke="#232A05" stroke-width="3.5"/>
+  <path d="M22 76 h16 l-5 6 5 6 h-16 z" fill="#6A35D9" stroke="#232A05" stroke-width="2.5"/>
+</g>
+</svg>

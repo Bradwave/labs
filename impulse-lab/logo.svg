@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Impulse Lab">
+<title>Impulse Lab</title>
+<style>
+.ball { animation: ball 3s infinite; }
+.spr { transform-origin: 98px 36px; animation: spr 3s infinite; }
+.curve { animation: curve 3s linear infinite; }
+.area { animation: area 3s linear infinite; }
+@keyframes ball { 0% { transform: translateX(0); animation-timing-function: linear; } 38% { transform: translateX(37px); animation-timing-function: ease-out; }
+  48% { transform: translateX(45px); animation-timing-function: ease-in; } 58% { transform: translateX(37px); animation-timing-function: linear; } 100% { transform: translateX(0); } }
+@keyframes spr { 0%, 38% { transform: scaleX(1); animation-timing-function: ease-out; } 48% { transform: scaleX(.55); animation-timing-function: ease-in; } 58%, 100% { transform: scaleX(1); } }
+@keyframes curve { 0%, 38% { stroke-dashoffset: 100; opacity: 1; } 58%, 88% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes area { 0%, 50% { opacity: 0; } 62%, 88% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#B9A3F2" stroke="#1D0E42" stroke-width="6"/>
+<rect x="98" y="14" width="10" height="44" fill="#1D0E42"/>
+<polyline class="spr" points="80,36 83,28 87,44 91,28 95,44 98,36" fill="none" stroke="#1D0E42" stroke-width="3"/>
+<circle class="ball" cx="31" cy="36" r="11" fill="#FF7A3D" stroke="#1D0E42" stroke-width="4"/>
+<path class="area" d="M30 98 C42 98 46 68 54 68 S66 98 78 98 Z" fill="#FFD23F"/>
+<path class="curve" d="M30 98 C42 98 46 68 54 68 S66 98 78 98" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" fill="none" stroke="#1D0E42" stroke-width="4"/>
+<line x1="16" y1="98" x2="104" y2="98" stroke="#1D0E42" stroke-width="4"/>
+</svg>

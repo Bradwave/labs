@@ -10,5 +10,5 @@ One repository (`Bradwave/labs`, served at labs.matephis.com) with every math an
 - Before committing changes to a lab: `node tools/sync-kit.mjs <slug>` (manifest and service worker) and `node tools/test-all.mjs`. After visible changes: `node tools/screenshot.mjs <slug>`; after changing `apps.json`: `node tools/readme.mjs`.
 - Preview: the `labs` entry in `.claude/launch.json` serves the whole repository on port 8100 (labs at `/<slug>/`).
 - **Ask before pushing**: a push to `main` deploys every lab to labs.matephis.com after CI.
-- No CNAME files in the labs: the custom domain is set in the repository's Pages settings. The old per-lab repos (pendulum-lab, crackler, quadrature, attracthm, carts-lab) are kept only to redirect their old addresses.
+- The root `CNAME` (labs.matephis.com) was created by GitHub when the custom domain was set; keep it. No CNAME files inside the lab folders. The old per-lab repos (pendulum-lab, crackler, quadrature, attracthm, carts-lab) are kept only to redirect their old addresses.
 - motus, matephis, obfusca and orario-pellicano are separate projects with their own style: do not apply the lab kit to them.

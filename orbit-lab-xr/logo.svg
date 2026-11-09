@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Orbit Lab XR">
+<title>Orbit Lab XR</title>
+<style>
+.spin { transform-origin: 60px 64px; animation: orbit 3s linear infinite; }
+@keyframes orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#6554D4" stroke="#14123A" stroke-width="6"/>
+<path d="M10 54 L20 48 M110 54 L100 48" stroke="#14123A" stroke-width="5"/>
+<rect x="18" y="38" width="84" height="52" fill="#F5F4FF" stroke="#14123A" stroke-width="5"/>
+<path d="M52 90 L60 80 L68 90" fill="#6554D4" stroke="#14123A" stroke-width="4"/>
+<ellipse cx="60" cy="64" rx="30" ry="12" fill="none" stroke="#14123A" stroke-width="2.5" stroke-dasharray="4 4"/>
+<circle cx="60" cy="64" r="9" fill="#FFD23F" stroke="#14123A" stroke-width="3"/>
+<g transform="matrix(1 0 0 .4 0 38.4)"><g class="spin" transform="rotate(30 60 64)"><circle cx="90" cy="64" r="6" fill="#E8601C" stroke="#14123A" stroke-width="2.5"/></g></g>
+</svg>

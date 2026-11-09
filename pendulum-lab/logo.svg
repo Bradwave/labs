@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Pendulum Lab">
+<title>Pendulum Lab</title>
+<style>
+.sw { transform-origin: 60px 26px; animation: sw 1.1s ease-in-out infinite alternate; }
+@keyframes sw { from { transform: rotate(-26deg); } to { transform: rotate(26deg); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#8CCBEB" stroke="#0B1B3A" stroke-width="6"/>
+<rect x="28" y="16" width="64" height="9" fill="#0B1B3A"/>
+<g class="sw" transform="rotate(-20 60 26)">
+  <line x1="60" y1="25" x2="60" y2="80" stroke="#0B1B3A" stroke-width="4"/>
+  <circle cx="60" cy="88" r="14" fill="#FFC23D" stroke="#0B1B3A" stroke-width="5"/>
+</g>
+<circle cx="60" cy="25" r="4" fill="#FF6A3D" stroke="#0B1B3A" stroke-width="2"/>
+</svg>

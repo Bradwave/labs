@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Motus 1D Lab">
+<title>Motus 1D Lab</title>
+<style>
+.cart { animation: cart 3s infinite; }
+.st { animation: st 3s infinite; }
+@keyframes cart { 0% { transform: translateX(0); animation-timing-function: cubic-bezier(.333,0,.667,.333); } 75%, 100% { transform: translateX(62px); } }
+@keyframes st { 0% { stroke-dashoffset: 100; animation-timing-function: linear; } 75%, 100% { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#4D7BFF" stroke="#0A1240" stroke-width="6"/>
+<rect x="14" y="14" width="92" height="56" fill="#F3F6FF" stroke="#0A1240" stroke-width="4"/>
+<path d="M22 22 V62 H98" fill="none" stroke="#0A1240" stroke-width="3"/>
+<path class="st" d="M22 62 Q60 62 96 24" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0" fill="none" stroke="#FF4B2B" stroke-width="4"/>
+<line x1="12" y1="100" x2="108" y2="100" stroke="#0A1240" stroke-width="4"/>
+<g class="cart" transform="translate(31 0)">
+  <rect x="16" y="80" width="24" height="14" fill="#FFD23F" stroke="#0A1240" stroke-width="3.5"/>
+</g>
+</svg>

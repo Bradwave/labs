@@ -50,7 +50,8 @@ async function check(app) {
   ok(!has(".git") && !has(".github") && !has(".gitignore"), "repository files inside the lab (.git, .github, .gitignore): the repository root owns them", "warn");
 
   // ---- identity and PWA (§2, §15)
-  ok(has("favicon.svg"), "favicon.svg missing");
+  ok(has("logo.svg"), "logo.svg missing (the animated logo, DESIGN.md §2)");
+  ok(has("favicon.svg"), "favicon.svg missing (node tools/logos.mjs)");
   ok(has("icon-192.png") && has("icon-512.png"), "icon-192.png / icon-512.png missing");
   ok(has("icon-maskable-512.png"), "icon-maskable-512.png missing", "warn");
   ok(has("apple-touch-icon.png"), "apple-touch-icon.png missing");

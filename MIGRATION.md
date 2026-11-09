@@ -72,7 +72,7 @@ onLang(() => relabel());   // rebuild everything generated in JS
 
 ### 8. Identity and PWA
 - Palette: copy from `apps.json`. Labs with an approved **proposed** background need a full palette first (surface, ink, muted, accent, onaccent, tile2, gridline, light and dark): propose it to the user, update `apps.json` (move it to `palette.light`/`dark`), check with `check-palettes.mjs`.
-- `favicon.svg`: a 32 × 32 tile on the brand bg, 2 px ink border, one simple drawing of the topic. Then `node tools/make-icons.mjs <slug>`.
+- Logo and icons: every lab already has `logo.svg` (DESIGN.md §2, reviewed in `logos.html`). Run `node tools/logos.mjs <slug>` to regenerate `favicon.svg` and the PNG icons from it; never draw the favicon by hand.
 - Set `"kit": true` for the lab in `apps.json`, then `node tools/sync-kit.mjs <slug>` (writes `manifest.webmanifest` and `sw.js`). Re-run sync after every later file change, before committing. Delete any old `kit/`, `.gitignore`, `.github/`, `.claude/` inside the lab: the root owns them.
 - Screenshot: `node tools/screenshot.mjs <slug>` → `docs/screenshot.png`, shown at the top of the lab's README and in the root README.
 

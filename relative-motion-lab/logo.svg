@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Relative Motion Lab">
+<title>Relative Motion Lab</title>
+<style>
+.train { animation: train 2.6s linear infinite; }
+.up { animation: up 2.6s infinite; }
+@keyframes train { 0% { transform: translateX(0); } 85%, 100% { transform: translateX(56px); } }
+@keyframes up { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(.333,.667,.667,1); } 42.5% { transform: translateY(-44px); animation-timing-function: cubic-bezier(.333,0,.667,.333); } 85%, 100% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#3C9A5F" stroke="#0E2A1C" stroke-width="6"/>
+<path d="M36 66 Q64 -22 92 66" fill="none" stroke="#F4F8EC" stroke-width="3" stroke-dasharray="5 5" opacity=".8"/>
+<line x1="10" y1="98" x2="110" y2="98" stroke="#0E2A1C" stroke-width="4"/>
+<g class="train" transform="translate(28 0)">
+  <g class="up" transform="translate(0 -44)"><circle cx="36" cy="64" r="7" fill="#F2C230" stroke="#0E2A1C" stroke-width="3.5"/></g>
+  <rect x="16" y="72" width="40" height="18" fill="#F4F8EC" stroke="#0E2A1C" stroke-width="4"/>
+  <circle cx="26" cy="93" r="4" fill="#0E2A1C"/><circle cx="46" cy="93" r="4" fill="#0E2A1C"/>
+</g>
+</svg>

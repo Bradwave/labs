@@ -36,8 +36,15 @@ Contents: 1 Scope and changes · 2 Identity · 3 Tokens · 4 Layout · 5 Header,
 - The checker compares background hues: closer than 18° with similar lightness is a clash.
 - Proposed hues for apps that clash today are in `apps.json` under `palette.proposed` and on the swatch board in `demo.html`. They become real only after review.
 
-### Icon and favicon
-- `favicon.svg`: a single tile (the app's accent or bg colour, 2 px ink border) carrying one glyph or a tiny drawing of the topic. Plus `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (glyph inside the 80 % safe zone) and `apple-touch-icon.png` (180 px).
+### Logo, favicon and icons
+- **`logo.svg`, the animated logo:** a 120 × 120 tile (6-unit ink border, the lab's light `--bg`) with one small drawing of what the lab is about and **one motion** that sums it up (a bob swinging, carts colliding, a ship in orbit, squares filling a shape). Rules:
+  - plain SVG with a `<style>` of CSS keyframes, no script; colours written as attributes (the light palette from `apps.json`): a logo looks the same in both themes, like an app icon;
+  - loops of 2–5 s, gentle; the motion is physically right (pendulum rhythm, uniform acceleration as a quadratic ease, closed orbits, equal carts exchanging velocities);
+  - the **still frame** is the drawing without its `<style>` (the base attributes): it must read well on its own, because it is used with `prefers-reduced-motion` (the logo includes `@media (prefers-reduced-motion: reduce) { * { animation: none } }`) and becomes the favicon;
+  - strokes thick enough to survive 32 px and 16 px (≥ 3 units).
+- **`favicon.svg` and PNG icons are generated** from the logo: `node tools/logos.mjs <slug>` writes `favicon.svg` (the still frame) and renders `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` (logo inside the safe zone on the brand background) and `apple-touch-icon.png`. Never draw the favicon by hand.
+- All logos side by side, moving and still, at every size: `logos.html`.
+- The logo is the lab's icon. Its place on the home page is a different drawing (a *station*, see `docs/LANDING.md`); the wordmark stays the lab's name in its header.
 - `<meta name="theme-color">` equals the light `--bg`, with a dark variant: `<meta name="theme-color" media="(prefers-color-scheme: dark)" content="…">`.
 
 ## 3. Tokens
@@ -254,8 +261,8 @@ They do not follow sections 4 and 6 inside the immersive view.
 ## 18. Prototyping a new lab
 
 1. **Cowork, any device**: start from `template/single-file.html` (the kit inlined in one file, about 140 kB) and this document. Focus on the physics and the teaching; use only kit components; new needs get `x-` classes.
-2. **Identity**: pick the name and slug, add the app to `apps.json` with a palette that passes `node tools/check-palettes.mjs`, and draw `favicon.svg`.
-3. **Claude Code**: `node tools/new-app.mjs <slug>` creates the folder from `template/` and writes its manifest and service worker; `node tools/make-icons.mjs <slug>` renders the PNG icons from the favicon. Then port the prototype into modules, move physics into pure tested modules, and resolve every `x-` piece (section 1).
+2. **Identity**: pick the name and slug, add the app to `apps.json` with a palette that passes `node tools/check-palettes.mjs`, and draw its animated `logo.svg` (§2).
+3. **Claude Code**: `node tools/new-app.mjs <slug>` creates the folder from `template/` and writes its manifest and service worker; draw the lab's `logo.svg` (§2), then `node tools/logos.mjs <slug>` makes the favicon and PNG icons from it. Then port the prototype into modules, move physics into pure tested modules, and resolve every `x-` piece (section 1).
 4. **Release**: `node tools/sync-kit.mjs <slug>` (refreshes the manifest and the service worker's file list and cache name), then the checklist below passes; pushing to `main` deploys after CI.
 
 ### Tools
@@ -267,7 +274,8 @@ They do not follow sections 4 and 6 inside the immersive view.
 | `node tools/test-all.mjs` | runs the kit tests and every lab's tests (as CI does) |
 | `node tools/screenshot.mjs [slug…]` | `docs/screenshot.png` of each lab with headless Chrome |
 | `node tools/new-app.mjs <slug>` | new lab from `template/` |
-| `node tools/make-icons.mjs <slug>` | PNG icons from `favicon.svg` (macOS `sips`) |
+| `node tools/logos.mjs [slug…]` | `favicon.svg` (the logo's still frame) and the PNG icons from `logo.svg` |
+| `node tools/make-icons.mjs <slug>` | PNG icons from `favicon.svg` (macOS `sips`; called by `logos.mjs`) |
 | `node tools/build-single-file.mjs [app-folder out.html]` | one-file build: the Cowork starter, or a prototype to share |
 | `node --test tests/` | kit unit tests |
 

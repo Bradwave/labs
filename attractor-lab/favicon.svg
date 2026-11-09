@@ -1,7 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-
-  <path d="M50 15 L85 85 L15 85 Z" fill="#9a2b17" opacity="0.8"/>
-  <path d="M50 15 L67.5 50 L32.5 50 Z" fill="#fff" opacity="0.5"/>
-  <path d="M32.5 50 L50 85 L15 85 Z" fill="#fff" opacity="0.3"/>
-  <path d="M67.5 50 L85 85 L50 85 Z" fill="#fff" opacity="0.3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+<rect x="4" y="4" width="112" height="112" fill="#E39BE6" stroke="#2A0B2E" stroke-width="6"/>
+<path d="M16 100 h88 l-44 -76.2 z" fill="#FCF5FD" stroke="#2A0B2E" stroke-width="4" stroke-linejoin="round"/>
+<path d="M60.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M43.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M60.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M32.5 71.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M38.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M60.0 42.8 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M87.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M38.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M54.5 33.3 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M49.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M93.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M49.0 42.8 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M71.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M65.5 52.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M16.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M27.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M82.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M71.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M65.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M38.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M76.5 71.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M21.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M27.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M43.5 52.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M82.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M49.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M71.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M16 100 h88 l-44 -76.2 z" fill="none" stroke="#2A0B2E" stroke-width="4" stroke-linejoin="round"/>
 </svg>

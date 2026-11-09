@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Attractor Lab">
+<title>Attractor Lab</title>
+<style>
+.t { animation: t 4.5s linear infinite; }
+@keyframes t { 0% { opacity: 0; } 6%, 86% { opacity: 1; } 96%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#E39BE6" stroke="#2A0B2E" stroke-width="6"/>
+<path d="M16 100 h88 l-44 -76.2 z" fill="#FCF5FD" stroke="#2A0B2E" stroke-width="4" stroke-linejoin="round"/>
+<path class="t" style="animation-delay:0.00s" d="M60.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.13s" d="M43.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.26s" d="M60.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.39s" d="M32.5 71.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.52s" d="M38.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.65s" d="M60.0 42.8 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.78s" d="M87.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:0.91s" d="M38.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.04s" d="M54.5 33.3 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.17s" d="M49.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.30s" d="M93.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.43s" d="M49.0 42.8 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.56s" d="M71.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.69s" d="M65.5 52.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.82s" d="M16.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:1.95s" d="M27.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.08s" d="M82.0 80.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.21s" d="M71.0 61.9 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.34s" d="M65.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.47s" d="M38.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.60s" d="M76.5 71.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.73s" d="M21.5 90.5 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.86s" d="M27.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:2.99s" d="M43.5 52.4 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:3.12s" d="M82.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:3.25s" d="M49.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path class="t" style="animation-delay:3.38s" d="M71.0 100.0 h11.0 l-5.5 -9.5 z" fill="#0B7F70"/>
+<path d="M16 100 h88 l-44 -76.2 z" fill="none" stroke="#2A0B2E" stroke-width="4" stroke-linejoin="round"/>
+</svg>

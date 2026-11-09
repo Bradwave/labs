@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Surface Lab XR">
+<title>Surface Lab XR</title>
+<style>
+.sec { transform-origin: 60px 60px; animation: sec 2.4s ease-in-out infinite alternate; }
+@keyframes sec { from { transform: scale(.3); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#8FD3C0" stroke="#0A2A26" stroke-width="6"/>
+<path d="M30 16 L90 16 L60 60 Z M30 104 L90 104 L60 60 Z" fill="#F6FBF9" stroke="#0A2A26" stroke-width="4" stroke-linejoin="round"/>
+<ellipse cx="60" cy="16" rx="30" ry="6" fill="#F6FBF9" stroke="#0A2A26" stroke-width="3"/>
+<g class="sec" transform="translate(60 60) scale(.7) translate(-60 -60)">
+  <ellipse cx="60" cy="104" rx="30" ry="7" fill="#F0E442" stroke="#D55E00" stroke-width="4"/>
+</g>
+<ellipse cx="60" cy="104" rx="30" ry="6" fill="none" stroke="#0A2A26" stroke-width="3"/>
+</svg>
