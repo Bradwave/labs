@@ -493,6 +493,39 @@
         },
         "note": "lemon-lime; keeps its violet and pink as accent and tile (approved background 2026-11-08, full palette 2026-11-09)"
       }
+    },
+    {
+      "slug": "series-lab",
+      "name": "Series Lab",
+      "kind": "2d",
+      "subject": "mathematics",
+      "port": 8115,
+      "kit": true,
+      "test": "node --test 'tests/**/*.test.*'",
+      "description": {
+        "it": "Somme parziali di una serie complessa nel piano di Gauss: scrivi il termine generale e guarda la spezzata convergere (o no).",
+        "en": "Partial sums of a complex series in the Argand plane: write the general term and watch the polygonal path converge (or not)."
+      },
+      "palette": {
+        "light": {
+          "bg": "#2DB9BD",
+          "surface": "#F2FCFC",
+          "ink": "#04242A",
+          "muted": "#3F6A70",
+          "accent": "#C2410C",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD23F"
+        },
+        "dark": {
+          "bg": "#04222A",
+          "surface": "#0B343D",
+          "ink": "#E4FAFB",
+          "muted": "#90C4CA",
+          "accent": "#FF8A5C",
+          "onaccent": "#04222A",
+          "tile2": "#E9B92A"
+        }
+      }
     }
   ]
 }

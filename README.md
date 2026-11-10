@@ -36,6 +36,10 @@ By [matephis.com](https://matephis.com). Vibecoded with Claude, with <3.
 <td width="50%" valign="top"><a href="surface-lab-xr/"><img src="surface-lab-xr/docs/screenshot.png" alt="Surface Lab XR" width="400"></a><br><b><a href="https://labs.matephis.com/surface-lab-xr/">Surface Lab XR</a></b> · <a href="surface-lab-xr/">code</a><br>Quadric surfaces and conic sections in 3D, on desktop or Meta Quest.<br><i>Superfici quadriche e sezioni coniche in 3D, sul computer o con Meta Quest.</i><br><sub>mathematics · XR · <i>being updated</i></sub></td>
 <td width="50%" valign="top"><a href="units-lab/"><img src="units-lab/docs/screenshot.png" alt="Units Lab" width="400"></a><br><b><a href="https://labs.matephis.com/units-lab/">Units Lab</a></b> · <a href="units-lab/">code</a><br>Scientific notation and unit conversions, one correct answer at a time.<br><i>Notazione scientifica ed equivalenze tra unità di misura, una risposta giusta alla volta.</i><br><sub>physics · <i>being updated</i></sub></td>
 </tr>
+<tr>
+<td width="50%" valign="top"><b><a href="https://labs.matephis.com/series-lab/">Series Lab</a></b> · <a href="series-lab/">code</a><br>Partial sums of a complex series in the Argand plane: write the general term and watch the polygonal path converge (or not).<br><i>Somme parziali di una serie complessa nel piano di Gauss: scrivi il termine generale e guarda la spezzata convergere (o no).</i><br><sub>mathematics</sub></td>
+<td width="50%" valign="top"></td>
+</tr>
 </table>
 <!-- labs:end -->
 
