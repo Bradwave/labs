@@ -78,10 +78,8 @@ export function fitView(m, P) {
   m.V.cy = (c + d) / 2;
 }
 
-export function drawPlane(ctx, W, H, C, m) {
-  const P = plotRect(W, H),
-    { s, k, V, opts } = m;
-  if (m.frame !== "free") fitView(m, P);
+// Grid and axes of a complex plane with view V = { cx, cy, s }. `under(ctx, b)` paints between clip and grid.
+function planeBase(ctx, P, C, V, under) {
   const mx = (P.x0 + P.x1) / 2,
     my = (P.y0 + P.y1) / 2;
   const X = (re) => mx + (re - V.cx) * V.s,
@@ -97,6 +95,7 @@ export function drawPlane(ctx, W, H, C, m) {
   const ty = [];
   for (let v = Math.ceil(imMin / step) * step; v <= imMax + step * 1e-9 && ty.length < 60; v += step) ty.push(Math.abs(v) < step * 1e-9 ? 0 : +v.toPrecision(12));
   clip(ctx, P);
+  if (under) under(ctx, { X, Y });
   ctx.strokeStyle = C.gridline;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -109,6 +108,33 @@ export function drawPlane(ctx, W, H, C, m) {
   if (reMin < 0 && reMax > 0) ctx.moveTo(X(0), P.y0), ctx.lineTo(X(0), P.y1);
   if (imMin < 0 && imMax > 0) ctx.moveTo(P.x0, Y(0)), ctx.lineTo(P.x1, Y(0));
   ctx.stroke();
+
+  return { X, Y, tx, ty, step };
+}
+function planeEnd(ctx, P, C, b) {
+  const { X, Y, tx, ty, step } = b;
+  ctx.restore();
+
+  // tick labels outside the plot area, axis names inside
+  frame(ctx, P, C);
+  for (const v of tx) {
+    const x = X(v);
+    if (x > P.x0 + 10 && x < P.x1 - 10) text(ctx, fmtTick(v, step), x, P.y1 + 16, C, { align: "center" });
+  }
+  for (const v of ty) {
+    const y = Y(v);
+    if (y > P.y0 + 6 && y < P.y1 - 4) text(ctx, fmtTick(v, step), P.x0 - 6, y + 4, C, { align: "right" });
+  }
+  text(ctx, "Re", P.x1 - 8, P.y1 - 6, C, { align: "right", color: C.ink, weight: 700, size: 12 });
+  text(ctx, "Im", P.x0 + 6, P.y0 + 14, C, { color: C.ink, weight: 700, size: 12 });
+}
+
+export function drawPlane(ctx, W, H, C, m) {
+  const P = plotRect(W, H),
+    { s, k, V, opts } = m;
+  if (m.frame !== "free") fitView(m, P);
+  const base = planeBase(ctx, P, C, V);
+  const { X, Y } = base;
 
   // the polygonal path of the partial sums
   if (opts.line && k > 0) {
@@ -177,20 +203,7 @@ export function drawPlane(ctx, W, H, C, m) {
       text(ctx, `S_{${s.n0 + best}}`, hx + 10, hy - 9, C, { color: C.ink, weight: 700, size: 12 });
     }
   }
-  ctx.restore();
-
-  // tick labels outside the plot area, axis names inside
-  frame(ctx, P, C);
-  for (const v of tx) {
-    const x = X(v);
-    if (x > P.x0 + 10 && x < P.x1 - 10) text(ctx, fmtTick(v, step), x, P.y1 + 16, C, { align: "center" });
-  }
-  for (const v of ty) {
-    const y = Y(v);
-    if (y > P.y0 + 6 && y < P.y1 - 4) text(ctx, fmtTick(v, step), P.x0 - 6, y + 4, C, { align: "right" });
-  }
-  text(ctx, "Re", P.x1 - 8, P.y1 - 6, C, { align: "right", color: C.ink, weight: 700, size: 12 });
-  text(ctx, "Im", P.x0 + 6, P.y0 + 14, C, { color: C.ink, weight: 700, size: 12 });
+  planeEnd(ctx, P, C, base);
 }
 
 // ---------- Re/Im parts and moduli against n ----------
@@ -337,4 +350,112 @@ export function drawMod(ctx, W, H, C, m) {
   if (legend.a) lines.push({ color: C.force, get: (i) => hypot(s.aRe[i], s.aIm[i]) });
   if (legend.s) lines.push({ color: C.pos, get: (i) => hypot(s.sRe[i], s.sIm[i]) });
   plotVsN(ctx, W, H, C, m, lines, opts.log, []);
+}
+
+// ---------- field: S_N(z) on a grid of sample points ----------
+function rgbOf(hex, fallback = [128, 128, 128]) {
+  const m = /^#([0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return fallback;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function hslToRgb(h, s, l) {
+  const f = (n) => {
+    const k = (n + h * 12) % 12,
+      a = s * Math.min(l, 1 - l);
+    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+  };
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+// mode "sum": domain colouring of S_N(z) (hue = argument, lightness = modulus);
+// mode "term": |a_N(z)| on a log scale, from the surface colour (tiny term) to the force colour (large term).
+export function paintFieldImage(field, mode, C) {
+  const { cols, rows } = field.geo;
+  const cvs = document.createElement("canvas");
+  cvs.width = cols;
+  cvs.height = rows;
+  const ctx = cvs.getContext("2d");
+  const img = ctx.createImageData(cols, rows);
+  const surf = rgbOf(C.surface),
+    force = rgbOf(C.force),
+    dead = rgbOf(C.ink);
+  for (let c = 0; c < cols * rows; c++) {
+    let rgb;
+    if (Number.isNaN(field.sRe[c])) {
+      rgb = [(dead[0] + surf[0]) / 2, (dead[1] + surf[1]) / 2, (dead[2] + surf[2]) / 2]; // not finite
+    } else if (mode === "term") {
+      const a = Math.hypot(field.aRe[c], field.aIm[c]);
+      const v = a > 0 ? Math.min(1, Math.max(0, (Math.log10(a) + 10) / 10)) : 0;
+      rgb = [0, 1, 2].map((q) => surf[q] + (force[q] - surf[q]) * v);
+    } else {
+      const m = Math.hypot(field.sRe[c], field.sIm[c]);
+      const hue = (Math.atan2(field.sIm[c], field.sRe[c]) / (2 * Math.PI) + 1) % 1;
+      rgb = hslToRgb(hue, 0.72, 0.2 + 0.62 * (m / (m + 1)));
+    }
+    img.data[4 * c] = rgb[0];
+    img.data[4 * c + 1] = rgb[1];
+    img.data[4 * c + 2] = rgb[2];
+    img.data[4 * c + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return { canvas: cvs, geo: field.geo };
+}
+
+// m: { F (window {cx, cy, s}), shown ({canvas, geo} | null), z (selected point), hover, field, fmtC, n }
+export function drawField(ctx, W, H, C, m) {
+  const P = plotRect(W, H),
+    V = m.F;
+  const base = planeBase(ctx, P, C, V, (c, { X, Y }) => {
+    const sh = m.shown;
+    if (!sh) return;
+    const g = sh.geo,
+      w = g.cols * g.dx * V.s,
+      h = g.rows * g.dx * V.s;
+    c.imageSmoothingEnabled = false;
+    c.drawImage(sh.canvas, X(g.cx) - w / 2, Y(g.cy) - h / 2, w, h);
+  });
+  const { X, Y } = base;
+  // selected z
+  const zx = X(m.z[0]),
+    zy = Y(m.z[1]);
+  ctx.strokeStyle = C.surface;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
+  ctx.strokeStyle = C.ink;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
+  text(ctx, "z", zx + 10, zy - 8, C, { color: C.ink, weight: 700, size: 12 });
+  // hovered cell: its z and S_N(z)
+  if (m.hover && m.field && m.field.geo) {
+    const f = m.field,
+      re = V.cx + (m.hover.x - (P.x0 + P.x1) / 2) / V.s,
+      im = V.cy - (m.hover.y - (P.y0 + P.y1) / 2) / V.s;
+    const g = m.shown && m.shown.geo,
+      cell = g && cellOf(g, re, im);
+    if (cell) {
+      const i = cell[1] * g.cols + cell[0];
+      const z = [g.cx + (cell[0] - (g.cols - 1) / 2) * g.dx, g.cy - (cell[1] - (g.rows - 1) / 2) * g.dx];
+      const ok = f.sig && f.geo === g && !Number.isNaN(f.sRe[i]);
+      const lines = [`z = ${m.fmtC(z[0], z[1], 3)}`, ok ? `S_{${f.n0 + f.kDone}} = ${m.fmtC(f.sRe[i], f.sIm[i], 3)}` : "S = —"];
+      ctx.font = "11.5px " + '"Space Mono", ui-monospace, monospace';
+      const w = Math.max(...lines.map((l) => ctx.measureText(l.replace(/[_{}]/g, "")).width)) + 14;
+      let bx = m.hover.x + 14,
+        by = m.hover.y + 14;
+      if (bx + w > P.x1) bx = m.hover.x - w - 10;
+      if (by + 40 > P.y1) by = m.hover.y - 46;
+      ctx.fillStyle = C.surface;
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(bx, by, w, 40);
+      ctx.strokeRect(bx, by, w, 40);
+      drawMath(ctx, lines[0], bx + 7, by + 16, { size: 11.5, color: C.ink });
+      drawMath(ctx, lines[1], bx + 7, by + 32, { size: 11.5, color: C.ink });
+    }
+  }
+  planeEnd(ctx, P, C, base);
+}
+function cellOf(g, re, im) {
+  const i = Math.round((re - g.cx) / g.dx + (g.cols - 1) / 2),
+    j = Math.round((g.cy - im) / g.dx + (g.rows - 1) / 2);
+  return i >= 0 && i < g.cols && j >= 0 && j < g.rows ? [i, j] : null;
 }

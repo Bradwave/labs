@@ -41,7 +41,7 @@
     </div>
     <div class="toolbar card ctlbar">
       <div class="seg small" role="group" id="viewSeg" data-i18n-aria="view.aria" aria-label="Grafico">
-        <button type="button" data-view="plane" class="on" data-i18n="view.plane">Piano</button><button type="button" data-view="parts" data-i18n="view.parts">Parti</button><button type="button" data-view="mod" data-i18n="view.mod">Moduli</button>
+        <button type="button" data-view="plane" class="on" data-i18n="view.plane">Piano</button><button type="button" data-view="parts" data-i18n="view.parts">Parti</button><button type="button" data-view="mod" data-i18n="view.mod">Moduli</button><button type="button" data-view="field" data-i18n="view.field">Campo</button>
       </div>
       <div class="chips" id="legend"></div>
       <div class="ctl grow nctl"><label for="nSlider"><span data-i18n="p.n">Termini sommati</span><b id="nOut"></b></label><input type="range" id="nSlider" min="0" max="100" step="1" value="0"></div>
@@ -75,6 +75,13 @@
       <div class="seg" role="group" id="frameSeg">
         <button type="button" data-frame="follow" class="on" data-i18n="frame.follow">Segui</button><button type="button" data-frame="all" data-i18n="frame.all">Intera</button><button type="button" data-frame="free" data-i18n="frame.free">Libera</button>
       </div>
+      <h3 class="grp" data-i18n="g.field">Griglia di punti z</h3>
+      <div class="seg" role="group" id="fieldSeg">
+        <button type="button" data-fmode="sum" class="on" data-i18n="field.sum">Somma</button><button type="button" data-fmode="term" data-i18n="field.term">Termine</button>
+      </div>
+      <p class="note" id="fieldNote"></p>
+      <div class="ctl"><label for="cols"><span data-i18n="field.res">Risoluzione</span><b id="colsOut"></b></label><input type="range" id="cols" min="16" max="120" step="4" value="56"></div>
+      <button class="btn" type="button" id="fieldReset" data-ic="axes"><span class="lbl" data-i18n="field.reset">Reimposta finestra</span></button>
       <h3 class="grp" data-i18n="g.show">Mostra</h3>
       <button class="tg" type="button" data-opt="line" aria-pressed="true"><span class="txt"><span data-i18n="tg.line">Spezzata</span><small data-i18n="tg.lineHint">collega le somme successive</small></span><span class="box"></span></button>
       <button class="tg" type="button" data-opt="dots" aria-pressed="true"><span class="txt"><span data-i18n="tg.dots">Punti</span><small data-i18n="tg.dotsHint">una somma parziale per punto</small></span><span class="box"></span></button>
@@ -99,6 +106,7 @@
     <li data-i18n="info.how2"></li>
     <li data-i18n="info.how3"></li>
     <li data-i18n="info.how4"></li>
+    <li data-i18n="info.how5"></li>
   </ul>
   <h3 data-i18n="info.keys">Tastiera</h3>
   <p class="keys" data-i18n="info.keysText"></p>

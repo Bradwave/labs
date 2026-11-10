@@ -5,7 +5,8 @@ import { toHTML, plain } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { compile, ExprError } from "./expr.js";
 import { computeSeries, limitEstimate, PRESETS, LIMITS, encodeState, decodeState, toCSV } from "./series.js";
-import { drawPlane, drawParts, drawMod, plotRect, MARGIN } from "./render.js";
+import { drawPlane, drawParts, drawMod, drawField, paintFieldImage, plotRect, MARGIN } from "./render.js";
+import { Field } from "./field.js";
 
 const VERSION = "0.1.0";
 const RATE = 5; // terms per second at 1×
@@ -18,6 +19,8 @@ const DEFAULTS = {
   z: [...PRESETS[0].z],
   nMax: PRESETS[0].nMax,
   view: "plane",
+  fmode: "sum",
+  cols: 56,
   frame: "follow",
   speed: 4,
   opts: { line: true, dots: true, term: true, limit: true, log: true },
@@ -27,7 +30,7 @@ const saved = store.getJSON("state", {}) || {};
 const fromHash = decodeState(location.hash);
 const S = {
   ...structuredClone(DEFAULTS),
-  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed"]),
+  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed", "fmode", "cols"]),
   opts: { ...DEFAULTS.opts, ...(saved.opts || {}) },
   legend: { ...DEFAULTS.legend },
   ...pick(fromHash, ["expr", "n0", "z", "nMax"]),
@@ -35,11 +38,14 @@ const S = {
   running: false,
   acc: 0,
   V: { cx: 0, cy: 0, s: 1 },
+  F: { cx: 0, cy: 0, s: null }, // window of the field view (s = pixels per unit, null: fit |z| ≤ 2.2)
   hover: null,
   series: null,
   prog: null,
 };
-if (!["plane", "parts", "mod"].includes(S.view)) S.view = "plane";
+if (!["plane", "parts", "mod", "field"].includes(S.view)) S.view = "plane";
+if (!["sum", "term"].includes(S.fmode)) S.fmode = "sum";
+S.cols = Math.min(120, Math.max(16, Math.round(+S.cols) || 56));
 if (!["follow", "all"].includes(S.frame)) S.frame = "follow";
 function pick(o, keys) {
   const r = {};
@@ -103,6 +109,7 @@ function setExpr(src) {
     compiled = compile(src);
     S.expr = src;
     $("expr").setAttribute("aria-invalid", "false");
+    if (S.series) syncHint();
     return true;
   } catch (e) {
     if (!(e instanceof ExprError)) throw e;
@@ -111,13 +118,12 @@ function setExpr(src) {
     return false;
   }
 }
+const kMax = () => S.nMax - S.n0; // last cursor position: the cursor also runs past a series that stops early (field view)
 function recompute(keepK = false) {
-  const prevEnd = S.series ? S.k >= S.series.count - 1 : true;
   S.series = computeSeries(compiled.fn, S.n0, S.nMax, S.z);
   const s = S.series;
-  S.k = keepK && !prevEnd ? Math.min(S.k, s.count - 1) : s.count - 1;
-  if (s.count < 1) S.k = 0;
-  $("nSlider").max = Math.max(0, s.count - 1);
+  S.k = keepK ? Math.min(S.k, kMax()) : kMax();
+  $("nSlider").max = kMax();
   $("exprErr").textContent = s.stoppedAt != null ? t("err.stopped", { n: s.stoppedAt }) : "";
   syncUI();
 }
@@ -133,7 +139,7 @@ function applyPreset(p) {
   persist();
 }
 function persist() {
-  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, opts: S.opts });
+  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, fmode: S.fmode, cols: S.cols, opts: S.opts });
 }
 
 // ---------- fields ----------
@@ -249,10 +255,18 @@ $("legend").addEventListener("click", (e) => {
   b.classList.toggle("on", S.legend[b.dataset.k]);
   draw();
 });
+function syncHint() {
+  const noZ = S.view === "field" && compiled && !compiled.names.has("z");
+  $("hint").textContent = t(noZ ? "hint.fieldNoZ" : { plane: "hint.plane", field: "hint.field" }[S.view] || "hint.plot");
+}
+function syncFieldNote() {
+  $("fieldNote").textContent = t(S.fmode === "sum" ? "field.noteSum" : "field.noteTerm");
+  $("colsOut").textContent = `${S.cols} × ${Math.ceil((S.cols * (cv.getBoundingClientRect().height || 1)) / Math.max(1, cv.getBoundingClientRect().width))}`;
+}
 function setView(v) {
   S.view = v;
   syncSeg("viewSeg", "view", v);
-  $("hint").textContent = t(v === "plane" ? "hint.plane" : "hint.plot");
+  syncHint();
   buildLegend();
   persist();
   draw();
@@ -280,6 +294,27 @@ for (const b of document.querySelectorAll("[data-opt]")) {
     draw();
   });
 }
+$("fieldSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  S.fmode = b.dataset.fmode;
+  syncSeg("fieldSeg", "fmode", S.fmode);
+  syncFieldNote();
+  persist();
+  fieldShown = null;
+  draw();
+});
+$("cols").value = S.cols;
+$("cols").addEventListener("input", (e) => {
+  S.cols = +e.target.value;
+  syncFieldNote();
+  persist();
+  draw();
+});
+$("fieldReset").addEventListener("click", () => {
+  S.F = { cx: 0, cy: 0, s: null };
+  draw();
+});
 $("speedSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (!b) return;
@@ -292,7 +327,7 @@ $("speedSeg").addEventListener("click", (e) => {
 function setRunning(on) {
   S.running = on;
   if (on) {
-    if (S.k >= S.series.count - 1) S.k = 0;
+    if (S.k >= kMax()) S.k = 0;
     S.acc = 0;
     last = 0;
     requestAnimationFrame(loop);
@@ -300,15 +335,15 @@ function setRunning(on) {
   syncUI();
 }
 function step(n = 1) {
-  S.k = Math.min(S.series.count - 1, S.k + n);
-  if (S.k >= S.series.count - 1) S.running = false;
+  S.k = Math.min(kMax(), S.k + n);
+  if (S.k >= kMax()) S.running = false;
   syncUI();
   draw();
 }
 $("playBtn").addEventListener("click", () => setRunning(!S.running));
 $("stepBtn").addEventListener("click", () => {
   S.running = false;
-  if (S.k >= S.series.count - 1) S.k = 0;
+  if (S.k >= kMax()) S.k = 0;
   else S.k++;
   syncUI();
   draw();
@@ -349,7 +384,7 @@ addEventListener("keydown", (e) => {
 // ---------- readout, table, text ----------
 function current() {
   const s = S.series,
-    k = Math.min(S.k, s.count - 1);
+    k = Math.max(0, Math.min(S.k, s.count - 1));
   return { s, k, n: s.n0 + k };
 }
 function syncUI() {
@@ -357,11 +392,12 @@ function syncUI() {
   $("playBtn").querySelector(".lbl").textContent = t(S.running ? "pause" : "play");
   const ic = $("playBtn").querySelector("svg");
   if (ic) ic.outerHTML = icon(S.running ? "pause" : "play");
-  $("clock").textContent = `n = ${n}`;
-  $("nSlider").value = k;
-  $("nOut").textContent = String(k + 1);
+  $("clock").textContent = `n = ${S.n0 + S.k}`;
+  $("nSlider").value = S.k;
+  $("nOut").textContent = String(S.k + 1);
   const est = S.opts.limit ? limitEstimate(s, k) : null;
   const rows = [
+    ...(S.view === "field" ? [["ro.z", fmtC(S.z[0], S.z[1])]] : []),
     ["ro.n", String(n)],
     ["ro.a", fmtC(s.aRe[k], s.aIm[k]), 1],
     ["ro.s", fmtC(s.sRe[k], s.sIm[k])],
@@ -429,17 +465,41 @@ function paint() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, r.width, r.height);
   const { s, k, n } = current();
+  if (S.view === "field") return paintFieldView(ctx, r, P0(r));
   const m = { s, k, n, V: S.V, frame: S.frame, opts: S.opts, legend: S.legend, hover: S.view === "plane" ? S.hover : null, est: S.opts.limit ? limitEstimate(s, k) : null };
   (S.view === "plane" ? drawPlane : S.view === "parts" ? drawParts : drawMod)(ctx, r.width, r.height, C, m);
 }
+// field view: the grid advances in time-budgeted slices; the last complete image stays on screen meanwhile
+const field = new Field();
+let fieldShown = null;
+const P0 = (r) => plotRect(r.width, r.height);
+function paintFieldView(ctx, r, P) {
+  const pw = P.x1 - P.x0,
+    ph = P.y1 - P.y0;
+  if (!S.F.s) S.F.s = ph / 4.4;
+  const cellPx = pw / S.cols,
+    rows = Math.ceil(ph / cellPx);
+  const geo = { cols: S.cols, rows, cx: S.F.cx, cy: S.F.cy, dx: cellPx / S.F.s };
+  field.configure(compiled.fn, S.n0, geo, [S.expr, S.n0, S.cols, rows, geo.cx, geo.cy, geo.dx].join("|"));
+  const done = field.advance(Math.min(S.k, kMax()), 8);
+  if (!field.fromReset && field.kDone >= 0 && (!fieldShown || fieldShown.k !== field.kDone || fieldShown.sig !== field.sig)) {
+    fieldShown = { ...paintFieldImage(field, S.fmode, C), k: field.kDone, sig: field.sig };
+  }
+  drawField(ctx, r.width, r.height, C, { F: S.F, shown: fieldShown, z: S.z, hover: S.hover, field, fmtC });
+  if (!done) draw();
+}
 new ResizeObserver(draw).observe(cv);
-onTheme(() => { C = readColors(); draw(); });
-onLang(() => { buildPresets(); buildLegend(); fillFields(); $("hint").textContent = t(S.view === "plane" ? "hint.plane" : "hint.plot"); syncUI(); draw(); });
+onTheme(() => { C = readColors(); fieldShown = null; draw(); });
+onLang(() => { buildPresets(); buildLegend(); fillFields(); syncHint(); syncFieldNote(); syncUI(); draw(); });
 
 // ---------- pan, zoom, hover on the plane ----------
 const ptrs = new Map();
 let pinch = 0;
+const win = () => (S.view === "field" ? S.F : S.V);
+const interactive = () => S.view === "plane" || S.view === "field";
+let down = null; // { x, y, moved }: tells a click from a drag in the field view
 function toFree() {
+  if (S.view !== "plane") return;
   if (S.frame !== "free") {
     S.frame = "free";
     syncSeg("frameSeg", "frame", "free");
@@ -447,39 +507,46 @@ function toFree() {
 }
 function zoomAt(px, py, f) {
   const r = cv.getBoundingClientRect(),
-    P = plotRect(r.width, r.height);
+    P = plotRect(r.width, r.height),
+    V = win();
   const mx = (P.x0 + P.x1) / 2,
     my = (P.y0 + P.y1) / 2;
-  const re = S.V.cx + (px - mx) / S.V.s,
-    im = S.V.cy - (py - my) / S.V.s;
-  S.V.s = Math.min(1e12, Math.max(1e-12, S.V.s * f));
-  S.V.cx = re - (px - mx) / S.V.s;
-  S.V.cy = im + (py - my) / S.V.s;
+  const re = V.cx + (px - mx) / V.s,
+    im = V.cy - (py - my) / V.s;
+  V.s = Math.min(1e12, Math.max(1e-12, V.s * f));
+  V.cx = re - (px - mx) / V.s;
+  V.cy = im + (py - my) / V.s;
 }
 const local = (e) => {
   const r = cv.getBoundingClientRect();
   return [e.clientX - r.left, e.clientY - r.top];
 };
 cv.addEventListener("pointerdown", (e) => {
-  if (S.view !== "plane") return;
+  if (!interactive()) return;
   cv.setPointerCapture(e.pointerId);
   ptrs.set(e.pointerId, local(e));
+  down = ptrs.size === 1 ? { p: local(e), moved: false } : null;
   pinch = 0;
   S.hover = null;
 });
 cv.addEventListener("pointermove", (e) => {
-  if (S.view !== "plane") return;
+  if (!interactive()) return;
   const p = local(e);
   if (!ptrs.has(e.pointerId)) {
     if (e.pointerType === "mouse") (S.hover = { x: p[0], y: p[1] }), draw();
     return;
   }
+  if (down && !down.moved) {
+    if (Math.hypot(p[0] - down.p[0], p[1] - down.p[1]) <= 4) return;
+    down.moved = true;
+  }
   const prev = ptrs.get(e.pointerId);
   ptrs.set(e.pointerId, p);
   toFree();
+  const V = win();
   if (ptrs.size === 1) {
-    S.V.cx -= (p[0] - prev[0]) / S.V.s;
-    S.V.cy += (p[1] - prev[1]) / S.V.s;
+    V.cx -= (p[0] - prev[0]) / V.s;
+    V.cy += (p[1] - prev[1]) / V.s;
   } else if (ptrs.size === 2) {
     const [a, b] = [...ptrs.values()];
     const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -492,13 +559,31 @@ const endPtr = (e) => {
   ptrs.delete(e.pointerId);
   pinch = 0;
 };
-cv.addEventListener("pointerup", endPtr);
-cv.addEventListener("pointercancel", endPtr);
+// a click in the field view picks the sample point z; its path is then in the Plane view
+function pickZ(x, y) {
+  const r = cv.getBoundingClientRect(),
+    P = plotRect(r.width, r.height),
+    F = S.F;
+  S.z = [+(F.cx + (x - (P.x0 + P.x1) / 2) / F.s).toFixed(4), +(F.cy - (y - (P.y0 + P.y1) / 2) / F.s).toFixed(4)];
+  fillFields();
+  recompute(true);
+  persist();
+  draw();
+}
+cv.addEventListener("pointerup", (e) => {
+  if (S.view === "field" && down && !down.moved && ptrs.size === 1 && e.type === "pointerup") pickZ(...local(e));
+  down = null;
+  endPtr(e);
+});
+cv.addEventListener("pointercancel", (e) => {
+  down = null;
+  endPtr(e);
+});
 cv.addEventListener("pointerleave", (e) => {
   if (e.pointerType === "mouse" && S.hover) (S.hover = null), draw();
 });
 cv.addEventListener("wheel", (e) => {
-  if (S.view !== "plane") return;
+  if (!interactive()) return;
   e.preventDefault();
   toFree();
   const [x, y] = local(e);
@@ -507,6 +592,7 @@ cv.addEventListener("wheel", (e) => {
 }, { passive: false });
 cv.addEventListener("dblclick", () => {
   if (S.view === "plane") setFrame("follow");
+  else if (S.view === "field") setView("plane");
 });
 
 // ---------- start ----------
@@ -514,8 +600,10 @@ if (!setExpr(S.expr)) setExpr(DEFAULTS.expr);
 buildPresets();
 fillFields();
 recompute();
-if (fromHash.N !== undefined) S.k = Math.max(0, Math.min(S.series.count - 1, fromHash.N - S.series.n0));
+if (fromHash.N !== undefined) S.k = Math.max(0, Math.min(kMax(), fromHash.N - S.n0));
 syncSeg("speedSeg", "speed", S.speed);
 syncSeg("frameSeg", "frame", S.frame);
+syncSeg("fieldSeg", "fmode", S.fmode);
+syncFieldNote();
 setView(S.view);
 syncUI();

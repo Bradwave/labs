@@ -15,3 +15,4 @@ Follow `../DESIGN.md`: it is the design standard of all the labs (header, settin
 - Palette: cyan background with a burnt-orange accent, chosen to stay clear of the other labs' hues (`node tools/check-palettes.mjs`).
 - PNG icons were rendered with Playwright from `favicon.svg` (`tools/make-icons.mjs` needs macOS `sips`).
 - Ideas not done: more input syntax (`sum`, piecewise terms), complex-valued `n`, convergence tests (ratio, root) shown as text, share view/zoom in the link.
+- Field view: `js/field.js` keeps running sums per cell and adds one term to every cell per step, within a time budget per frame; the last complete image (`fieldShown`) stays on screen while a new grid (pan, zoom, resolution, expression) is recomputed, and is drawn through the current window, so panning never flashes. The cursor runs to `nMax − n0` even when the series at the selected z stops earlier.
