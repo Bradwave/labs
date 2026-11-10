@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Series Lab</title>
+<meta name="description" content="Partial sums of a complex series in the Argand plane: write the general term and watch the polygonal path converge (or not).">
+<meta name="theme-color" content="#2DB9BD">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#04222A">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Series Lab"><span class="a">s</span><span>e</span><span class="b">r</span><span>i</span><span class="k">e</span><span>s</span><b class="lab">lab</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="playBtn" data-ic="play"><span class="lbl" data-i18n="play">Avvia</span></button>
+      <button class="btn" type="button" id="stepBtn" data-ic="step"><span class="lbl" data-i18n="step">Passo</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+      <div class="seg small" role="group" id="speedSeg" data-i18n-aria="speed.aria" aria-label="Velocità: termini al secondo">
+        <button type="button" data-speed="1">1×</button><button type="button" data-speed="4" class="on">4×</button><button type="button" data-speed="16">16×</button><button type="button" data-speed="64">64×</button>
+      </div>
+      <span class="grow"></span>
+      <span class="num-t" id="clock">n = 0</span>
+    </div>
+    <div class="canvas-wrap card">
+      <canvas id="cv" data-i18n-aria="stage" aria-label="Piano complesso con le somme parziali"></canvas>
+      <div class="readout" id="readout"></div>
+      <div class="hint" id="hint" data-i18n="hint.plane">Trascina per spostare · rotella o pizzico per ingrandire · doppio clic per inquadrare</div>
+    </div>
+    <div class="toolbar card ctlbar">
+      <div class="seg small" role="group" id="viewSeg" data-i18n-aria="view.aria" aria-label="Grafico">
+        <button type="button" data-view="plane" class="on" data-i18n="view.plane">Piano</button><button type="button" data-view="parts" data-i18n="view.parts">Parti</button><button type="button" data-view="mod" data-i18n="view.mod">Moduli</button>
+      </div>
+      <div class="chips" id="legend"></div>
+      <div class="ctl grow nctl"><label for="nSlider"><span data-i18n="p.n">Termini sommati</span><b id="nOut"></b></label><input type="range" id="nSlider" min="0" max="100" step="1" value="0"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" type="button" aria-selected="true" aria-controls="pane-series" data-ic="pencil"><span class="t" data-i18n="tab.series">Serie</span></button>
+      <button class="tab" role="tab" type="button" aria-selected="false" aria-controls="pane-view" data-ic="sliders"><span class="t" data-i18n="tab.view">Vista</span></button>
+      <button class="tab" role="tab" type="button" aria-selected="false" aria-controls="pane-values" data-ic="table"><span class="t" data-i18n="tab.values">Valori</span></button>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane-series">
+      <h3 class="grp" data-i18n="g.series">La serie</h3>
+      <label class="sel"><select id="preset" data-i18n-aria="p.preset" aria-label="Esempio"></select></label>
+      <label class="field-l" for="expr"><span data-i18n="p.term">Termine generale</span></label>
+      <div class="expr-row"><span class="expr-lhs">a<sub>n</sub> =</span><input class="field expr" id="expr" type="text" spellcheck="false" autocomplete="off" autocapitalize="none" autocorrect="off"></div>
+      <p class="note err" id="exprErr" role="status"></p>
+      <div class="chips" id="insert" role="group" data-i18n-aria="p.insert" aria-label="Inserisci"></div>
+      <p class="note" data-i18n="syntax.note"></p>
+      <h3 class="grp" data-i18n="g.range">Indici e parametro</h3>
+      <div class="form">
+        <label class="num"><span>n₀</span><input type="text" id="n0" value="0" data-step="1" data-digits="0" data-min="-1000" data-max="1000"></label>
+        <label class="num"><span data-i18n="p.nmax">Ultimo indice calcolato</span><input type="text" id="nMax" value="300" data-step="50" data-digits="0" data-min="1" data-max="20000"></label>
+        <label class="num"><span>Re z</span><input type="text" id="zRe" value="0,8" data-step="0.1"></label>
+        <label class="num"><span>Im z</span><input type="text" id="zIm" value="0,5" data-step="0.1"></label>
+      </div>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane-view" hidden>
+      <h3 class="grp" data-i18n="g.frame">Inquadratura</h3>
+      <div class="seg" role="group" id="frameSeg">
+        <button type="button" data-frame="follow" class="on" data-i18n="frame.follow">Segui</button><button type="button" data-frame="all" data-i18n="frame.all">Intera</button><button type="button" data-frame="free" data-i18n="frame.free">Libera</button>
+      </div>
+      <h3 class="grp" data-i18n="g.show">Mostra</h3>
+      <button class="tg" type="button" data-opt="line" aria-pressed="true"><span class="txt"><span data-i18n="tg.line">Spezzata</span><small data-i18n="tg.lineHint">collega le somme successive</small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-opt="dots" aria-pressed="true"><span class="txt"><span data-i18n="tg.dots">Punti</span><small data-i18n="tg.dotsHint">una somma parziale per punto</small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-opt="term" aria-pressed="true"><span class="txt"><span data-i18n="tg.term">Ultimo termine</span><small data-i18n="tg.termHint">vettore a_n da S_{n−1} a S_n</small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-opt="limit" aria-pressed="true"><span class="txt"><span data-i18n="tg.limit">Limite stimato</span><small data-i18n="tg.limitHint">estrapolazione di Aitken, solo una stima</small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-opt="log" aria-pressed="true"><span class="txt"><span data-i18n="tg.log">Scala logaritmica</span><small data-i18n="tg.logHint">nel grafico dei moduli</small></span><span class="box"></span></button>
+    </div>
+    <div class="tabpane card" role="tabpanel" id="pane-values" hidden>
+      <p class="note" data-i18n="values.note">Ultimi termini sommati.</p>
+      <table class="ptable"><thead id="thead"></thead><tbody id="tbody"></tbody></table>
+    </div>
+  </section>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="a">s</span><span>e</span><span class="b">r</span><span>i</span><span class="k">e</span><span>s</span><b class="lab">lab</b></h1>
+  <p data-i18n="info.about">Somme parziali di una serie complessa nel piano di Gauss: scrivi il termine generale e guarda la spezzata convergere (o no).</p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <ul>
+    <li data-i18n="info.how1"></li>
+    <li data-i18n="info.how2"></li>
+    <li data-i18n="info.how3"></li>
+    <li data-i18n="info.how4"></li>
+  </ul>
+  <h3 data-i18n="info.keys">Tastiera</h3>
+  <p class="keys" data-i18n="info.keysText"></p>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

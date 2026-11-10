@@ -1,0 +1,120 @@
+/* Series Lab · app.css
+   Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
+:root {
+  --bg: #2DB9BD;
+  --bgline: rgba(0, 0, 0, 0.12);
+  --surface: #F2FCFC;
+  --ink: #04242A;
+  --muted: color-mix(in srgb, #04242A 65%, #F2FCFC);
+  --accent: #C2410C;
+  --onaccent: #04242A;
+  --tile2: #FFD23F;
+  --gridline: color-mix(in srgb, #04242A 16%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #04222A;
+    --bgline: rgba(255, 255, 255, 0.07);
+    --surface: #0B343D;
+    --ink: #E4FAFB;
+    --muted: color-mix(in srgb, #E4FAFB 65%, #0B343D);
+    --accent: #FF8A5C;
+    --onaccent: #04222A;
+    --tile2: #E9B92A;
+    --gridline: color-mix(in srgb, #E4FAFB 14%, transparent);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #04222A;
+  --bgline: rgba(255, 255, 255, 0.07);
+  --surface: #0B343D;
+  --ink: #E4FAFB;
+  --muted: color-mix(in srgb, #E4FAFB 65%, #0B343D);
+  --accent: #FF8A5C;
+  --onaccent: #04222A;
+  --tile2: #E9B92A;
+  --gridline: color-mix(in srgb, #E4FAFB 14%, transparent);
+}
+
+/* ---------- app-specific styles below ---------- */
+
+.ctlbar {
+  gap: 10px 14px;
+}
+.nctl {
+  min-width: 110px;
+  margin: 0;
+}
+.expr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 2px;
+}
+.expr-lhs {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.expr {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 15px;
+}
+.field-l {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+.err {
+  color: var(--err);
+  min-height: 1.4em;
+}
+.err:empty {
+  min-height: 0;
+  margin: 0;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.form .num {
+  justify-content: space-between;
+  width: 100%;
+}
+#insert {
+  margin: 8px 0;
+}
+#insert .lg {
+  opacity: 1;
+  font-family: inherit;
+}
+.readout i {
+  font-style: italic;
+}
+.readout {
+  max-width: calc(100% - 20px);
+}
+.keys {
+  font-size: 12.5px;
+}
+.readout.compact .opt {
+  display: none;
+}
+.nctl {
+  flex: 1 1 120px;
+}
+@media (max-width: 540px), (max-height: 600px) and (orientation: landscape) {
+  .toolbar .num-t {
+    display: none;
+  }
+  .ctlbar {
+    gap: 8px 10px;
+  }
+  .readout {
+    font-size: 10.5px;
+  }
+}
