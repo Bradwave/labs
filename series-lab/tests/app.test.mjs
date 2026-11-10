@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import STRINGS from "../js/strings.js";
-import { Field } from "../js/field.js";
+import { Field, maxSide } from "../js/field.js";
 import { compile, ExprError } from "../js/expr.js";
 import { computeSeries, aitken, limitEstimate, PRESETS, encodeState, decodeState, toCSV } from "../js/series.js";
 
@@ -116,43 +116,61 @@ test("limit estimate: shown for convergent series, hidden for divergent ones", (
   assert.equal(est("z^n", 0, [1.1, 0.2], 60), null);
 });
 
-test("field: S_N(z) on a grid matches the closed form inside the disc, cells blow up outside", () => {
+test("URL state keeps the grid window", () => {
+  const st = { expr: "z^n", n0: 0, z: [0.5, 0], nMax: 50, N: 5, fc: [1, -1], fr: 2.5 };
+  assert.deepEqual(decodeState("#" + encodeState(st)), st);
+  assert.deepEqual(decodeState("#F=1,2,-3"), {});
+});
+test("field: every path is the series at its own z, and matches computeSeries", () => {
   const f = new Field();
-  const geo = { cols: 5, rows: 3, cx: 0, cy: 0, dx: 0.2 };
-  f.configure(compile("z^n").fn, 0, geo, "a");
+  const grid = { side: 5, cx: 0, cy: 0, r: 0.4, len: 61 };
+  const fn = compile("z^n").fn;
+  f.configure(fn, 0, grid, "a");
+  assert.equal(f.count, 25);
   assert.ok(f.advance(60, 1e9));
   assert.equal(f.kDone, 60);
-  for (let j = 0; j < 3; j++)
-    for (let i = 0; i < 5; i++) {
-      const [re, im] = f.zOf(i, j),
-        c = j * 5 + i,
-        d = (1 - re) ** 2 + im ** 2;
-      assert.ok(Math.abs(f.sRe[c] - (1 - re) / d) < 1e-9 && Math.abs(f.sIm[c] - im / d) < 1e-9);
+  for (const c of [0, 7, 12, 24]) {
+    const ref = computeSeries(fn, 0, 60, [f.zRe[c], f.zIm[c]]);
+    for (const k of [0, 10, 60]) {
+      const p = f.at(c, k);
+      assert.ok(Math.abs(p[0] - ref.sRe[k]) < 1e-12 && Math.abs(p[1] - ref.sIm[k]) < 1e-12);
     }
-  assert.deepEqual(f.cellAt(...f.zOf(3, 1)), [3, 1]);
-  assert.equal(f.cellAt(10, 10), null);
-  // |z| > 1: finite but huge, then NaN once it overflows; the cell stays NaN
-  const g = new Field();
-  g.configure(compile("z^n").fn, 0, { cols: 1, rows: 1, cx: 3, cy: 0, dx: 1 }, "b");
-  g.advance(700, 1e9);
-  assert.ok(Number.isNaN(g.sRe[0]));
+  }
+  // grid covers the square [cx−r, cx+r] × [cy−r, cy+r], row 0 on top
+  assert.deepEqual([f.zRe[0], f.zIm[0]], [-0.4, 0.4]);
+  assert.deepEqual([f.zRe[24], f.zIm[24]], [0.4, -0.4]);
+  assert.equal(f.nearest(0.41, -0.39), 24);
+  assert.equal(f.nearest(5, 5), -1);
 });
-test("field: the time budget slices the work, going back restarts, same signature keeps the data", () => {
+test("field: paths that blow up stop, the others go on; shrinking terms are told from growing ones", () => {
   const f = new Field();
-  const geo = { cols: 4, rows: 4, cx: 0, cy: 0, dx: 0.1 };
-  assert.equal(f.configure(compile("z^n").fn, 0, geo, "s"), true);
+  f.configure(compile("z^n").fn, 0, { side: 3, cx: 3, cy: 0, r: 2.5, len: 800 }, "b"); // Re z = 0.5, 3, 5.5
+  f.advance(799, 1e9);
+  const mid = 1; // z = 3 + 2.5i is on the first row; use the row of Im z = 0: cells 3, 4, 5
+  assert.equal(f.shrinking(3, 700), true); // z = 0.5
+  assert.equal(f.shrinking(4, 100), false); // z = 3: terms grow
+  assert.equal(f.shrinking(4, 700), false); // stopped (overflow)
+  assert.ok(f.valid[4] < 800 && f.valid[3] === 800);
+  assert.equal(f.shrinking(3, 2), null);
+  assert.ok(mid);
+});
+test("field: the time budget slices the work and the history is kept when the cursor goes back", () => {
+  const f = new Field();
+  f.configure(compile("z^n").fn, 0, { side: 4, cx: 0, cy: 0, r: 0.5, len: 100 }, "s");
   let t = 0;
-  const clock = () => (t += 1); // every call costs 1 ms
+  const clock = () => (t += 1);
   assert.equal(f.advance(50, 3, clock), false);
   assert.ok(f.kDone >= 0 && f.kDone < 50);
-  assert.equal(f.fromReset, true);
   while (!f.advance(50, 3, clock));
-  assert.equal(f.fromReset, false);
-  assert.equal(f.configure(compile("z^n").fn, 0, geo, "s"), false);
-  const before = f.sRe[0];
-  assert.equal(f.advance(10, 3, clock), false); // going back restarts from the first term
-  assert.ok(f.kDone < 10);
-  assert.equal(f.fromReset, true);
-  f.advance(50, 1e9);
-  assert.ok(Math.abs(f.sRe[0] - before) < 1e-12);
+  const before = f.at(5, 30);
+  f.advance(10); // going back asks for nothing new
+  assert.equal(f.kDone, 50);
+  assert.deepEqual(f.at(5, 30), before);
+  assert.equal(f.configure(compile("z^n").fn, 0, f.grid, "s"), false);
+  assert.equal(f.advance(1000, 1e9), true); // clamped to the last term
+  assert.equal(f.kDone, 99);
+});
+test("field: the grid is capped so memory stays bounded", () => {
+  assert.equal(maxSide(300), 21);
+  assert.ok(maxSide(20001) <= 9 && maxSide(20001) >= 3);
 });

@@ -1,12 +1,12 @@
 // Series Lab · main.js
 // Entry point: kit setup, state, controls, animation loop, canvas interaction.
-import { initKit, t, icon, readColors, onTheme, onLang, getLang, fmtNum, fmtSci, parseNum, store, toast } from "../../kit/kit.js";
+import { initKit, t, icon, isDark, readColors, onTheme, onLang, getLang, fmtNum, fmtSci, parseNum, store, toast } from "../../kit/kit.js";
 import { toHTML, plain } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { compile, ExprError } from "./expr.js";
 import { computeSeries, limitEstimate, PRESETS, LIMITS, encodeState, decodeState, toCSV } from "./series.js";
-import { drawPlane, drawParts, drawMod, drawField, paintFieldImage, plotRect, MARGIN } from "./render.js";
-import { Field } from "./field.js";
+import { drawPlane, drawParts, drawMod, drawField, fieldHit, insetHit, plotRect, MARGIN } from "./render.js";
+import { Field, maxSide } from "./field.js";
 
 const VERSION = "0.1.0";
 const RATE = 5; // terms per second at 1×
@@ -19,8 +19,10 @@ const DEFAULTS = {
   z: [...PRESETS[0].z],
   nMax: PRESETS[0].nMax,
   view: "plane",
-  fmode: "sum",
-  cols: 56,
+  fmode: "z",
+  side: 9,
+  fc: [...PRESETS[0].fc],
+  fr: PRESETS[0].fr,
   frame: "follow",
   speed: 4,
   opts: { line: true, dots: true, term: true, limit: true, log: true },
@@ -30,22 +32,23 @@ const saved = store.getJSON("state", {}) || {};
 const fromHash = decodeState(location.hash);
 const S = {
   ...structuredClone(DEFAULTS),
-  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed", "fmode", "cols"]),
+  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed", "fmode", "side", "fc", "fr"]),
   opts: { ...DEFAULTS.opts, ...(saved.opts || {}) },
   legend: { ...DEFAULTS.legend },
-  ...pick(fromHash, ["expr", "n0", "z", "nMax"]),
+  ...pick(fromHash, ["expr", "n0", "z", "nMax", "fc", "fr"]),
   k: 0,
   running: false,
   acc: 0,
   V: { cx: 0, cy: 0, s: 1 },
-  F: { cx: 0, cy: 0, s: null }, // window of the field view (s = pixels per unit, null: fit |z| ≤ 2.2)
   hover: null,
   series: null,
   prog: null,
 };
 if (!["plane", "parts", "mod", "field"].includes(S.view)) S.view = "plane";
-if (!["sum", "term"].includes(S.fmode)) S.fmode = "sum";
-S.cols = Math.min(120, Math.max(16, Math.round(+S.cols) || 56));
+if (!["z", "conv"].includes(S.fmode)) S.fmode = "z";
+S.side = Math.min(21, Math.max(3, Math.round(+S.side) || 9));
+if (!(Array.isArray(S.fc) && S.fc.length === 2 && S.fc.every(Number.isFinite))) S.fc = [0, 0];
+if (!(S.fr > 0 && S.fr <= 1e6)) S.fr = 1.5;
 if (!["follow", "all"].includes(S.frame)) S.frame = "follow";
 function pick(o, keys) {
   const r = {};
@@ -132,6 +135,8 @@ function applyPreset(p) {
   S.n0 = p.n0;
   S.z = [...p.z];
   S.nMax = p.nMax;
+  S.fc = [...p.fc];
+  S.fr = p.fr;
   setExpr(p.expr);
   fillFields();
   recompute();
@@ -139,7 +144,7 @@ function applyPreset(p) {
   persist();
 }
 function persist() {
-  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, fmode: S.fmode, cols: S.cols, opts: S.opts });
+  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, fmode: S.fmode, side: S.side, fc: S.fc, fr: S.fr, opts: S.opts });
 }
 
 // ---------- fields ----------
@@ -149,7 +154,10 @@ function fillFields() {
   $("nMax").value = fmtPlain(S.nMax);
   $("zRe").value = fmtPlain(S.z[0]);
   $("zIm").value = fmtPlain(S.z[1]);
-  for (const id of ["n0", "nMax", "zRe", "zIm"]) $(id).setAttribute("aria-invalid", "false");
+  $("fcRe").value = fmtPlain(S.fc[0]);
+  $("fcIm").value = fmtPlain(S.fc[1]);
+  $("fr").value = fmtPlain(S.fr);
+  for (const id of ["n0", "nMax", "zRe", "zIm", "fcRe", "fcIm", "fr"]) $(id).setAttribute("aria-invalid", "false");
   syncPreset();
 }
 function buildPresets() {
@@ -213,6 +221,23 @@ function onZ() {
   persist();
   draw();
 }
+function onGrid() {
+  const re = parseNum($("fcRe").value),
+    im = parseNum($("fcIm").value),
+    r = parseNum($("fr").value);
+  if ([re, im, r].some(Number.isNaN)) return;
+  if (!(r > 0 && r <= 1e6)) {
+    toast(t("err.badRadius"));
+    $("fr").setAttribute("aria-invalid", "true");
+    return;
+  }
+  $("fr").setAttribute("aria-invalid", "false");
+  S.fc = [re, im];
+  S.fr = r;
+  persist();
+  draw();
+}
+for (const id of ["fcRe", "fcIm", "fr"]) $(id).addEventListener("change", onGrid);
 $("zRe").addEventListener("change", onZ);
 $("zIm").addEventListener("change", onZ);
 
@@ -260,8 +285,9 @@ function syncHint() {
   $("hint").textContent = t(noZ ? "hint.fieldNoZ" : { plane: "hint.plane", field: "hint.field" }[S.view] || "hint.plot");
 }
 function syncFieldNote() {
-  $("fieldNote").textContent = t(S.fmode === "sum" ? "field.noteSum" : "field.noteTerm");
-  $("colsOut").textContent = `${S.cols} × ${Math.ceil((S.cols * (cv.getBoundingClientRect().height || 1)) / Math.max(1, cv.getBoundingClientRect().width))}`;
+  $("fieldNote").textContent = t(S.fmode === "z" ? "field.noteZ" : "field.noteConv");
+  const side = Math.min(S.side, maxSide(kMax() + 1));
+  $("sideOut").textContent = `${side} × ${side} = ${side * side}`;
 }
 function setView(v) {
   S.view = v;
@@ -301,18 +327,13 @@ $("fieldSeg").addEventListener("click", (e) => {
   syncSeg("fieldSeg", "fmode", S.fmode);
   syncFieldNote();
   persist();
-  fieldShown = null;
   draw();
 });
-$("cols").value = S.cols;
-$("cols").addEventListener("input", (e) => {
-  S.cols = +e.target.value;
+$("side").value = S.side;
+$("side").addEventListener("input", (e) => {
+  S.side = +e.target.value;
   syncFieldNote();
   persist();
-  draw();
-});
-$("fieldReset").addEventListener("click", () => {
-  S.F = { cx: 0, cy: 0, s: null };
   draw();
 });
 $("speedSeg").addEventListener("click", (e) => {
@@ -420,7 +441,7 @@ function refreshTable() {
 
 // ---------- share and export ----------
 function share() {
-  const hash = encodeState({ expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, N: S.series.n0 + S.k });
+  const hash = encodeState({ expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, N: S.series.n0 + S.k, fc: S.fc, fr: S.fr });
   const url = `${location.origin}${location.pathname}#${hash}`;
   navigator.clipboard?.writeText(url).then(() => toast(t("copied")), () => {});
 }
@@ -465,41 +486,32 @@ function paint() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, r.width, r.height);
   const { s, k, n } = current();
-  if (S.view === "field") return paintFieldView(ctx, r, P0(r));
+  if (S.view === "field") return paintFieldView(ctx, r);
   const m = { s, k, n, V: S.V, frame: S.frame, opts: S.opts, legend: S.legend, hover: S.view === "plane" ? S.hover : null, est: S.opts.limit ? limitEstimate(s, k) : null };
   (S.view === "plane" ? drawPlane : S.view === "parts" ? drawParts : drawMod)(ctx, r.width, r.height, C, m);
 }
-// field view: the grid advances in time-budgeted slices; the last complete image stays on screen meanwhile
+// field view: the paths advance in time-budgeted slices, the cursor shows what has been computed so far
 const field = new Field();
-let fieldShown = null;
-const P0 = (r) => plotRect(r.width, r.height);
-function paintFieldView(ctx, r, P) {
-  const pw = P.x1 - P.x0,
-    ph = P.y1 - P.y0;
-  if (!S.F.s) S.F.s = ph / 4.4;
-  const cellPx = pw / S.cols,
-    rows = Math.ceil(ph / cellPx);
-  const geo = { cols: S.cols, rows, cx: S.F.cx, cy: S.F.cy, dx: cellPx / S.F.s };
-  field.configure(compiled.fn, S.n0, geo, [S.expr, S.n0, S.cols, rows, geo.cx, geo.cy, geo.dx].join("|"));
-  const done = field.advance(Math.min(S.k, kMax()), 8);
-  if (!field.fromReset && field.kDone >= 0 && (!fieldShown || fieldShown.k !== field.kDone || fieldShown.sig !== field.sig)) {
-    fieldShown = { ...paintFieldImage(field, S.fmode, C), k: field.kDone, sig: field.sig };
-  }
-  drawField(ctx, r.width, r.height, C, { F: S.F, shown: fieldShown, z: S.z, hover: S.hover, field, fmtC });
+function paintFieldView(ctx, r) {
+  const side = Math.min(S.side, maxSide(kMax() + 1));
+  const grid = { side, cx: S.fc[0], cy: S.fc[1], r: S.fr, len: kMax() + 1 };
+  field.configure(compiled.fn, S.n0, grid, [S.expr, S.n0, S.nMax, side, S.fc[0], S.fc[1], S.fr].join("|"));
+  const done = field.advance(S.frame === "all" ? kMax() : Math.min(S.k, kMax()), 8);
+  drawField(ctx, r.width, r.height, C, fieldState());
   if (!done) draw();
 }
+const fieldState = () => ({ field, k: Math.min(S.k, kMax()), V: S.V, frame: S.frame, opts: S.opts, mode: S.fmode, z: S.z, hover: S.hover, fmtC, dark: isDark() });
 new ResizeObserver(draw).observe(cv);
-onTheme(() => { C = readColors(); fieldShown = null; draw(); });
+onTheme(() => { C = readColors(); draw(); });
 onLang(() => { buildPresets(); buildLegend(); fillFields(); syncHint(); syncFieldNote(); syncUI(); draw(); });
 
 // ---------- pan, zoom, hover on the plane ----------
 const ptrs = new Map();
 let pinch = 0;
-const win = () => (S.view === "field" ? S.F : S.V);
+const win = () => S.V;
 const interactive = () => S.view === "plane" || S.view === "field";
 let down = null; // { x, y, moved }: tells a click from a drag in the field view
 function toFree() {
-  if (S.view !== "plane") return;
   if (S.frame !== "free") {
     S.frame = "free";
     syncSeg("frameSeg", "frame", "free");
@@ -559,19 +571,22 @@ const endPtr = (e) => {
   ptrs.delete(e.pointerId);
   pinch = 0;
 };
-// a click in the field view picks the sample point z; its path is then in the Plane view
-function pickZ(x, y) {
-  const r = cv.getBoundingClientRect(),
-    P = plotRect(r.width, r.height),
-    F = S.F;
-  S.z = [+(F.cx + (x - (P.x0 + P.x1) / 2) / F.s).toFixed(4), +(F.cy - (y - (P.y0 + P.y1) / 2) / F.s).toFixed(4)];
+// a click in the field view picks the sample point z (a path end, or a cell of the little map); its path is then
+// highlighted and the Plane view opens it with a double-click
+function pickPath(x, y) {
+  const r = cv.getBoundingClientRect();
+  const fs = fieldState();
+  let c = insetHit(fs, r.width, r.height, x, y);
+  if (c === -2) c = fieldHit(fs, r.width, r.height, x, y);
+  if (c < 0) return;
+  S.z = [field.zRe[c], field.zIm[c]];
   fillFields();
   recompute(true);
   persist();
   draw();
 }
 cv.addEventListener("pointerup", (e) => {
-  if (S.view === "field" && down && !down.moved && ptrs.size === 1 && e.type === "pointerup") pickZ(...local(e));
+  if (S.view === "field" && down && !down.moved && ptrs.size === 1 && e.type === "pointerup") pickPath(...local(e));
   down = null;
   endPtr(e);
 });

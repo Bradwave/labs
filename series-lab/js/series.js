@@ -68,14 +68,14 @@ export function limitEstimate(s, k) {
 }
 
 export const PRESETS = [
-  { id: "geo", expr: "z^n", n0: 0, z: [0.8, 0.5], nMax: 120 },
-  { id: "harm", expr: "1/n", n0: 1, z: [1, 0], nMax: 300 },
-  { id: "alt", expr: "(-1)^n/n", n0: 1, z: [1, 0], nMax: 300 },
-  { id: "ipow", expr: "i^n/n", n0: 1, z: [1, 0], nMax: 300 },
-  { id: "phase", expr: "exp(i*n)/n", n0: 1, z: [1, 0], nMax: 400 },
-  { id: "exp", expr: "z^n/n!", n0: 0, z: [2, 2], nMax: 40 },
-  { id: "dir", expr: "1/n^z", n0: 1, z: [1.5, 3], nMax: 400 },
-  { id: "chirp", expr: "exp(i*n^2/12)/n", n0: 1, z: [1, 0], nMax: 800 },
+  { id: "geo", expr: "z^n", n0: 0, z: [0.8, 0.5], nMax: 120, fc: [0, 0], fr: 1.5 },
+  { id: "harm", expr: "1/n", n0: 1, z: [1, 0], nMax: 300, fc: [0, 0], fr: 1.5 },
+  { id: "alt", expr: "(-1)^n/n", n0: 1, z: [1, 0], nMax: 300, fc: [0, 0], fr: 1.5 },
+  { id: "ipow", expr: "i^n/n", n0: 1, z: [1, 0], nMax: 300, fc: [0, 0], fr: 1.5 },
+  { id: "phase", expr: "exp(i*n)/n", n0: 1, z: [1, 0], nMax: 400, fc: [0, 0], fr: 1.5 },
+  { id: "exp", expr: "z^n/n!", n0: 0, z: [2, 2], nMax: 40, fc: [0, 0], fr: 4 },
+  { id: "dir", expr: "1/n^z", n0: 1, z: [1.5, 3], nMax: 400, fc: [1.5, 0], fr: 1.4 },
+  { id: "chirp", expr: "exp(i*n^2/12)/n", n0: 1, z: [1, 0], nMax: 800, fc: [0, 0], fr: 1.5 },
 ];
 
 // ---------- URL hash ----------
@@ -86,6 +86,7 @@ export function encodeState(s) {
   q.set("z", `${s.z[0]},${s.z[1]}`);
   q.set("M", String(s.nMax));
   q.set("N", String(s.N));
+  if (s.fc && s.fr) q.set("F", `${s.fc[0]},${s.fc[1]},${s.fr}`);
   return q.toString();
 }
 // Defensive: returns only the valid fields.
@@ -114,6 +115,8 @@ export function decodeState(hash) {
   if (nMax !== undefined) out.nMax = nMax;
   if (N !== undefined) out.N = N;
   const z = (q.get("z") || "").split(",").map(Number);
+  const F = (q.get("F") || "").split(",").map(Number);
+  if (F.length === 3 && F.every(Number.isFinite) && F[2] > 0 && F.every((v) => Math.abs(v) <= 1e6)) (out.fc = [F[0], F[1]]), (out.fr = F[2]);
   if (z.length === 2 && z.every((v) => Number.isFinite(v) && Math.abs(v) <= 1e6)) out.z = z;
   return out;
 }

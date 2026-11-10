@@ -77,11 +77,15 @@
       </div>
       <h3 class="grp" data-i18n="g.field">Griglia di punti z</h3>
       <div class="seg" role="group" id="fieldSeg">
-        <button type="button" data-fmode="sum" class="on" data-i18n="field.sum">Somma</button><button type="button" data-fmode="term" data-i18n="field.term">Termine</button>
+        <button type="button" data-fmode="z" class="on" data-i18n="field.byz">Per z</button><button type="button" data-fmode="conv" data-i18n="field.conv">Convergenza</button>
       </div>
       <p class="note" id="fieldNote"></p>
-      <div class="ctl"><label for="cols"><span data-i18n="field.res">Risoluzione</span><b id="colsOut"></b></label><input type="range" id="cols" min="16" max="120" step="4" value="56"></div>
-      <button class="btn" type="button" id="fieldReset" data-ic="axes"><span class="lbl" data-i18n="field.reset">Reimposta finestra</span></button>
+      <div class="ctl"><label for="side"><span data-i18n="field.side">Punti per lato</span><b id="sideOut"></b></label><input type="range" id="side" min="3" max="21" step="1" value="9"></div>
+      <div class="form">
+        <label class="num"><span data-i18n="field.cx">Centro Re z</span><input type="text" id="fcRe" value="0" data-step="0.5"></label>
+        <label class="num"><span data-i18n="field.cy">Centro Im z</span><input type="text" id="fcIm" value="0" data-step="0.5"></label>
+        <label class="num"><span data-i18n="field.r">Raggio</span><input type="text" id="fr" value="1,5" data-step="0.5" data-min="0.1"></label>
+      </div>
       <h3 class="grp" data-i18n="g.show">Mostra</h3>
       <button class="tg" type="button" data-opt="line" aria-pressed="true"><span class="txt"><span data-i18n="tg.line">Spezzata</span><small data-i18n="tg.lineHint">collega le somme successive</small></span><span class="box"></span></button>
       <button class="tg" type="button" data-opt="dots" aria-pressed="true"><span class="txt"><span data-i18n="tg.dots">Punti</span><small data-i18n="tg.dotsHint">una somma parziale per punto</small></span><span class="box"></span></button>

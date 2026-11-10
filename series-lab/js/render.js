@@ -352,110 +352,210 @@ export function drawMod(ctx, W, H, C, m) {
   plotVsN(ctx, W, H, C, m, lines, opts.log, []);
 }
 
-// ---------- field: S_N(z) on a grid of sample points ----------
-function rgbOf(hex, fallback = [128, 128, 128]) {
-  const m = /^#([0-9a-f]{6})$/i.exec(String(hex).trim());
-  if (!m) return fallback;
-  const n = parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+// ---------- field: one partial-sum path for every point z of a grid ----------
+// m: { field, k (cursor), V (view of the sums), frame, opts, mode ("z" | "conv"), z (selected), hover, fmtC, dark }
+const INSET = 96;
+export function insetRect(W, H) {
+  const P = plotRect(W, H),
+    size = Math.min(INSET, (P.x1 - P.x0) * 0.32, (P.y1 - P.y0) * 0.4);
+  return { x: P.x0 + 8, y: P.y0 + 24, size }; // under the "Im" label
 }
-function hslToRgb(h, s, l) {
-  const f = (n) => {
-    const k = (n + h * 12) % 12,
-      a = s * Math.min(l, 1 - l);
-    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-  };
-  return [f(0) * 255, f(8) * 255, f(4) * 255];
-}
-// mode "sum": domain colouring of S_N(z) (hue = argument, lightness = modulus);
-// mode "term": |a_N(z)| on a log scale, from the surface colour (tiny term) to the force colour (large term).
-export function paintFieldImage(field, mode, C) {
-  const { cols, rows } = field.geo;
-  const cvs = document.createElement("canvas");
-  cvs.width = cols;
-  cvs.height = rows;
-  const ctx = cvs.getContext("2d");
-  const img = ctx.createImageData(cols, rows);
-  const surf = rgbOf(C.surface),
-    force = rgbOf(C.force),
-    dead = rgbOf(C.ink);
-  for (let c = 0; c < cols * rows; c++) {
-    let rgb;
-    if (Number.isNaN(field.sRe[c])) {
-      rgb = [(dead[0] + surf[0]) / 2, (dead[1] + surf[1]) / 2, (dead[2] + surf[2]) / 2]; // not finite
-    } else if (mode === "term") {
-      const a = Math.hypot(field.aRe[c], field.aIm[c]);
-      const v = a > 0 ? Math.min(1, Math.max(0, (Math.log10(a) + 10) / 10)) : 0;
-      rgb = [0, 1, 2].map((q) => surf[q] + (force[q] - surf[q]) * v);
-    } else {
-      const m = Math.hypot(field.sRe[c], field.sIm[c]);
-      const hue = (Math.atan2(field.sIm[c], field.sRe[c]) / (2 * Math.PI) + 1) % 1;
-      rgb = hslToRgb(hue, 0.72, 0.2 + 0.62 * (m / (m + 1)));
-    }
-    img.data[4 * c] = rgb[0];
-    img.data[4 * c + 1] = rgb[1];
-    img.data[4 * c + 2] = rgb[2];
-    img.data[4 * c + 3] = 255;
+const kShown = (m) => Math.max(0, Math.min(m.k, m.field.kDone));
+
+// Colour of path c: hue = direction of z from the centre of the grid, or green/red = terms shrinking or not.
+function pathColor(m, C, c) {
+  const f = m.field;
+  if (m.mode === "conv") {
+    const s = f.shrinking(c, kShown(m));
+    return s === null ? C.muted : s ? C.vel : C.force;
   }
-  ctx.putImageData(img, 0, 0);
-  return { canvas: cvs, geo: field.geo };
+  const dx = f.zRe[c] - f.grid.cx,
+    dy = f.zIm[c] - f.grid.cy;
+  if (Math.hypot(dx, dy) < 1e-12 * (1 + f.grid.r)) return C.ink;
+  const hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
+  return `hsl(${hue.toFixed(0)} 80% ${m.dark ? 66 : 42}%)`;
 }
 
-// m: { F (window {cx, cy, s}), shown ({canvas, geo} | null), z (selected point), hover, field, fmtC, n }
-export function drawField(ctx, W, H, C, m) {
-  const P = plotRect(W, H),
-    V = m.F;
-  const base = planeBase(ctx, P, C, V, (c, { X, Y }) => {
-    const sh = m.shown;
-    if (!sh) return;
-    const g = sh.geo,
-      w = g.cols * g.dx * V.s,
-      h = g.rows * g.dx * V.s;
-    c.imageSmoothingEnabled = false;
-    c.drawImage(sh.canvas, X(g.cx) - w / 2, Y(g.cy) - h / 2, w, h);
-  });
-  const { X, Y } = base;
-  // selected z
-  const zx = X(m.z[0]),
-    zy = Y(m.z[1]);
-  ctx.strokeStyle = C.surface;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
-  ctx.strokeStyle = C.ink;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
-  text(ctx, "z", zx + 10, zy - 8, C, { color: C.ink, weight: 700, size: 12 });
-  // hovered cell: its z and S_N(z)
-  if (m.hover && m.field && m.field.geo) {
-    const f = m.field,
-      re = V.cx + (m.hover.x - (P.x0 + P.x1) / 2) / V.s,
-      im = V.cy - (m.hover.y - (P.y0 + P.y1) / 2) / V.s;
-    const g = m.shown && m.shown.geo,
-      cell = g && cellOf(g, re, im);
-    if (cell) {
-      const i = cell[1] * g.cols + cell[0];
-      const z = [g.cx + (cell[0] - (g.cols - 1) / 2) * g.dx, g.cy - (cell[1] - (g.rows - 1) / 2) * g.dx];
-      const ok = f.sig && f.geo === g && !Number.isNaN(f.sRe[i]);
-      const lines = [`z = ${m.fmtC(z[0], z[1], 3)}`, ok ? `S_{${f.n0 + f.kDone}} = ${m.fmtC(f.sRe[i], f.sIm[i], 3)}` : "S = —"];
-      ctx.font = "11.5px " + '"Space Mono", ui-monospace, monospace';
-      const w = Math.max(...lines.map((l) => ctx.measureText(l.replace(/[_{}]/g, "")).width)) + 14;
-      let bx = m.hover.x + 14,
-        by = m.hover.y + 14;
-      if (bx + w > P.x1) bx = m.hover.x - w - 10;
-      if (by + 40 > P.y1) by = m.hover.y - 46;
-      ctx.fillStyle = C.surface;
-      ctx.strokeStyle = C.ink;
-      ctx.lineWidth = 1.5;
-      ctx.fillRect(bx, by, w, 40);
-      ctx.strokeRect(bx, by, w, 40);
-      drawMath(ctx, lines[0], bx + 7, by + 16, { size: 11.5, color: C.ink });
-      drawMath(ctx, lines[1], bx + 7, by + 32, { size: 11.5, color: C.ink });
+// Fit: the view is decided by the paths whose terms are shrinking (when there are any), so diverging paths fly out
+// of the frame instead of squashing the others into a dot; with none, by the closer half of the paths.
+export function fitFieldView(m, P) {
+  const f = m.field,
+    kEnd = m.frame === "all" ? f.kDone : kShown(m);
+  const radius = [],
+    shrink = [];
+  for (let c = 0; c < f.count; c++) {
+    let mx = 0;
+    const last = Math.min(kEnd, f.valid[c] - 1),
+      o = c * f.grid.len;
+    for (let q = 0; q <= last; q++) mx = Math.max(mx, Math.abs(f.sRe[o + q]), Math.abs(f.sIm[o + q]));
+    radius.push(mx);
+    shrink.push(f.shrinking(c, kEnd) === true);
+  }
+  let use = shrink;
+  if (!shrink.some(Boolean)) {
+    const cut = [...radius].sort((a, b) => a - b)[Math.floor(0.5 * (radius.length - 1))];
+    use = radius.map((x) => x <= cut);
+  }
+  let a = 0,
+    b = 0,
+    c0 = 0,
+    d = 0;
+  for (let c = 0; c < f.count; c++) {
+    if (!use[c]) continue;
+    const last = Math.min(kEnd, f.valid[c] - 1),
+      o = c * f.grid.len;
+    for (let q = 0; q <= last; q++) {
+      const x = f.sRe[o + q],
+        y = f.sIm[o + q];
+      if (x < a) a = x;
+      if (x > b) b = x;
+      if (y < c0) c0 = y;
+      if (y > d) d = y;
     }
   }
-  planeEnd(ctx, P, C, base);
+  const pad = 30,
+    pw = P.x1 - P.x0,
+    ph = P.y1 - P.y0;
+  let rw = b - a,
+    rh = d - c0;
+  if (rw === 0 && rh === 0) rw = rh = 1;
+  m.V.s = Math.min((pw - 2 * pad) / Math.max(rw, 1e-300), (ph - 2 * pad) / Math.max(rh, 1e-300));
+  m.V.cx = (a + b) / 2;
+  m.V.cy = (c0 + d) / 2;
 }
-function cellOf(g, re, im) {
-  const i = Math.round((re - g.cx) / g.dx + (g.cols - 1) / 2),
-    j = Math.round((g.cy - im) / g.dx + (g.rows - 1) / 2);
-  return i >= 0 && i < g.cols && j >= 0 && j < g.rows ? [i, j] : null;
+
+// Nearest path end S_k within `radius` px of (x, y), or -1.
+export function fieldHit(m, W, H, x, y, radius = 14) {
+  const P = plotRect(W, H),
+    f = m.field,
+    k = kShown(m),
+    V = m.V;
+  const mx = (P.x0 + P.x1) / 2,
+    my = (P.y0 + P.y1) / 2;
+  let best = -1,
+    bd = radius * radius;
+  for (let c = 0; c < f.count; c++) {
+    const e = f.at(c, k);
+    if (!e) continue;
+    const dx = mx + (e[0] - V.cx) * V.s - x,
+      dy = my - (e[1] - V.cy) * V.s - y,
+      dd = dx * dx + dy * dy;
+    if (dd < bd) (bd = dd), (best = c);
+  }
+  return best;
+}
+// The little map of the sample points: its cell under (x, y), or -1.
+export function insetHit(m, W, H, x, y) {
+  const R = insetRect(W, H),
+    side = m.field.grid.side;
+  if (x < R.x || y < R.y || x > R.x + R.size || y > R.y + R.size) return -2; // outside the map
+  const cell = (R.size - 10) / side,
+    i = Math.floor((x - R.x - 5) / cell),
+    j = Math.floor((y - R.y - 5) / cell);
+  return i >= 0 && i < side && j >= 0 && j < side ? j * side + i : -1;
+}
+
+export function drawField(ctx, W, H, C, m) {
+  const P = plotRect(W, H),
+    f = m.field,
+    V = m.V,
+    k = kShown(m);
+  if (m.frame !== "free" && f.kDone >= 0) fitFieldView(m, P);
+  const base = planeBase(ctx, P, C, V);
+  const { X, Y } = base;
+  const colors = Array.from({ length: f.count }, (_, c) => pathColor(m, C, c));
+  const sel = (() => {
+    for (let c = 0; c < f.count; c++) if (Math.abs(f.zRe[c] - m.z[0]) + Math.abs(f.zIm[c] - m.z[1]) < 1e-9 * (1 + f.grid.r)) return c;
+    return -1;
+  })();
+  const ih = m.hover ? insetHit(m, W, H, m.hover.x, m.hover.y) : -2;
+  const hov = ih >= 0 ? ih : ih === -2 && m.hover ? fieldHit(m, W, H, m.hover.x, m.hover.y) : -1;
+
+  const trace = (c, width, alpha) => {
+    const last = Math.min(k, f.valid[c] - 1),
+      o = c * f.grid.len;
+    if (last < 0) return;
+    ctx.strokeStyle = colors[c];
+    ctx.lineWidth = width;
+    ctx.globalAlpha = alpha;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(X(f.sRe[o]), Y(f.sIm[o]));
+    for (let q = 1; q <= last; q++) ctx.lineTo(X(f.sRe[o + q]), Y(f.sIm[o + q]));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  };
+  if (f.kDone >= 0) {
+    // paths whose terms do not shrink cannot converge: drawn faint and first, so the others stand out
+    const faint = (c) => f.shrinking(c, k) === false;
+    const order = [...Array(f.count).keys()].sort((a, b) => faint(b) - faint(a));
+    if (m.opts.line) for (const c of order) if (c !== sel && c !== hov) trace(c, 1.25, faint(c) ? 0.2 : 0.8);
+    if (m.opts.dots)
+      for (const c of order) {
+        const e = f.at(c, k);
+        if (!e) continue;
+        ctx.globalAlpha = faint(c) ? 0.35 : 1;
+        ctx.fillStyle = colors[c];
+        ctx.fillRect(X(e[0]) - 2, Y(e[1]) - 2, 4, 4);
+      }
+    ctx.globalAlpha = 1;
+    for (const c of [sel, hov]) if (c >= 0) trace(c, 2.5, 1);
+  }
+  // the selected path ends in a square marker, like the S_n of the Plane view
+  if (sel >= 0) {
+    const e = f.at(sel, k);
+    if (e) {
+      ctx.fillStyle = colors[sel];
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 2;
+      ctx.fillRect(X(e[0]) - 5, Y(e[1]) - 5, 10, 10);
+      ctx.strokeRect(X(e[0]) - 5, Y(e[1]) - 5, 10, 10);
+      text(ctx, `S_{${f.n0 + k}}`, X(e[0]) + 9, Y(e[1]) + 17, C, { color: C.ink, weight: 700, size: 12 });
+    }
+  }
+  // hovered path: z and S_n
+  if (hov >= 0) {
+    const e = f.at(hov, k),
+      lines = [`z = ${m.fmtC(f.zRe[hov], f.zIm[hov], 3)}`, e ? `S_{${f.n0 + k}} = ${m.fmtC(e[0], e[1], 3)}` : "S = —"];
+    ctx.font = "11.5px " + '"Space Mono", ui-monospace, monospace';
+    const w = Math.max(...lines.map((l) => ctx.measureText(l.replace(/[_{}]/g, "")).width)) + 14;
+    let bx = m.hover.x + 14,
+      by = m.hover.y + 14;
+    if (bx + w > P.x1) bx = m.hover.x - w - 10;
+    if (by + 40 > P.y1) by = m.hover.y - 46;
+    ctx.fillStyle = C.surface;
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(bx, by, w, 40);
+    ctx.strokeRect(bx, by, w, 40);
+    drawMath(ctx, lines[0], bx + 7, by + 16, { size: 11.5, color: C.ink });
+    drawMath(ctx, lines[1], bx + 7, by + 32, { size: 11.5, color: C.ink });
+  }
+  ctx.restore();
+  planeEnd(ctx, P, C, base);
+
+  // map of the sample points, coloured as the paths: tells which path starts from which z
+  if (H > 260) {
+    const R = insetRect(W, H),
+      side = f.grid.side,
+      cell = (R.size - 10) / side;
+    ctx.fillStyle = C.surface;
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(R.x, R.y, R.size, R.size);
+    ctx.strokeRect(R.x, R.y, R.size, R.size);
+    for (let c = 0; c < f.count; c++) {
+      const i = c % side,
+        j = Math.floor(c / side);
+      ctx.fillStyle = colors[c];
+      ctx.fillRect(R.x + 5 + i * cell + 1, R.y + 5 + j * cell + 1, Math.max(2, cell - 2), Math.max(2, cell - 2));
+    }
+    for (const [c, w] of [[sel, 2], [hov, 1.5]])
+      if (c >= 0) {
+        ctx.strokeStyle = C.ink;
+        ctx.lineWidth = w;
+        ctx.strokeRect(R.x + 5 + (c % side) * cell, R.y + 5 + Math.floor(c / side) * cell, cell, cell);
+      }
+    text(ctx, "z", R.x + R.size + 5, R.y + 12, C, { color: C.ink, weight: 700, size: 12 });
+  }
 }
