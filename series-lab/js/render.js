@@ -559,3 +559,120 @@ export function drawField(ctx, W, H, C, m) {
     text(ctx, "z", R.x + R.size + 5, R.y + 12, C, { color: C.ink, weight: 700, size: 12 });
   }
 }
+
+// ---------- field, "map" kind: S_N(z) on a fine grid of z, as colours ----------
+function rgbOf(hex, fallback = [128, 128, 128]) {
+  const m = /^#([0-9a-f]{6})$/i.exec(String(hex).trim());
+  if (!m) return fallback;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function hslToRgb(h, s, l) {
+  const f = (n) => {
+    const k = (n + h * 12) % 12,
+      a = s * Math.min(l, 1 - l);
+    return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+  };
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+// mode "sum": domain colouring of S_N(z) (hue = argument, lightness = modulus);
+// mode "term": |a_N(z)| on a log scale, from the surface colour (tiny term) to the force colour (large term).
+export function paintMapImage(field, mode, C) {
+  const { cols, rows } = field.geo;
+  const cvs = document.createElement("canvas");
+  cvs.width = cols;
+  cvs.height = rows;
+  const ctx = cvs.getContext("2d");
+  const img = ctx.createImageData(cols, rows);
+  const surf = rgbOf(C.surface),
+    force = rgbOf(C.force),
+    dead = rgbOf(C.ink);
+  for (let c = 0; c < cols * rows; c++) {
+    let rgb;
+    if (Number.isNaN(field.sRe[c])) {
+      rgb = [0, 1, 2].map((q) => (dead[q] + surf[q]) / 2); // not finite
+    } else if (mode === "term") {
+      const a = Math.hypot(field.aRe[c], field.aIm[c]);
+      const v = a > 0 ? Math.min(1, Math.max(0, (Math.log10(a) + 10) / 10)) : 0;
+      rgb = [0, 1, 2].map((q) => surf[q] + (force[q] - surf[q]) * v);
+    } else {
+      const m = Math.hypot(field.sRe[c], field.sIm[c]);
+      const hue = (Math.atan2(field.sIm[c], field.sRe[c]) / (2 * Math.PI) + 1) % 1;
+      rgb = hslToRgb(hue, 0.72, 0.2 + 0.62 * (m / (m + 1)));
+    }
+    img.data[4 * c] = rgb[0];
+    img.data[4 * c + 1] = rgb[1];
+    img.data[4 * c + 2] = rgb[2];
+    img.data[4 * c + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return { canvas: cvs, geo: field.geo };
+}
+
+// m: { F (window {cx, cy, s}), shown ({canvas, geo} | null), z (selected point), hover, field, fmtC, grid {cx, cy, r, side} }
+export function drawMap(ctx, W, H, C, m) {
+  const P = plotRect(W, H),
+    V = m.F;
+  const base = planeBase(ctx, P, C, V, (c, { X, Y }) => {
+    const sh = m.shown;
+    if (!sh) return;
+    const g = sh.geo,
+      w = g.cols * g.dx * V.s,
+      h = g.rows * g.dx * V.s;
+    c.imageSmoothingEnabled = false;
+    c.drawImage(sh.canvas, X(g.cx) - w / 2, Y(g.cy) - h / 2, w, h);
+  });
+  const { X, Y } = base;
+  // the window the paths are sampled from: dashed square and its sample points
+  if (m.grid) {
+    const g = m.grid,
+      step = (2 * g.r) / (g.side - 1);
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(X(g.cx - g.r), Y(g.cy + g.r), 2 * g.r * V.s, 2 * g.r * V.s);
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.ink;
+    for (let j = 0; j < g.side; j++)
+      for (let i = 0; i < g.side; i++) ctx.fillRect(X(g.cx - g.r + i * step) - 1.5, Y(g.cy - g.r + j * step) - 1.5, 3, 3);
+  }
+  // selected z
+  const zx = X(m.z[0]),
+    zy = Y(m.z[1]);
+  ctx.strokeStyle = C.surface;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
+  ctx.strokeStyle = C.ink;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(zx - 6, zy - 6, 12, 12);
+  text(ctx, "z", zx + 10, zy - 8, C, { color: C.ink, weight: 700, size: 12 });
+  // hovered cell: its z and S_N(z)
+  if (m.hover && m.field && m.shown) {
+    const f = m.field,
+      g = m.shown.geo,
+      re = V.cx + (m.hover.x - (P.x0 + P.x1) / 2) / V.s,
+      im = V.cy - (m.hover.y - (P.y0 + P.y1) / 2) / V.s;
+    const i0 = Math.round((re - g.cx) / g.dx + (g.cols - 1) / 2),
+      j0 = Math.round((g.cy - im) / g.dx + (g.rows - 1) / 2);
+    if (i0 >= 0 && i0 < g.cols && j0 >= 0 && j0 < g.rows) {
+      const i = j0 * g.cols + i0;
+      const z = [g.cx + (i0 - (g.cols - 1) / 2) * g.dx, g.cy - (j0 - (g.rows - 1) / 2) * g.dx];
+      const ok = f.geo === g && !Number.isNaN(f.sRe[i]);
+      const lines = [`z = ${m.fmtC(z[0], z[1], 3)}`, ok ? `S_{${f.n0 + f.kDone}} = ${m.fmtC(f.sRe[i], f.sIm[i], 3)}` : "S = —"];
+      ctx.font = "11.5px " + '"Space Mono", ui-monospace, monospace';
+      const w = Math.max(...lines.map((l) => ctx.measureText(l.replace(/[_{}]/g, "")).width)) + 14;
+      let bx = m.hover.x + 14,
+        by = m.hover.y + 14;
+      if (bx + w > P.x1) bx = m.hover.x - w - 10;
+      if (by + 40 > P.y1) by = m.hover.y - 46;
+      ctx.fillStyle = C.surface;
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(bx, by, w, 40);
+      ctx.strokeRect(bx, by, w, 40);
+      drawMath(ctx, lines[0], bx + 7, by + 16, { size: 11.5, color: C.ink });
+      drawMath(ctx, lines[1], bx + 7, by + 32, { size: 11.5, color: C.ink });
+    }
+  }
+  planeEnd(ctx, P, C, base);
+}

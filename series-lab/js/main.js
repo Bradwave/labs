@@ -5,8 +5,9 @@ import { toHTML, plain } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { compile, ExprError } from "./expr.js";
 import { computeSeries, limitEstimate, PRESETS, LIMITS, encodeState, decodeState, toCSV } from "./series.js";
-import { drawPlane, drawParts, drawMod, drawField, fieldHit, insetHit, plotRect, MARGIN } from "./render.js";
+import { drawPlane, drawParts, drawMod, drawField, drawMap, paintMapImage, fieldHit, insetHit, plotRect, MARGIN } from "./render.js";
 import { Field, maxSide } from "./field.js";
+import { MapField } from "./mapfield.js";
 
 const VERSION = "0.1.0";
 const RATE = 5; // terms per second at 1×
@@ -19,6 +20,9 @@ const DEFAULTS = {
   z: [...PRESETS[0].z],
   nMax: PRESETS[0].nMax,
   view: "plane",
+  kind: "paths",
+  mmode: "sum",
+  cols: 56,
   fmode: "z",
   side: 9,
   fc: [...PRESETS[0].fc],
@@ -32,7 +36,7 @@ const saved = store.getJSON("state", {}) || {};
 const fromHash = decodeState(location.hash);
 const S = {
   ...structuredClone(DEFAULTS),
-  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed", "fmode", "side", "fc", "fr"]),
+  ...pick(saved, ["expr", "n0", "z", "nMax", "view", "frame", "speed", "kind", "mmode", "cols", "fmode", "side", "fc", "fr"]),
   opts: { ...DEFAULTS.opts, ...(saved.opts || {}) },
   legend: { ...DEFAULTS.legend },
   ...pick(fromHash, ["expr", "n0", "z", "nMax", "fc", "fr"]),
@@ -40,12 +44,16 @@ const S = {
   running: false,
   acc: 0,
   V: { cx: 0, cy: 0, s: 1 },
+  F: { cx: 0, cy: 0, s: null }, // z window of the map (s = pixels per unit, null: fit |z| ≤ 2.2)
   hover: null,
   series: null,
   prog: null,
 };
 if (!["plane", "parts", "mod", "field"].includes(S.view)) S.view = "plane";
 if (!["z", "conv"].includes(S.fmode)) S.fmode = "z";
+if (!["paths", "map"].includes(S.kind)) S.kind = "paths";
+if (!["sum", "term"].includes(S.mmode)) S.mmode = "sum";
+S.cols = Math.min(120, Math.max(16, Math.round(+S.cols) || 56));
 S.side = Math.min(21, Math.max(3, Math.round(+S.side) || 9));
 if (!(Array.isArray(S.fc) && S.fc.length === 2 && S.fc.every(Number.isFinite))) S.fc = [0, 0];
 if (!(S.fr > 0 && S.fr <= 1e6)) S.fr = 1.5;
@@ -144,7 +152,7 @@ function applyPreset(p) {
   persist();
 }
 function persist() {
-  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, fmode: S.fmode, side: S.side, fc: S.fc, fr: S.fr, opts: S.opts });
+  store.setJSON("state", { expr: S.expr, n0: S.n0, z: S.z, nMax: S.nMax, view: S.view, frame: S.frame === "free" ? "follow" : S.frame, speed: S.speed, kind: S.kind, mmode: S.mmode, cols: S.cols, fmode: S.fmode, side: S.side, fc: S.fc, fr: S.fr, opts: S.opts });
 }
 
 // ---------- fields ----------
@@ -282,9 +290,21 @@ $("legend").addEventListener("click", (e) => {
 });
 function syncHint() {
   const noZ = S.view === "field" && compiled && !compiled.names.has("z");
-  $("hint").textContent = t(noZ ? "hint.fieldNoZ" : { plane: "hint.plane", field: "hint.field" }[S.view] || "hint.plot");
+  const key = S.view === "field" ? (S.kind === "map" ? "hint.map" : "hint.field") : S.view === "plane" ? "hint.plane" : "hint.plot";
+  $("hint").textContent = t(noZ ? "hint.fieldNoZ" : key);
+}
+function syncKind() {
+  const f = S.view === "field";
+  $("kindSeg").hidden = !f;
+  $("grpMap").hidden = S.kind !== "map";
+  $("grpPaths").hidden = S.kind !== "paths";
+  syncSeg("kindSeg", "kind", S.kind);
+  syncHint();
 }
 function syncFieldNote() {
+  $("mapNote").textContent = t(S.mmode === "sum" ? "field.noteSum" : "field.noteTerm");
+  const rc = cv.getBoundingClientRect();
+  $("colsOut").textContent = `${S.cols} × ${Math.ceil((S.cols * (rc.height || 1)) / Math.max(1, rc.width))}`;
   $("fieldNote").textContent = t(S.fmode === "z" ? "field.noteZ" : "field.noteConv");
   const side = Math.min(S.side, maxSide(kMax() + 1));
   $("sideOut").textContent = `${side} × ${side} = ${side * side}`;
@@ -292,7 +312,7 @@ function syncFieldNote() {
 function setView(v) {
   S.view = v;
   syncSeg("viewSeg", "view", v);
-  syncHint();
+  syncKind();
   buildLegend();
   persist();
   draw();
@@ -320,11 +340,55 @@ for (const b of document.querySelectorAll("[data-opt]")) {
     draw();
   });
 }
+$("kindSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  S.kind = b.dataset.kind;
+  S.hover = null;
+  syncKind();
+  persist();
+  draw();
+});
+$("mapSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  S.mmode = b.dataset.mmode;
+  syncSeg("mapSeg", "mmode", S.mmode);
+  syncFieldNote();
+  persist();
+  mapShown = null;
+  draw();
+});
+$("cols").value = S.cols;
+$("cols").addEventListener("input", (e) => {
+  S.cols = +e.target.value;
+  syncFieldNote();
+  persist();
+  draw();
+});
+$("mapReset").addEventListener("click", () => {
+  S.F = { cx: 0, cy: 0, s: null };
+  draw();
+});
+// the visible window of the map becomes the window the paths start from
+$("mapUse").addEventListener("click", () => {
+  const rc = cv.getBoundingClientRect(),
+    P = plotRect(rc.width, rc.height);
+  if (!S.F.s) return;
+  S.fc = [+S.F.cx.toFixed(3), +S.F.cy.toFixed(3)];
+  S.fr = +(Math.min(P.x1 - P.x0, P.y1 - P.y0) / (2 * S.F.s)).toPrecision(3);
+  fillFields();
+  S.kind = "paths";
+  syncKind();
+  persist();
+  draw();
+});
 $("fieldSeg").addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (!b) return;
   S.fmode = b.dataset.fmode;
   syncSeg("fieldSeg", "fmode", S.fmode);
+syncSeg("mapSeg", "mmode", S.mmode);
   syncFieldNote();
   persist();
   draw();
@@ -486,7 +550,7 @@ function paint() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, r.width, r.height);
   const { s, k, n } = current();
-  if (S.view === "field") return paintFieldView(ctx, r);
+  if (S.view === "field") return S.kind === "map" ? paintMapView(ctx, r) : paintFieldView(ctx, r);
   const m = { s, k, n, V: S.V, frame: S.frame, opts: S.opts, legend: S.legend, hover: S.view === "plane" ? S.hover : null, est: S.opts.limit ? limitEstimate(s, k) : null };
   (S.view === "plane" ? drawPlane : S.view === "parts" ? drawParts : drawMod)(ctx, r.width, r.height, C, m);
 }
@@ -500,19 +564,40 @@ function paintFieldView(ctx, r) {
   drawField(ctx, r.width, r.height, C, fieldState());
   if (!done) draw();
 }
+// map: the grid advances in time-budgeted slices; the last complete image stays on screen meanwhile and is
+// drawn through the current window, so panning never flashes
+const mapField = new MapField();
+let mapShown = null;
+function paintMapView(ctx, r) {
+  const P = plotRect(r.width, r.height),
+    pw = P.x1 - P.x0,
+    ph = P.y1 - P.y0;
+  if (!S.F.s) S.F.s = ph / 4.4;
+  const cellPx = pw / S.cols,
+    rows = Math.ceil(ph / cellPx);
+  const geo = { cols: S.cols, rows, cx: S.F.cx, cy: S.F.cy, dx: cellPx / S.F.s };
+  mapField.configure(compiled.fn, S.n0, geo, [S.expr, S.n0, S.cols, rows, geo.cx, geo.cy, geo.dx].join("|"));
+  const done = mapField.advance(Math.min(S.k, kMax()), 8);
+  if (!mapField.fromReset && mapField.kDone >= 0 && (!mapShown || mapShown.k !== mapField.kDone || mapShown.sig !== mapField.sig)) {
+    mapShown = { ...paintMapImage(mapField, S.mmode, C), k: mapField.kDone, sig: mapField.sig };
+  }
+  const side = Math.min(S.side, maxSide(kMax() + 1));
+  drawMap(ctx, r.width, r.height, C, { F: S.F, shown: mapShown, z: S.z, hover: S.hover, field: mapField, fmtC, grid: { cx: S.fc[0], cy: S.fc[1], r: S.fr, side } });
+  if (!done) draw();
+}
 const fieldState = () => ({ field, k: Math.min(S.k, kMax()), V: S.V, frame: S.frame, opts: S.opts, mode: S.fmode, z: S.z, hover: S.hover, fmtC, dark: isDark() });
 new ResizeObserver(draw).observe(cv);
-onTheme(() => { C = readColors(); draw(); });
+onTheme(() => { C = readColors(); mapShown = null; draw(); });
 onLang(() => { buildPresets(); buildLegend(); fillFields(); syncHint(); syncFieldNote(); syncUI(); draw(); });
 
 // ---------- pan, zoom, hover on the plane ----------
 const ptrs = new Map();
 let pinch = 0;
-const win = () => S.V;
+const win = () => (S.view === "field" && S.kind === "map" ? S.F : S.V);
 const interactive = () => S.view === "plane" || S.view === "field";
 let down = null; // { x, y, moved }: tells a click from a drag in the field view
 function toFree() {
-  if (S.frame !== "free") {
+  if (win() === S.V && S.frame !== "free") {
     S.frame = "free";
     syncSeg("frameSeg", "frame", "free");
   }
@@ -573,6 +658,16 @@ const endPtr = (e) => {
 };
 // a click in the field view picks the sample point z (a path end, or a cell of the little map); its path is then
 // highlighted and the Plane view opens it with a double-click
+function pickMapZ(x, y) {
+  const r = cv.getBoundingClientRect(),
+    P = plotRect(r.width, r.height),
+    F = S.F;
+  S.z = [+(F.cx + (x - (P.x0 + P.x1) / 2) / F.s).toFixed(4), +(F.cy - (y - (P.y0 + P.y1) / 2) / F.s).toFixed(4)];
+  fillFields();
+  recompute(true);
+  persist();
+  draw();
+}
 function pickPath(x, y) {
   const r = cv.getBoundingClientRect();
   const fs = fieldState();
@@ -586,7 +681,7 @@ function pickPath(x, y) {
   draw();
 }
 cv.addEventListener("pointerup", (e) => {
-  if (S.view === "field" && down && !down.moved && ptrs.size === 1 && e.type === "pointerup") pickPath(...local(e));
+  if (S.view === "field" && down && !down.moved && ptrs.size === 1 && e.type === "pointerup") (S.kind === "map" ? pickMapZ : pickPath)(...local(e));
   down = null;
   endPtr(e);
 });

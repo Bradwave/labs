@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import STRINGS from "../js/strings.js";
 import { Field, maxSide } from "../js/field.js";
+import { MapField } from "../js/mapfield.js";
 import { compile, ExprError } from "../js/expr.js";
 import { computeSeries, aitken, limitEstimate, PRESETS, encodeState, decodeState, toCSV } from "../js/series.js";
 
@@ -173,4 +174,42 @@ test("field: the time budget slices the work and the history is kept when the cu
 test("field: the grid is capped so memory stays bounded", () => {
   assert.equal(maxSide(300), 21);
   assert.ok(maxSide(20001) <= 9 && maxSide(20001) >= 3);
+});
+test("map: S_N(z) on a grid matches the closed form inside the disc, cells blow up outside", () => {
+  const f = new MapField();
+  f.configure(compile("z^n").fn, 0, { cols: 5, rows: 3, cx: 0, cy: 0, dx: 0.2 }, "a");
+  assert.ok(f.advance(60, 1e9));
+  assert.equal(f.kDone, 60);
+  for (let j = 0; j < 3; j++)
+    for (let i = 0; i < 5; i++) {
+      const [re, im] = f.zOf(i, j),
+        c = j * 5 + i,
+        d = (1 - re) ** 2 + im ** 2;
+      assert.ok(Math.abs(f.sRe[c] - (1 - re) / d) < 1e-9 && Math.abs(f.sIm[c] - im / d) < 1e-9);
+    }
+  assert.deepEqual(f.cellAt(...f.zOf(3, 1)), [3, 1]);
+  assert.equal(f.cellAt(10, 10), null);
+  const g = new MapField();
+  g.configure(compile("z^n").fn, 0, { cols: 1, rows: 1, cx: 3, cy: 0, dx: 1 }, "b");
+  g.advance(700, 1e9);
+  assert.ok(Number.isNaN(g.sRe[0]));
+});
+test("map: the time budget slices the work, going back restarts, same signature keeps the data", () => {
+  const f = new MapField();
+  const geo = { cols: 4, rows: 4, cx: 0, cy: 0, dx: 0.1 };
+  assert.equal(f.configure(compile("z^n").fn, 0, geo, "s"), true);
+  let t = 0;
+  const clock = () => (t += 1);
+  assert.equal(f.advance(50, 3, clock), false);
+  assert.ok(f.kDone >= 0 && f.kDone < 50);
+  assert.equal(f.fromReset, true);
+  while (!f.advance(50, 3, clock));
+  assert.equal(f.fromReset, false);
+  assert.equal(f.configure(compile("z^n").fn, 0, geo, "s"), false);
+  const before = f.sRe[0];
+  assert.equal(f.advance(10, 3, clock), false); // going back restarts from the first term
+  assert.ok(f.kDone < 10);
+  assert.equal(f.fromReset, true);
+  f.advance(50, 1e9);
+  assert.ok(Math.abs(f.sRe[0] - before) < 1e-12);
 });
