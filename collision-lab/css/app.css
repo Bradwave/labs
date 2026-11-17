@@ -307,6 +307,14 @@ dialog.confirm {
   .scenebar {
     padding: 4px 8px;
     gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .scenebar .sb-text {
+    flex: 1 1 0;
+  }
+  .scenebar .sb-text b {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .scenebar .sb-note {
     display: none;

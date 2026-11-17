@@ -1,12 +1,13 @@
 // Collision Lab · main.js
 // Entry point: kit set-up, settings and controls, the simulation loop (fixed physics step, rendering at display
 // rate), dragging on the table, and the refresh of the balance and graph panels.
-import { initKit, t, icon, readColors, onTheme, onLang, fmtNum, store, toast } from "../../kit/kit.js";
+import { initKit, t, icon, readColors, onTheme, onLang, fmtNum, store, toast, getLang } from "../../kit/kit.js";
 import { toHTML } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { createWorld, cloneWorld, step, explode, totals, states } from "./physics.js";
 import { TABLE, sceneById } from "./scenes.js";
 import { toHash, parseLink, SHOW_KEYS, hiddenNow, eLabel } from "./state.js";
+import { PRESET_MAP } from "./presets.js";
 import { createStage, EXTRA_COLORS, lineOf, fillOf } from "./render.js";
 import { drawMomentum, fillTables, drawEnergy, drawGraph, buildCsv } from "./panels.js";
 import { DEFAULT_QUANTITY, axisLabel, extraKind, valueOf, extraOf } from "./quantities.js";
@@ -47,7 +48,7 @@ for (const b of $$("[data-ic]")) b.insertAdjacentHTML("afterbegin", icon(b.datas
 const linkHash = location.hash.length > 2 ? location.hash : "";
 let st, pres, preset;
 function loadLink(hash) {
-  ({ st, pres, preset } = parseLink(hash || store.get("state") || ""));
+  ({ st, pres, preset } = parseLink(hash || store.get("state") || "", PRESET_MAP));
 }
 loadLink(linkHash);
 const SHOW_DEFAULT = { mom: true, vel: false, cm: true, trail: false, strobe: true };
@@ -64,7 +65,7 @@ const isHidden = (k) => hiddenNow(pres, revealed).has(k);
 const prepared = () => pres.hide.length > 0 || pres.lock || !!preset;
 function save() {
   if (!prepared()) store.set("state", toHash(st));
-  history.replaceState(null, "", toHash(st, pres, preset));
+  history.replaceState(null, "", toHash(st, pres, preset, PRESET_MAP));
 }
 
 // ---------- simulation state ----------
@@ -558,11 +559,14 @@ function syncBar() {
   const anyHidden = hiddenNow(pres, revealed).size > 0, lk = locked();
   $("revealBtn").hidden = !anyHidden;
   $("revealBtn").title = t("reveal.tip");
-  $("backBtn").hidden = !lk;
+  const pr = preset ? PRESET_MAP.get(preset) : null, lang = getLang();
+  $("backBtn").hidden = !lk && !pr;
   $("unlockBtn").hidden = !lk;
-  const title = lk ? t("lock.title") : anyHidden ? t("reveal.hidden") : "";
+  // a preset gives the title and the note; otherwise the bar says why it is there
+  const title = pr ? pr.title[lang] : lk ? t("lock.title") : anyHidden ? t("reveal.hidden") : "";
   $("sbTitle").textContent = title;
-  $("sbNote").textContent = lk && anyHidden ? t("reveal.hidden") : "";
+  $("sbNote").textContent = pr ? pr.note[lang] : lk && anyHidden ? t("reveal.hidden") : "";
+  $("sbNote").title = $("sbNote").textContent;
   $("sceneBar").hidden = !title;
 }
 const LOCK = '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>';
