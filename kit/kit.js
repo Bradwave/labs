@@ -24,6 +24,9 @@ const KIT_STRINGS = {
     "kit.privacy": "Tutto avviene su questo dispositivo: nessun dato viene inviato.",
     "kit.license": "Licenza MIT",
     "kit.more": "Altri laboratori",
+    "kit.qr": "Mostra il QR",
+    "kit.qrNote": "Inquadra il codice per aprire questa pagina così com'è adesso.",
+    "kit.qrFail": "Non riesco a creare il QR di questo link",
   },
   en: {
     "kit.info": "About",
@@ -42,11 +45,15 @@ const KIT_STRINGS = {
     "kit.privacy": "Everything runs on this device: no data is sent anywhere.",
     "kit.license": "MIT licence",
     "kit.more": "More labs",
+    "kit.qr": "Show QR code",
+    "kit.qrNote": "Scan the code to open this page as it is now.",
+    "kit.qrFail": "Cannot make a QR code of this link",
   },
 };
 
 // ---------- icons (inline SVG, 24 × 24 grid) ----------
 const ICONS = {
+  qr: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect class="f" x="5.5" y="5.5" width="2" height="2"/><rect class="f" x="16.5" y="5.5" width="2" height="2"/><rect class="f" x="5.5" y="16.5" width="2" height="2"/><path d="M14 14h3v3M21 14v7h-4M14 18v3"/>',
   info: '<rect x="3" y="3" width="18" height="18"/><path d="M12 10.5v7"/><rect class="f" x="10.75" y="6" width="2.5" height="2.5"/>',
   settings:
     '<path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"/><rect x="7.5" y="7.5" width="9" height="9"/><rect x="10.5" y="10.5" width="3" height="3"/>',
@@ -369,6 +376,35 @@ export function toast(msg, ms = 2400) {
   toastEl.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
+}
+
+// ---------- QR code of a link, large enough to project (DESIGN.md §14) ----------
+// Apps add it to their settings menu next to the share item:
+//   { icon: "qr", label: "kit.qr", onClick: () => showQR() }
+// The encoder (qr.js, no dependencies) is loaded on first use and precached for offline use.
+let qrDialog = null;
+export async function showQR(url = location.href) {
+  let svg;
+  try {
+    const { qrSVG } = await import("./qr.js");
+    svg = qrSVG(url, { title: url });
+  } catch (e) {
+    toast(t("kit.qrFail"));
+    return;
+  }
+  if (!qrDialog) {
+    qrDialog = document.createElement("dialog");
+    qrDialog.className = "kit-qr";
+    qrDialog.addEventListener("click", (e) => {
+      if (e.target === qrDialog || e.target.closest("[data-close]")) qrDialog.close();
+    });
+    document.body.append(qrDialog);
+  }
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  qrDialog.innerHTML =
+    `<button class="icon-btn dlg-close" type="button" data-close aria-label="${t("kit.close")}">${icon("close")}</button>` +
+    `<div class="qrbox">${svg}</div><p class="qrnote">${t("kit.qrNote")}</p><p class="qrurl">${esc(url)}</p>`;
+  qrDialog.showModal();
 }
 
 // ---------- header buttons, info dialog, settings menu (DESIGN.md §5) ----------

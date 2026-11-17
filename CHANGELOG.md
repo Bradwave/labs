@@ -3,6 +3,7 @@
 ## 0.2.0 · 2026-11-18
 
 - `kit/qr.js`: QR codes with no dependencies (byte mode UTF-8, level M or L, versions 1–13, automatic mask), `qrMatrix(text)` and `qrSVG(text, opts)`. Checked against the Reed–Solomon example of the standard and decoded with a real reader for every version range and mask. New tool `tools/qr.mjs <url> [out.svg]` for worksheets.
+- `showQR(url = location.href)` in `kit.js`: a dialog with the QR code of the page, black on white in both themes and large enough to project; icon `qr`, strings `kit.qr`, `kit.qrNote`, `kit.qrFail`. Apps add `{ icon: "qr", label: "kit.qr", onClick: () => showQR() }` next to their share item (Collision Lab and `demo.html` do). `qr.js` is loaded on first use and precached by `sync-kit` for offline use; in a single-file build it is not available and the item shows a toast.
 
 ## Unreleased · 2026-11-09
 

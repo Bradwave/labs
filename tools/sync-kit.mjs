@@ -21,7 +21,7 @@ if (!apps.length) console.log('No labs to sync: mark migrated labs with "kit": t
 
 const KIT_DIR = join(KIT_ROOT, "kit");
 // files of the shared kit that a lab page uses at run time
-const KIT_RUNTIME = ["kit.css", "kit.js", "mathtext.js", ...readdirSync(join(KIT_DIR, "fonts")).filter((f) => f.endsWith(".woff2")).map((f) => "fonts/" + f)];
+const KIT_RUNTIME = ["kit.css", "kit.js", "mathtext.js", "qr.js", ...readdirSync(join(KIT_DIR, "fonts")).filter((f) => f.endsWith(".woff2")).map((f) => "fonts/" + f)];
 const SKIP_DIRS = new Set([".git", ".github", ".claude", "node_modules", "tests", "test", "docs", "tools", "dist"]);
 const SKIP_FILES = new Set(["sw.js", ".gitignore", ".nojekyll", "CNAME", "LICENSE", "package.json", "package-lock.json", ".DS_Store"]);
 

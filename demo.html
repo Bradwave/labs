@@ -107,7 +107,7 @@
 </dialog>
 
 <script type="module">
-import { initKit, t, readColors, onTheme, onLang, fmtNum, niceTicks, toast, icon } from "./kit/kit.js";
+import { initKit, t, readColors, onTheme, onLang, fmtNum, niceTicks, toast, icon, showQR } from "./kit/kit.js";
 import { drawMath } from "./kit/mathtext.js";
 
 const strings = {
@@ -127,6 +127,7 @@ const strings = {
 let level = 1;
 initKit({ slug: "kit-lab", name: "Kit Lab", version: "0.1.0", strings, sw: false, menu: [
   { icon: "link", label: "m.share", onClick: () => toast(t("copied")) },
+  { icon: "qr", label: "kit.qr", onClick: () => showQR() },
   { icon: "level", label: "m.level", value: () => "L" + level, onClick: () => (level = (level % 3) + 1), keepOpen: true },
   { icon: "reset", label: "m.reset", onClick: () => toast("↺") },
 ] });

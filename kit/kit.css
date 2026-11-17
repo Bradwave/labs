@@ -925,6 +925,32 @@ dialog .meta {
   font-size: 11px;
   color: var(--muted);
 }
+/* ---------- QR dialog: black on white in both themes, so every phone can read it ---------- */
+dialog.kit-qr {
+  text-align: center;
+  width: min(600px, 94vw);
+}
+.kit-qr .qrbox {
+  background: #fff;
+  border: 2px solid var(--ink);
+  width: min(520px, 72vmin);
+  margin: 30px auto 0;
+}
+.kit-qr .qrbox svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.kit-qr .qrnote {
+  margin: 10px 0 2px;
+}
+.kit-qr .qrurl {
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+
 kbd {
   font-family: inherit;
   font-size: 10px;

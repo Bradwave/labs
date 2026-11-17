@@ -1,7 +1,7 @@
 // Collision Lab · main.js
 // Entry point: kit set-up, settings and controls, the simulation loop (fixed physics step, rendering at display
 // rate), dragging on the table, and the refresh of the balance and graph panels.
-import { initKit, t, icon, readColors, onTheme, onLang, fmtNum, store, toast, getLang } from "../../kit/kit.js";
+import { initKit, t, icon, readColors, onTheme, onLang, fmtNum, store, toast, getLang, showQR } from "../../kit/kit.js";
 import { toHTML } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { createWorld, cloneWorld, step, explode, totals, states } from "./physics.js";
@@ -25,6 +25,7 @@ initKit({
   strings: STRINGS,
   menu: [
     { icon: "link", label: "menu.share", onClick: () => navigator.clipboard?.writeText(location.href).then(() => toast(t("copied"))) },
+    { icon: "qr", label: "kit.qr", onClick: () => showQR() },
     {
       icon: "reset",
       label: "menu.reset",
