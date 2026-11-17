@@ -86,6 +86,16 @@ export function fromHash(hash, base = initialSettings()) {
   return parseLink(hash, null, base).st;
 }
 
+// ---------- hiding (prediction) ----------
+// What is hidden now: the link's `hide`, until the user reveals it for the session.
+export function hiddenNow(pres, revealed = false) {
+  return new Set(revealed ? [] : pres.hide);
+}
+// The text shown for e: "?" while it is hidden, so its value appears nowhere in the interface.
+export function eLabel(e, hidden, fmt) {
+  return hidden ? "?" : fmt(e, 2);
+}
+
 // ---------- writing ----------
 function physPairs(st) {
   const p = st.params[st.scene];

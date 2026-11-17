@@ -76,3 +76,19 @@ test("bad presentation values are ignored", () => {
   assert.equal(parseLink("#tab=2").pres.tab, 2); // presentation keys work without a scene
   assert.equal(parseLink("#tab=2&e=0.3").st.e, 1); // physical keys still need one, as before
 });
+
+test("hide=e: the value of e appears in no generated text", async () => {
+  const { hiddenNow, eLabel } = await import("../js/state.js");
+  const { _test, fmtNum } = await import("../../kit/kit.js");
+  const { pres, st } = parseLink("#s=headon&m1=0.25&m2=0.25&v1=1&v2=0&x1=0.5&x2=1.2&e=0.7&st=0&w=0&f=lab&hide=e,bal");
+  const hidden = hiddenNow(pres);
+  assert.ok(hidden.has("e") && hidden.has("bal"));
+  for (const lang of ["it", "en"]) {
+    _test.setLangForTest(lang);
+    const label = eLabel(st.e, hidden.has("e"), fmtNum);
+    assert.equal(label, "?");
+    assert.ok(!/0[.,]7/.test(label));
+    assert.equal(eLabel(st.e, false, fmtNum), lang === "it" ? "0,70" : "0.70");
+  }
+  assert.equal(hiddenNow(pres, true).size, 0, "revealed: nothing hidden");
+});

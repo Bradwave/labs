@@ -193,18 +193,19 @@ export function createStage(canvas) {
     }
 
     // ---- vectors ----
-    const showVel = M.show.vel || M.setup;
+    const showVel = !M.noVec && (M.show.vel || M.setup);
+    const showMom = !M.noVec && M.show.mom;
     M.discs.forEach((d, i) => {
       const s = M.S[i];
       // v and p are parallel: when both are drawn, they sit side by side, 4 px each side of the centre line
-      const sp = Math.hypot(s.vx, s.vy) || 1, both = showVel && M.show.mom ? 4 : 0;
+      const sp = Math.hypot(s.vx, s.vy) || 1, both = showVel && showMom ? 4 : 0;
       const qx = (-s.vy / sp) * both, qy = (-s.vx / sp) * both; // screen offset to the left of the motion
       if (showVel) {
         const x0 = X(s.x) - qx, y0 = Y(s.y) - qy;
         const x1 = X(s.x + s.vx * VSCALE) - qx, y1 = Y(s.y + s.vy * VSCALE) - qy;
         if (arrow(ctx, x0, y0, x1, y1, C.vel)) arrowLabel(ctx, C, `v_${d.label}`, x0, y0, x1, y1, C.vel);
       }
-      if (M.show.mom) {
+      if (showMom) {
         const x0 = X(s.x) + qx, y0 = Y(s.y) + qy;
         const x1 = X(s.x + d.m * s.vx * MSCALE) + qx, y1 = Y(s.y + d.m * s.vy * MSCALE) + qy;
         if (arrow(ctx, x0, y0, x1, y1, C.mom)) arrowLabel(ctx, C, `p_${d.label}`, x0, y0, x1, y1, C.mom);
@@ -214,7 +215,7 @@ export function createStage(canvas) {
     // ---- centre of mass and total momentum ----
     if (M.show.cm) {
       const cx = X(M.T.X), cy = Y(M.T.Y);
-      if (M.show.mom) {
+      if (showMom) {
         const x1 = X(M.T.X + M.T.Px * MSCALE), y1 = Y(M.T.Y + M.T.Py * MSCALE);
         if (arrow(ctx, cx, cy, x1, y1, C.mom, 4)) arrowLabel(ctx, C, "P", cx, cy, x1, y1, C.mom, 13);
       }

@@ -254,8 +254,58 @@ header .word span.puck:last-of-type {
   margin-top: 8px;
 }
 
+/* ---------- scene bar: title of a prepared scene, reveal, lock actions ---------- */
+.scenebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  flex: none;
+  flex-wrap: wrap;
+}
+.scenebar .sb-text {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12.5px;
+}
+.scenebar .sb-text b {
+  white-space: nowrap;
+}
+.scenebar .sb-note {
+  color: var(--muted);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scenebar .btn {
+  min-height: 30px;
+  padding: 4px 10px;
+}
+dialog.confirm {
+  max-width: 420px;
+}
+.dlg-actions {
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+.qmark {
+  font-weight: 700;
+}
+
 /* ---------- phones ---------- */
 @media (max-width: 920px) and (orientation: portrait) {
+  .scenebar {
+    padding: 4px 8px;
+    gap: 6px;
+  }
+  .scenebar .sb-note {
+    display: none;
+  }
   .readout {
     font-size: 10.5px;
     padding: 3px 7px;
@@ -279,4 +329,9 @@ header .word span.puck:last-of-type {
   #stepBtn {
     display: none;
   }
+}
+
+/* elements hidden by the link (hide=…) or by the app: the attribute wins over the kit's display rules */
+[hidden] {
+  display: none !important;
 }

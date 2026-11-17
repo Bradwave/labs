@@ -37,6 +37,10 @@
         <button type="button" data-v="lab" class="on" aria-pressed="true" data-ic="axes" data-i18n-title="frame.labTip"><span class="t" data-i18n="frame.lab">Lab</span></button><button type="button" data-v="cm" aria-pressed="false" data-ic="target" data-i18n-title="frame.cmTip"><span class="t" data-i18n="frame.cm">CM</span></button>
       </div>
     </div>
+    <div class="scenebar card" id="sceneBar" hidden>
+      <div class="sb-text"><b id="sbTitle"></b><span class="sb-note" id="sbNote"></span></div>
+      <button class="btn primary" type="button" id="revealBtn" hidden><span id="revealIc"></span><span class="lbl" data-i18n="reveal.btn">Mostra</span></button>
+    </div>
     <div class="canvas-wrap card" id="wrap">
       <canvas id="cv" data-i18n-aria="stage"></canvas>
       <div class="readout" id="readout"></div>
@@ -77,7 +81,7 @@
       <div class="chips gchips" id="gchips"></div>
       <canvas id="gcv" class="gcv" data-i18n-aria="g.canvas"></canvas>
       <p class="note" data-i18n="g.note">Le linee tratteggiate segnano gli urti.</p>
-      <div class="csvrow"><button class="btn" id="csvBtn" type="button" data-ic="copy"><span data-i18n="csv.copy">Copia i dati in CSV</span></button><span class="note" data-i18n="csv.note">Posizioni, velocità e totali</span></div>
+      <div class="csvrow" id="csvRow"><button class="btn" id="csvBtn" type="button" data-ic="copy"><span data-i18n="csv.copy">Copia i dati in CSV</span></button><span class="note" data-i18n="csv.note">Posizioni, velocità e totali</span></div>
       <textarea id="csvOut" class="field" hidden readonly data-i18n-aria="csv.aria"></textarea>
     </div>
 
@@ -94,7 +98,7 @@
       <div id="params"></div>
 
       <h3 class="grp" data-i18n="g.collision">Urto</h3>
-      <div class="ctl"><label for="eR"><span data-i18n="p.e">Coefficiente di restituzione e</span> <b id="eL"></b></label><input type="range" id="eR" min="0" max="1" step="0.05" value="1"></div>
+      <div class="ctl" id="eCtl"><label for="eR"><span data-i18n="p.e">Coefficiente di restituzione e</span> <b id="eL"></b></label><input type="range" id="eR" min="0" max="1" step="0.05" value="1"></div>
       <div class="seg small full" id="eSeg" role="group">
         <button type="button" data-v="1" data-i18n="e.elastic">elastico</button><button type="button" data-v="0.5" data-i18n="e.inelastic">anelastico</button><button type="button" data-v="0" data-i18n="e.zero">e = 0</button>
       </div>
@@ -102,8 +106,8 @@
       <button class="tg" type="button" id="tgWalls" aria-pressed="false"><span class="txt"><span data-i18n="tg.walls">Sponde elastiche</span><small data-i18n="tg.wallsHint">una forza esterna</small></span><span class="box"></span></button>
 
       <h3 class="grp" data-i18n="g.show">Mostra</h3>
-      <button class="tg" type="button" data-show="mom" aria-pressed="true"><span class="sw" style="color:var(--mom)"></span><span class="txt"><span data-i18n="tg.mom">Quantità di moto</span><small data-i18n="tg.momHint"></small></span><span class="box"></span></button>
-      <button class="tg" type="button" data-show="vel" aria-pressed="false"><span class="sw" style="color:var(--vel)"></span><span class="txt"><span data-i18n="tg.vel">Velocità</span><small data-i18n="tg.velHint"></small></span><span class="box"></span></button>
+      <button class="tg vecsw" type="button" data-show="mom" aria-pressed="true"><span class="sw" style="color:var(--mom)"></span><span class="txt"><span data-i18n="tg.mom">Quantità di moto</span><small data-i18n="tg.momHint"></small></span><span class="box"></span></button>
+      <button class="tg vecsw" type="button" data-show="vel" aria-pressed="false"><span class="sw" style="color:var(--vel)"></span><span class="txt"><span data-i18n="tg.vel">Velocità</span><small data-i18n="tg.velHint"></small></span><span class="box"></span></button>
       <button class="tg" type="button" data-show="cm" aria-pressed="true"><span class="sw dot cmdot"></span><span class="txt"><span data-i18n="tg.cm">Centro di massa</span><small data-i18n="tg.cmHint"></small></span><span class="box"></span></button>
       <button class="tg" type="button" data-show="trail" aria-pressed="false"><span class="txt"><span data-i18n="tg.trail">Scie</span><small data-i18n="tg.trailHint"></small></span><span class="box"></span></button>
       <button class="tg" type="button" data-show="strobe" aria-pressed="true"><span class="txt"><span data-i18n="tg.strobe">Foto stroboscopica</span><small data-i18n="tg.strobeHint"></small></span><span class="box"></span></button>
@@ -118,6 +122,15 @@
   <h3 data-i18n="info.how">Come funziona</h3>
   <div data-i18n-html="help.body"></div>
   <p class="meta kit-meta"></p>
+</dialog>
+
+<dialog id="revealDlg" class="confirm">
+  <h2 data-i18n="reveal.title">Hai scritto la tua previsione?</h2>
+  <p data-i18n="reveal.body">Quello che è nascosto comparirà fino a quando ricarichi la pagina.</p>
+  <div class="row dlg-actions">
+    <button class="btn" type="button" data-close data-i18n="reveal.no">Non ancora</button>
+    <button class="btn primary" type="button" id="revealYes" data-i18n="reveal.yes">Sì, mostra</button>
+  </div>
 </dialog>
 
 <script type="module" src="js/main.js"></script>

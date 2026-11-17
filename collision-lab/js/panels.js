@@ -97,7 +97,7 @@ export function fillTables(ptab, ktab, C, discs, before, now) {
 }
 
 // ---------- kinetic energy: centre-of-mass part and internal part ----------
-export function drawEnergy(canvas, C, before, now) {
+export function drawEnergy(canvas, C, before, now, numbers = true) {
   const { ctx, w, h } = prep(canvas);
   if (w < 20) return;
   ctx.fillStyle = C.surface;
@@ -132,7 +132,7 @@ export function drawEnergy(canvas, C, before, now) {
       ctx.setLineDash([]);
       if (wl > 40) text(ctx, t("b.lost"), left + wc + wi + wl / 2, y + bh / 2 + 4, C.muted, 10.5, "center");
     }
-    text(ctx, fmtNum(T.K, 3, "J"), Math.max(left + wc + wi, n ? left + before.K * k : 0) + 6, y + bh / 2 + 4, C.ink, 11);
+    if (numbers) text(ctx, fmtNum(T.K, 3, "J"), Math.max(left + wc + wi, n ? left + before.K * k : 0) + 6, y + bh / 2 + 4, C.ink, 11);
   });
   // legend
   const ly = top + 2 * (bh + gap) + 8;

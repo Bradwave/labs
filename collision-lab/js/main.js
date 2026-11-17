@@ -6,7 +6,7 @@ import { toHTML } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { createWorld, cloneWorld, step, explode, totals, states } from "./physics.js";
 import { TABLE, sceneById } from "./scenes.js";
-import { toHash, parseLink, SHOW_KEYS } from "./state.js";
+import { toHash, parseLink, SHOW_KEYS, hiddenNow, eLabel } from "./state.js";
 import { createStage, EXTRA_COLORS, lineOf, fillOf } from "./render.js";
 import { drawMomentum, fillTables, drawEnergy, drawGraph, buildCsv } from "./panels.js";
 import { DEFAULT_QUANTITY, axisLabel, extraKind, valueOf, extraOf } from "./quantities.js";
@@ -58,6 +58,8 @@ function applyShow() {
 }
 applyShow();
 let speed = 1;
+let revealed = false; // the user chose "Show" in this session
+const isHidden = (k) => hiddenNow(pres, revealed).has(k);
 // a link that hides or locks something is a prepared scene: it does not replace the user's own saved scene
 const prepared = () => pres.hide.length > 0 || pres.lock || !!preset;
 function save() {
@@ -216,7 +218,12 @@ function syncParams() {
 // restitution, stick, bumpers
 function syncCollision() {
   $("eR").value = st.e;
-  $("eL").textContent = fmtNum(st.e, 2);
+  const eh = isHidden("e");
+  $("eL").textContent = eLabel(st.e, eh, fmtNum);
+  $("eL").classList.toggle("qmark", eh);
+  $("eR").hidden = eh;
+  $("eSeg").hidden = eh;
+  if (eh) $("eR").value = 0.5; // the thumb would show it too
   segSync($("eSeg"), st.e);
   $("eR").disabled = st.sticky;
   $("eSeg").classList.toggle("dim", st.sticky);
@@ -265,7 +272,10 @@ for (const b of $$("[data-show]")) {
 // ---------- tabs ----------
 const tabs = $$(".tab");
 let tabIndex = 0;
+// tabs that the link hides (Balance, Graphs) are skipped
+const tabHidden = (i) => (i === 0 && isHidden("bal")) || (i === 1 && isHidden("gr"));
 function showTab(i) {
+  if (tabHidden(i)) i = [0, 1, 2].find((j) => !tabHidden(j));
   tabIndex = i;
   tabs.forEach((b, j) => {
     b.setAttribute("aria-selected", String(i === j));
@@ -425,7 +435,7 @@ function render(now) {
     shift: cm ? { x: Tlab.X - T0.X, y: Tlab.Y - T0.Y } : { x: 0, y: 0 },
     cmFrame: cm, X0: T0.X, Y0: T0.Y,
     history: rec, strobeEvery: Math.round(0.1 / SAMPLE),
-    setup: canDrag(), walls: st.walls,
+    setup: canDrag(), walls: st.walls, noVec: isHidden("vec"),
   });
   $("clock").textContent = `t = ${fmtNum(world.t, 2, "s")}`;
   $("readout").innerHTML =
@@ -441,7 +451,7 @@ function render(now) {
   if (tabIndex === 0) {
     drawMomentum($("pcv"), C, world.discs, T0f, T);
     fillTables($("ptab"), $("ktab"), C, world.discs, T0f, T);
-    drawEnergy($("kcv"), C, T0f, T);
+    drawEnergy($("kcv"), C, T0f, T, !isHidden("num"));
     $("verdict").innerHTML = verdict(Tlab);
     $("frameNote").textContent = t(cm ? "b.frameCm" : "b.frameLab");
   } else if (tabIndex === 1) {
@@ -496,6 +506,7 @@ function loop(now) {
 // ---------- start ----------
 function relabel() {
   buildParams();
+  syncBar();
   setPlaying(playing);
   chipsKey = "";
   dirty = true;
@@ -515,7 +526,38 @@ for (const id of ["pcv", "kcv", "gcv"]) ro.observe($(id));
 document.fonts?.ready.then(() => (dirty = true));
 
 // everything that depends on the link: also used by "back to the linked scene"
+// ---------- hiding and the scene bar ----------
+const EYE = '<path d="M2 12c3-5 6.5-7 10-7s7 2 10 7c-3 5-6.5 7-10 7S5 17 2 12z"/><rect class="f" x="9.5" y="9.5" width="5" height="5"/>';
+$("revealIc").innerHTML = icon(EYE);
+function applyHide() {
+  tabs[0].hidden = isHidden("bal");
+  tabs[1].hidden = isHidden("gr");
+  const num = isHidden("num");
+  for (const id of ["readout", "ptab", "ktab", "verdict", "csvRow"]) $(id).hidden = num;
+  if (num) $("csvOut").hidden = true;
+  for (const b of $$(".vecsw")) b.hidden = isHidden("vec");
+  syncCollision();
+  syncBar();
+  if (tabHidden(tabIndex)) showTab(tabIndex);
+  dirty = true;
+}
+function syncBar() {
+  const anyHidden = hiddenNow(pres, revealed).size > 0;
+  $("revealBtn").hidden = !anyHidden;
+  $("revealBtn").title = t("reveal.tip");
+  $("sbTitle").textContent = anyHidden ? t("reveal.hidden") : "";
+  $("sbNote").textContent = "";
+  $("sceneBar").hidden = !anyHidden;
+}
+$("revealBtn").addEventListener("click", () => $("revealDlg").showModal());
+$("revealYes").addEventListener("click", () => {
+  $("revealDlg").close();
+  revealed = true;
+  applyHide();
+});
+
 function applyAll() {
+  revealed = false;
   applyShow();
   syncShow();
   setPlaying(false);
@@ -525,6 +567,7 @@ function applyAll() {
   segSync($("frameSeg"), st.frame);
   setQuantity(pres.g || DEFAULT_QUANTITY, false);
   showTab(pres.tab ?? Math.min(2, Math.max(0, +(store.get("tab") || 0))));
+  applyHide();
   save();
 }
 applyAll();
