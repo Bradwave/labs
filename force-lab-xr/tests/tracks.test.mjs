@@ -52,6 +52,18 @@ ok("run: time limit and leaving the room", () => {
   const r2 = new T.Run(t); r2.grab(); r2.hold(t.start.p); r2.release([0, 4, 0]);
   r2.advance({ zones: [], g: 0 }, 240 * 2); assert.equal(r2.state, "lost");
 });
+ok("blast: Δv = J/m along the kick, budget, starts the run from ready", () => {
+  const t = T.TRACKS.find((x) => x.id === "kick");
+  const r = new T.Run(t);
+  assert.ok(r.blast([1, 0, 0])); assert.equal(r.state, "flying");
+  r.advance({ zones: [], g: 0 }, 60);
+  assert.ok(Math.abs(r.ball.v[0] - 0.25 / t.mass) < 1e-9, "Δv = J/m"); assert.ok(Math.abs(r.ball.v[2]) < 1e-12);
+  assert.ok(r.blast([1, 0, 0]) && r.blast([1, 0, 0])); assert.ok(!r.blast([1, 0, 0]), "only 3");
+  assert.ok(r.events.some((e) => e.type === "noBlastsLeft"));
+  const heavy = new T.Run({ ...t, mass: 1 }); heavy.ball.m = 1; heavy.blast([0, 1, 0]); heavy.advance({ zones: [], g: 0 }, 60);
+  assert.ok(Math.abs(heavy.ball.v[1] - 0.25) < 1e-9, "twice the mass, half the Δv");
+  const noKicks = new T.Run(T.TRACKS[0]); assert.ok(!noKicks.blast([1, 0, 0])); assert.ok(noKicks.events.some((e) => e.type === "noBlast"));
+});
 ok("medals", () => {
   const t = T.TRACKS[0];
   assert.equal(T.medalFor(t, 2.9), 3); assert.equal(T.medalFor(t, 4), 2); assert.equal(T.medalFor(t, 5.9), 1); assert.equal(T.medalFor(t, 7), 0);

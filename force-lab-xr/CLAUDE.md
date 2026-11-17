@@ -10,9 +10,9 @@ Unlike the older XR labs, the 2D page uses the shared kit (`../kit/kit.css`, `..
 
 | File | Role |
 |---|---|
-| `js/physics.js` | **pure**: forces (uniform zones in N, rubber band that only pulls with rest length + `BAND.slack` dead zone, weight), fixed step `DT = 1/240` (semi-implicit Euler), ring crossing, target, prediction, split of a, force snapping. |
-| `js/tracks.js` | **pure**: the 8 tracks + sandbox (data in stage coordinates, metres), `validate`, `Run` state machine (ready · held · flying · free · done · failed · lost), medals, `simulateSolution`, guide path. |
-| `js/input.js` | **pure**: `ThrowEstimator` (least squares over a window before release), `Button` (tap / hold with progress), `Stick`, `palmNormal`/`palmUp`, `fist`. |
+| `js/physics.js` | **pure**: forces (uniform zones in N, rubber band that only pulls with rest length + dead zone `slack`, default `BAND.slack`, set by `opt.slack`; weight), fixed step `DT = 1/240` (semi-implicit Euler), ring crossing, target, prediction, split of a, force snapping. |
+| `js/tracks.js` | **pure**: the 8 tracks + sandbox (data in stage coordinates, metres), `validate`, `Run` state machine (ready · held · flying · free · done · failed · lost), kicks (`blast`, budget `maxBlasts`), medals, `simulateSolution`, guide path. |
+| `js/input.js` | **pure**: `ThrowEstimator` (least squares over a window before release), `Button` (tap / hold with progress), `Stick`, `palmNormal`/`palmUp`, `fist`, `openHand`, `BlastGesture`, `DoubleTap`. |
 | `js/xrpanel.js` | **pure layout + canvas drawing**: options, HUD, gallery/palm card, zone menu; hit-test, ray, fingertip `Poke`. |
 | `js/grab.js`, `js/pointer.js` | copied unchanged from `surface-lab-xr` (two-hand grab of the stage; pointer tracker with pre-pinch latch). |
 | `js/app.js` | THREE scene, zones (`ZoneView`), ball/arrows/trail/band/prediction, XR input (`xrInput`), desktop input, sessions, loop. Test hook `window.__app`. |
@@ -28,8 +28,8 @@ Tests: `node tests/physics.test.mjs`, `tracks.test.mjs` (every track's reference
 Headless XR checks used so far: in the page, set `__app.SRC[i]` (`kind`, `gp` with `buttons`/`axes`), write `__app.grips[i].matrix` /
 `__app.ctrls[i].matrix` (XR controller groups ignore `.position`) and `visible = true`, fake `__app.hands[i].joints`, then call `__app.xrInput(now, dt)` and `__app.physics(dt)`.
 
-Controls (agreed with the user, see the plan): grip = grab/throw ball, move zones and handles, stage knob; trigger = rubber band (or click a
-panel, or drag a handle on the ray); A/X tap = new zone, hold = zone menu; B/Y tap = retry, hold = options; stick up = gallery (left/right, trigger plays,
-down closes). Hands: pinch or fist near the ball = grab; pinch a handle = drag; pinch with the ray on a panel = click; pinch elsewhere = band;
-palm up 0.4 s = palm menu; index fingertip pokes buttons. Button indices (`GP` in `app.js`) and the palm sign are **unverified on the Quest**:
+Controls (agreed with the user, see the plan): grip = grab/throw ball, move zones and handles, stage knob (Options → Track size scales around the start pad, `scaleAboutStart`); trigger = rubber band (or click a
+panel, or drag a handle on the ray), double tap = kick along the ray; A/X tap = new zone, hold = zone menu; B/Y tap = retry, hold = options; stick up = gallery (left/right, trigger plays,
+down closes). Hands: pinch or fist near the ball = grab; pinch or fist on the knob = move/turn the track (second hand pinching = resize); pinch a handle = drag; pinch with the ray on a panel = click; pinch elsewhere = band;
+fist then snapped open = kick along the palm; palm up 0.4 s = palm menu (poke ◀ ▶ or swipe the other index across the card); index fingertip pokes buttons. Button indices (`GP` in `app.js`) and the palm sign are **unverified on the Quest**:
 open `?monitor=1`.

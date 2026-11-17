@@ -37,8 +37,10 @@ ok("a is parallel to the net force, v need not be", () => {
   close(len(cr), 0, 1e-12, "a × F");
 });
 ok("rubber band: slack inside rest + dead zone, pulls beyond, capped, never pushes", () => {
-  const band = { anchor: [0, 0, 0], rest: 0.3 };
+  const band = { anchor: [0, 0, 0], rest: 0.3, slack: 0.15 };
   assert.deepEqual(P.bandForce([0, 0, -0.4], band).F, [0, 0, 0]);         // 0.4 < 0.3 + 0.15
+  assert.ok(P.bandForce([0, 0, -0.4], { anchor: [0, 0, 0], rest: 0.3, slack: 0 }).F[2] > 0, "no dead zone: pulls at once");
+  assert.deepEqual(P.bandForce([0, 0, -0.34], { anchor: [0, 0, 0], rest: 0.3 }).F, [0, 0, 0], "default dead zone 5 cm");
   assert.deepEqual(P.bandForce([0, 0, -0.1], band).F, [0, 0, 0]);         // closer: still slack (no push)
   const f = P.bandForce([0, 0, -0.65], band).F;                           // stretch 0.2 → 0.8 N toward the hand
   close(f[2], 4 * 0.2, 1e-12, "Hooke"); assert.ok(f[2] > 0);
@@ -46,7 +48,7 @@ ok("rubber band: slack inside rest + dead zone, pulls beyond, capped, never push
 });
 ok("band orbit: circular motion stays circular (energy bounded)", () => {
   const s = { p: [0.5, 0, 0], v: [0, 0, -1], m: 0.5 };
-  const env = { zones: [], g: 0, band: { anchor: [0, 0, 0], rest: 0.10 } };
+  const env = { zones: [], g: 0, band: { anchor: [0, 0, 0], rest: 0.10, slack: 0.15 } };
   let rmin = 9, rmax = 0;
   for (let i = 0; i < 240 * 10; i++) { P.step(s, env); const r = len(s.p); rmin = Math.min(rmin, r); rmax = Math.max(rmax, r); }
   assert.ok(rmin > 0.48 && rmax < 0.52, `radius stays near 0.5: ${rmin}..${rmax}`);
@@ -79,5 +81,15 @@ ok("prediction follows the simulation", () => {
   const pts = P.predict([0, 0, 0], [0, 0, -1], 0.5, env, 1, 0.1);
   const s = run({ p: [0, 0, 0], v: [0, 0, -1], m: 0.5 }, env, 1);
   close(len(sub(pts[pts.length - 1], s.p)), 0, 1e-9, "end point");
+});
+ok("blast cone: inside 30° and within range only", () => {
+  assert.ok(P.blastHits([0, 0, 0], [0, 0, -1], [0.2, 0, -1]));
+  assert.ok(!P.blastHits([0, 0, 0], [0, 0, -1], [1, 0, -1]), "outside the cone");
+  assert.ok(!P.blastHits([0, 0, 0], [0, 0, -1], [0, 0, -3]), "out of range");
+  assert.ok(!P.blastHits([0, 0, 0], [0, 0, -1], [0, 0, 1]), "behind");
+});
+ok("a kick force adds to the net force", () => {
+  const f = P.forces([0, 0, 0], 0.5, { zones: [], g: 0, kick: [2.5, 0, 0] });
+  assert.deepEqual(f.net, [2.5, 0, 0]); assert.deepEqual(f.a, [5, 0, 0]);
 });
 console.log(`\n${n} physics tests passed`);

@@ -38,6 +38,9 @@
     label('l-slow', 'x.slow');
     it.push.apply(it, row([1, 0.5, 0.25].map(k => ['slow:' + k, num(k, k === 1 ? 0 : k === 0.5 ? 1 : 2, s.lang) + '×', { on: o.slow === k }]), X, y, IW, 68));
     y += 88;
+    label('l-slack', 'x.slack');
+    it.push.apply(it, row([0, 0.02, 0.05, 0.1].map(k => ['slack:' + k, Math.round(k * 100) + ' cm', { on: o.slack === k }]), X, y, IW, 68));
+    y += 88;
     if (s.sandbox) {
       label('l-g', 'x.gravity');
       it.push.apply(it, row([[0, t('x.g.off')], [1, t('x.g.low')], [9.8, t('x.g.earth')]].map(k => ['g:' + k[0], k[1], { on: o.g === k[0] }]), X, y, IW, 68));
@@ -46,6 +49,10 @@
       it.push.apply(it, row([0.25, 0.5, 1].map(m => ['mass:' + m, num(m, m === 0.25 ? 2 : 1, s.lang) + ' kg', { on: o.mass === m }]), X, y, IW, 68));
       y += 88;
     }
+    label('l-size', 'x.size');
+    const sc = s.scale || 1;
+    it.push.apply(it, row([0.5, 0.75, 1, 1.5].map(k => ['size:' + k, Math.round(k * 100) + '%', { on: Math.abs(sc - k) < 0.01 }]), X, y, IW, 68));
+    y += 88;
     label('l-lang', 'x.lang');
     it.push.apply(it, row([['lang:it', 'IT', { on: s.lang === 'it' }], ['lang:en', 'EN', { on: s.lang === 'en' }]], X, y, IW, 68));
     y += 92;
@@ -63,7 +70,7 @@
     it.push(T('msg', X, 72, IW, 34, s.msg || '', { small: true, color: s.msgColor }));
     if (!tr.sandbox) {
       it.push(T('time', X, 112, 260, 70, 't = ' + num(s.run.time, 2, s.lang) + ' s', { bold: true, px: 40 }));
-      it.push(T('gates', X + 280, 112, 260, 70, t('x.gates') + ' ' + s.run.next + '/' + s.run.total, { bold: true, px: 30, right: true }));
+      it.push(T('gates', X + 280, 112, 260, 70, t('x.gates') + ' ' + s.run.next + '/' + s.run.total + (s.blasts ? '  J ' + s.blasts.left + '/' + s.blasts.max : ''), { bold: true, px: 30, right: true }));
     }
     const y = tr.sandbox ? 116 : 196;
     it.push(T('v', X, y, 176, 40, '|v| ' + num(s.v, 2, s.lang), { bold: true, color: 'vel', px: 25 }));
@@ -86,7 +93,7 @@
     it.push(T('gname', X + 92, 30, IW - 184, 40, L(tr.name, s.lang), { bold: true, center: true, px: 28 }));
     it.push(T('gnum', X + 92, 70, IW - 184, 28, tr.sandbox ? '' : s.index + ' / ' + s.count, { small: true, centerSmall: true }));
     it.push(T('gidea', X, 118, IW, 96, L(tr.idea, s.lang), { wrap: true, px: 21 }));
-    const tools = tr.sandbox ? '' : [tr.maxZones ? t('x.tool.zones', { n: tr.maxZones }) : t('x.tool.nozones'), tr.band ? t('x.tool.band') : '', tr.g ? 'g = ' + num(tr.g, 0, s.lang) + ' m/s²' : '', tr.timeLimit ? '≤ ' + num(tr.timeLimit, 0, s.lang) + ' s' : ''].filter(Boolean).join(' · ');
+    const tools = tr.sandbox ? '' : [tr.maxZones ? t('x.tool.zones', { n: tr.maxZones }) : t('x.tool.nozones'), tr.band ? t('x.tool.band') : '', tr.maxBlasts ? t('x.tool.blasts', { n: tr.maxBlasts }) : '', tr.g ? 'g = ' + num(tr.g, 0, s.lang) + ' m/s²' : '', tr.timeLimit ? '≤ ' + num(tr.timeLimit, 0, s.lang) + ' s' : ''].filter(Boolean).join(' · ');
     it.push(T('gtools', X, 222, IW, 30, tools, { small: true, px: 19 }));
     it.push(T('gbest', X, 254, IW, 30, s.best != null ? t('x.best') + ' ' + num(s.best, 2, s.lang) + ' s  ' + ['', '🥉', '🥈', '🥇'][s.medal || 0] : '', { small: true, px: 19 }));
     let y = 296;

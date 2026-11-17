@@ -7,7 +7,10 @@
 
   const DT = 1 / 240;
   const BALL_R = 0.04;                       // raggio della palla (m)
-  const BAND = { k: 4, slack: 0.15, cap: 3, reach: 2.5 };   // N/m, zona morta (m), forza massima (N), portata (m)
+  // Colpo (impulso): J fisso, applicato come forza costante J/dt per dt secondi (così le frecce F e a si vedono);
+  // colpisce solo se la palla è nel cono (semiapertura in gradi) entro la portata; pausa minima tra due colpi.
+  const BLAST = { J: 0.25, dt: 0.1, cone: 30, range: 2.5, cooldown: 0.5 };
+  const BAND = { k: 4, slack: 0.05, cap: 3, reach: 2.5 };   // N/m, zona morta predefinita (m; regolabile nelle opzioni), forza massima (N), portata (m)
 
   const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
   const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -31,7 +34,7 @@
     return { F: mul(d, mag / L), stretch: stretch, L: L, free: free };
   }
 
-  // env = { zones: [{min, max, F}], g (m/s², verso −y), band: null | {anchor, rest, k?, slack?, cap?} }
+  // env = { zones: [{min, max, F}], g (m/s², verso −y), band: null | {anchor, rest, k?, slack?, cap?}, kick?: [Fx, Fy, Fz] (colpo in corso) }
   function forces(p, m, env) {
     let zone = [0, 0, 0];
     const inside = [];
@@ -39,8 +42,9 @@
     const weight = [0, -m * (env.g || 0), 0];
     const b = env.band ? bandForce(p, env.band) : null;
     const band = b ? b.F : [0, 0, 0];
-    const net = add(add(zone, band), weight);
-    return { zone: zone, band: band, weight: weight, net: net, a: mul(net, 1 / m), inside: inside, stretch: b ? b.stretch : null };
+    const kick = env.kick || [0, 0, 0];
+    const net = add(add(add(zone, band), weight), kick);
+    return { zone: zone, band: band, weight: weight, kick: kick, net: net, a: mul(net, 1 / m), inside: inside, stretch: b ? b.stretch : null };
   }
 
   // un passo: s = {p, v, m}; muta s e restituisce il segmento percorso [p0, p1]
@@ -78,6 +82,13 @@
     return out;
   }
 
+  // Il colpo partito da `o` in direzione `d` (versore) raggiunge la palla in p? (cono e portata)
+  function blastHits(o, d, p) {
+    const op = sub(p, o), L = len(op);
+    if (L > BLAST.range || L < 1e-9) return false;
+    return dot(op, norm(d)) / L >= Math.cos(BLAST.cone * Math.PI / 180);
+  }
+
   // Scomposizione dell'accelerazione lungo v (cambia la velocità scalare) e perpendicolare (cambia la direzione)
   function splitA(a, v) {
     const u = norm(v);
@@ -105,7 +116,7 @@
     return mul(u, mag);
   }
 
-  const api = { DT: DT, BALL_R: BALL_R, BAND: BAND, forces: forces, step: step, bandForce: bandForce, inBox: inBox, crossRing: crossRing, inTarget: inTarget,
+  const api = { DT: DT, BALL_R: BALL_R, BAND: BAND, BLAST: BLAST, blastHits: blastHits, forces: forces, step: step, bandForce: bandForce, inBox: inBox, crossRing: crossRing, inTarget: inTarget,
     predict: predict, splitA: splitA, snapForce: snapForce, V: { add: add, sub: sub, mul: mul, dot: dot, len: len, norm: norm } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Physics = api;
 })(typeof window !== 'undefined' ? window : globalThis);

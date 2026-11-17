@@ -5,8 +5,25 @@ Start with `../CLAUDE.md` (this lab's) for the file map; this plan holds the dec
 
 ## Decisions taken with the user (2026-11-09)
 - Force zones: one uniform force per box, several boxes (they add up). Forces in newtons, the mass matters.
-- Rubber band: pulls only; rest length = distance when it attaches; **dead zone increased to 15 cm** (`BAND.slack`), and the band **dangles**
-  (a sagging curve of the right length, toward the floor) while it is slack. Stiffness 4 N/m, cap 3 N, reach 2.5 m.
+- Rubber band: pulls only; rest length = distance when it attaches, plus a dead zone; the band **dangles** (a sagging curve of the right
+  length, toward the floor) while it is slack. Stiffness 4 N/m, cap 3 N, reach 2.5 m. The dead zone was raised to 15 cm, then judged
+  too big: now **adjustable in the options (0, 2, 5, 10 cm), default 5 cm** (`opt.slack`, `BAND.slack`).
+- **Tracking lost while pulling** (hand or controller out of view): the band keeps pulling from the last known point, so the ball can be
+  swung around the user. It ends when the hand comes back without pinching, when the controller's trigger is released, or after 10 s.
+- No placeholder boxes on the controllers (only the ray marks them).
+- **Kicks (impulse, "Iron Man blast")**: a fixed impulse J = 0.25 N·s applied as 2.5 N for 0.1 s (so the F and a arrows flash), Δv = J/m.
+  It hits only if the ball is inside a 30° cone within 2.5 m along the palm's facing direction (the ray for controllers); 0.5 s cooldown.
+  Hands: fist held ≥ 0.15 s, then snapped open within 0.15 s, ball more than 12 cm away (closer, the fist grabs). Controllers: **double tap
+  on the trigger** (the first tap only attaches a slack band, which pulls with zero force). Desktop: B, from the pointer toward the ball.
+  Shown: a shockwave cone, the impulse J on the ball and the velocity before the kick (faded) next to v after it. Budget per track
+  (`maxBlasts`, shown on the HUD as J n/max); new track 9 **Kicks** (3 kicks); unlimited in the sandbox. If accidental double taps happen
+  while pumping the band, the free thumbstick click is the fallback.
+- **Small rooms**: students may not have space to walk. The knob under the start pad now works with **hands too** (pinch or fist on it;
+  a second pinch anywhere resizes, one hand also turns the track), and the options have **Track size 50 / 75 / 100 / 150 %**, scaled around
+  the start pad so it stays within reach. Physics stays in track metres: a half-size track plays the same with half-speed throws.
+  A fist that grabbed something does not count as a kick when it opens.
+- Palm card: besides poking ◀ ▶ with the other index finger, a **horizontal swipe** of that finger across the card (≥ 8 cm in 0.4 s,
+  within 6 cm of it) changes track.
 - Gravity: off on most tracks, low g = 1 m/s² on track 8; Earth only in the sandbox; slow motion ×½ ×¼.
 - **Rotating the track helps with how the user can move their arms**: the stage can be moved, rotated freely (not only yaw) and scaled
   with the knob under the start pad (two hands scale). Physics runs in stage coordinates, so this is comfort, not a puzzle element.
@@ -18,7 +35,6 @@ Start with `../CLAUDE.md` (this lab's) for the file map; this plan holds the dec
   making "pinch inside a zone" ambiguous with the band. Controllers can also grip anywhere inside a zone to move it.
 - Desktop: the ball and handles are dragged in a **horizontal plane** (Shift = vertical), so a throw can go down the track; the HUD is drawn
   over the stage on screen and floats next to the track in the headset.
-- No swipe on the palm card yet: the ◀ ▶ buttons (poke or ray) change track.
 - The prediction is drawn while the ball is in the hand too (with the current estimated release velocity): an aiming aid on the tracks that allow it.
 
 A WebXR lab for the Quest Browser (and desktop) about the relationship **force → acceleration → velocity**.
@@ -285,6 +301,9 @@ replay ghost, track editor and sharing tracks by link/QR, sounds, obstacles.
 | Date | What |
 |---|---|
 | 2026-11-09 | Plan written (Opus 5.5). |
+| 2026-11-09 | v0.1.3: hands can move, turn and resize the track by the knob; track size presets around the start pad; knob highlight. |
+| 2026-11-09 | v0.1.2: kicks (hand fist→open, controller double tap, desktop B), track 9 Kicks, swipe on the palm card. Tests: 14 physics, 28 tracks, 7 input, 37 panel. |
+| 2026-11-09 | v0.1.1: controller boxes removed; band keeps pulling while the hand/controller is out of view; dead zone adjustable (default 5 cm). |
 | 2026-11-09 | v0.1 built: physics, 8 tracks + sandbox with reference solutions, throw estimator, buttons, panels, scene, desktop play, XR controllers and hands, zones, gallery with 3D previews, palm menu, options, it/en, PWA, logo. Tests: 12 physics, 25 tracks, 5 input, 34 panel. Checked in the browser (desktop) and with simulated controllers/hands; **nothing run on a Quest yet**. |
 
 ## Next (waiting for the first headset test)

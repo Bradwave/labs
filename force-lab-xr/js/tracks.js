@@ -66,7 +66,7 @@
       g: 0, mass: 0.5, predict: false, band: true, maxZones: 0, maxForce: 1, timeLimit: 10, medals: [4, 5.5, 7],
       start: { p: sl(0), r: 0.15 }, center: SLING_C,
       gates: [ring(sl(90), slN(90)), ring(sl(180), slN(180)), ring(sl(270), slN(270)), ring(sl(358), slN(358))],
-      zones: [], solution: { launch: [0, 0, -1], zones: [], band: { anchor: SLING_C, rest: 0.10 } } },
+      zones: [], solution: { launch: [0, 0, -1], zones: [], band: { anchor: SLING_C, rest: 0.20, slack: 0.05 } } },
 
     { id: 'lowg', n: 8, name: { it: 'Gravità bassa', en: 'Low gravity' },
       idea: { it: 'Anche il peso è una forza: annullalo, o sfruttalo.', en: 'Weight is a force too: cancel it, or use it.' },
@@ -75,7 +75,14 @@
       gates: [ring([0, 1.519, -1.05], [0, 0.371, -0.928]), ring([0, 1.727, -1.85], [0, 0.239, -0.971]), ring([0, 1.821, -2.65], [0, -0.2, -0.98]), ring([0, 1.336, -3.45], [0, -0.709, -0.706])],
       zones: [], solution: { launch: [0, 1, -1], zones: [zone([-0.4, 1.4, -2.2], [0.4, 2.1, -1.2], [0, 0.5, 0])] } },
 
-    { id: 'sandbox', n: 0, sandbox: true, name: { it: 'Laboratorio libero', en: 'Sandbox' },
+    { id: 'kick', n: 9, name: { it: 'Colpi', en: 'Kicks' },
+      idea: { it: "Un colpo è un impulso J = F·Δt: cambia v di colpo, Δv = J/m, nella direzione del colpo.", en: 'A kick is an impulse J = F·Δt: it changes v at once, Δv = J/m, in the direction of the kick.' },
+      g: 0, mass: 0.5, predict: true, band: false, maxZones: 0, maxBlasts: 3, maxForce: 1, timeLimit: 6, medals: [3.4, 4.2, 5],
+      start: { p: START, r: 0.15 },
+      gates: [ring([0, 1.2, -0.9], [0, 0, -1]), ring([0.276, 1.2, -1.754], [0.447, 0, -0.894]), ring([0.916, 1.2, -2.535], [0.781, 0, -0.625]), ring([1.659, 1.2, -3.129], [0.781, 0, -0.625])],
+      zones: [], solution: { launch: [0, 0, -1], zones: [], blasts: [{ t: 0.7, dir: [1, 0, 0] }, { t: 1.7, dir: [1, 0, 0.6] }] } },
+
+    { id: 'sandbox', n: 0, sandbox: true, maxBlasts: 99, name: { it: 'Laboratorio libero', en: 'Sandbox' },
       idea: { it: 'Tutti gli strumenti, nessuna porta: prova quello che vuoi.', en: 'Every tool, no gates: try anything.' },
       g: 0, mass: 0.5, predict: true, band: true, maxZones: 6, maxForce: 1, timeLimit: 0, medals: null,
       start: { p: START, r: 0.15 }, gates: [], zones: [], solution: null },
@@ -98,6 +105,7 @@
     if (t.solution) {
       if (t.solution.zones.length > t.maxZones) err.push('solution uses too many zones');
       t.solution.zones.forEach(z => { if (len(z.F) > t.maxForce + 1e-9) err.push('solution force too big'); });
+      if ((t.solution.blasts || []).length > (t.maxBlasts || 0)) err.push('solution uses too many blasts');
     }
     if (!t.sandbox && (!t.medals || t.medals.length !== 3 || !(t.medals[0] < t.medals[1] && t.medals[1] < t.medals[2] && t.medals[2] <= t.timeLimit))) err.push('medals');
     return err;
@@ -122,6 +130,7 @@
     this.next = 0; this.time = 0; this.result = null;
     this.passed = t.gates.map(() => false);
     this.events = [];
+    this.kicks = []; this.blastsUsed = 0;
   };
   Run.prototype.emit = function (type, data) { this.events.push(Object.assign({ type: type }, data || {})); };
   Run.prototype.inStart = function (p) { return len(sub(p, this.track.start.p)) <= this.track.start.r + 0.05; };
@@ -131,6 +140,21 @@
   Run.prototype.grab = function () {
     if (this.state === 'flying') { this.emit('void'); }
     this.state = 'held'; this.next = 0; this.time = 0; this.passed = this.track.gates.map(() => false); this.result = null;
+    this.kicks = []; this.blastsUsed = 0;
+  };
+  // colpo: impulso J lungo il versore dir (coordinate di pista). Restituisce true se è partito.
+  Run.prototype.blastsLeft = function () { return Math.max(0, (this.track.maxBlasts || 0) - this.blastsUsed); };
+  Run.prototype.blast = function (dir) {
+    const t = this.track;
+    if (!t.maxBlasts) { this.emit('noBlast'); return false; }
+    if (this.blastsLeft() <= 0) { this.emit('noBlastsLeft'); return false; }
+    if (this.state === 'held' || this.state === 'lost') return false;
+    const u = norm(dir), J = mul(u, P.BLAST.J);
+    this.kicks.push({ F: mul(u, P.BLAST.J / P.BLAST.dt), n: Math.round(P.BLAST.dt / P.DT) });
+    this.blastsUsed++;
+    if (this.state === 'ready') { this.state = t.sandbox ? 'free' : 'flying'; this.time = 0; if (!t.sandbox) this.emit('launch'); }
+    this.emit('blast', { J: J, vBefore: this.ball.v.slice(), left: this.blastsLeft() });
+    return true;
   };
   Run.prototype.hold = function (p) { this.ball.p = p.slice(); this.ball.v = [0, 0, 0]; };
   // la mano lascia la palla con velocità v
@@ -147,12 +171,19 @@
     for (let i = 0; i < steps; i++) {
       if (this.state === 'held' || this.state === 'lost') return;
       if (this.state === 'ready') {
-        if (!env.band) return;                        // ferma sulla partenza; parte solo se l'elastico tira
+        if (!env.band) return;                        // (un colpo fa partire la prova da solo: vedi blast)                        // ferma sulla partenza; parte solo se l'elastico tira
         const f = P.forces(b.p, b.m, { zones: [], g: 0, band: env.band });
         if (len(f.net) < 1e-9) return;
         this.state = t.sandbox ? 'free' : 'flying'; this.time = 0; if (!t.sandbox) this.emit('launch');
       }
-      const seg = P.step(b, env, P.DT);
+      let e = env;
+      if (this.kicks.length) {
+        let k = [0, 0, 0];
+        for (const q of this.kicks) { k = add(k, q.F); q.n--; }
+        e = Object.assign({}, env, { kick: k });
+        this.kicks = this.kicks.filter(q => q.n > 0);
+      }
+      const seg = P.step(b, e, P.DT);
       if (this.state === 'flying') {
         this.time += P.DT;
         const g = t.gates[this.next];
@@ -184,7 +215,11 @@
     const env = { zones: zones, g: t.g, band: sol.band || null };
     r.grab(); r.hold(t.start.p); r.release(sol.launch);
     const n = Math.round((maxT || (t.timeLimit + 1)) / P.DT);
-    for (let i = 0; i < n && (r.state === 'flying'); i++) r.advance(env, 1);
+    const blasts = (sol.blasts || []).slice();
+    for (let i = 0; i < n && (r.state === 'flying'); i++) {
+      while (blasts.length && r.time >= blasts[0].t - 1e-9) r.blast(blasts.shift().dir);
+      r.advance(env, 1);
+    }
     return r;
   }
 

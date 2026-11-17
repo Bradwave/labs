@@ -43,4 +43,21 @@ ok("palm up and fist", () => {
   assert.ok(I.fist({ middleMeta: m, indexTip: [0, -0.03, -0.06], middleTip: [0, -0.03, -0.07], ringTip: [0.01, -0.03, -0.07] }));
   assert.ok(!I.fist({ middleMeta: m, indexTip: [0, 0, -0.17], middleTip: [0, 0, -0.18], ringTip: [0.01, 0, -0.17] }));
 });
+ok("double tap: two short presses within 320 ms; slow or long presses do not count", () => {
+  const d = new I.DoubleTap();
+  assert.ok(!d.update(true, 0)); d.update(false, 80); assert.ok(d.update(true, 200), "second press fires"); d.update(false, 260);
+  assert.ok(!d.update(true, 300), "a third press does not fire again");
+  const e = new I.DoubleTap(); e.update(true, 0); e.update(false, 400); assert.ok(!e.update(true, 450), "first press too long");
+  const f = new I.DoubleTap(); f.update(true, 0); f.update(false, 50); assert.ok(!f.update(true, 600), "too late");
+});
+ok("hand blast: fist held, then snapped open", () => {
+  const g = new I.BlastGesture();
+  assert.ok(!g.update(true, false, 0)); assert.ok(!g.update(true, false, 200));
+  assert.ok(!g.update(false, false, 230)); assert.ok(g.update(false, true, 280), "opens within 150 ms");
+  const h = new I.BlastGesture(); h.update(true, false, 0); h.update(false, false, 60); assert.ok(!h.update(false, true, 80), "fist too short");
+  const k = new I.BlastGesture(); k.update(true, false, 0); k.update(false, false, 300); assert.ok(!k.update(false, true, 600), "opened too slowly");
+  const m = [0, 0, -0.08];
+  assert.ok(I.openHand({ middleMeta: m, indexTip: [0, 0, -0.18], middleTip: [0, 0, -0.19], ringTip: [0.01, 0, -0.18] }));
+  assert.ok(!I.openHand({ middleMeta: m, indexTip: [0, -0.03, -0.06], middleTip: [0, -0.03, -0.07], ringTip: [0.01, -0.03, -0.07] }));
+});
 console.log(`\n${n} input tests passed`);

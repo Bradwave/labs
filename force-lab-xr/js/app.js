@@ -23,9 +23,12 @@ export function startApp(kit) {
   let C = PAL[isDark() ? "dark" : "light"];
 
   // ---------- stato ----------
-  const DEF = { vec: { v: true, a: true, F: true }, each: false, split: false, strobe: true, predict: "auto", slow: 1, snap: true, g: 0, mass: 0.5 };
+  const DEF = { vec: { v: true, a: true, F: true }, each: false, split: false, strobe: true, predict: "auto", slow: 1, snap: true, g: 0, mass: 0.5, slack: P.BAND.slack };
+  const SLACKS = [0, 0.02, 0.05, 0.1];          // zona morta dell'elastico (m), scelta nelle opzioni
+  const BAND_LOST_MAX = 10;                     // s: un elastico senza mano tracciata si stacca dopo questo tempo
   const opt = Object.assign({}, DEF, store.getJSON("opts", {}));
   opt.vec = Object.assign({}, DEF.vec, opt.vec || {});
+  if (!SLACKS.includes(opt.slack)) opt.slack = DEF.slack;
   const best = store.getJSON("best", {});
   const saveOpts = () => store.setJSON("opts", opt);
   let trackIdx = clamp(+store.get("track") || 0, 0, TR.TRACKS.length - 1);
@@ -199,10 +202,11 @@ export function startApp(kit) {
     if (tr.center) { // fionda: dove tenere la mano
       const c = new THREE.Mesh(sph, mat("band", { transparent: true, opacity: 0.5 })); c.scale.setScalar(0.025); c.position.set(tr.center[0], tr.center[1], tr.center[2]); g.add(c);
     }
+    let knob = null;
     if (!mini) { // manopola sulla colonnina: impugnala per spostare, ruotare e (con due mani) scalare la pista
-      const knob = outlined(new THREE.CylinderBufferGeometry(0.06, 0.06, 0.03, 24), "accent", 1.1); knob.position.set(sp[0], 0.9, sp[2]); g.add(knob);
+      knob = outlined(new THREE.CylinderBufferGeometry(0.06, 0.06, 0.03, 24), "accent", 1.1); knob.position.set(sp[0], 0.9, sp[2]); g.add(knob);
     }
-    return { g: g, gates: gates, post: post };
+    return { g: g, gates: gates, post: post, knob: knob };
   }
   function zoneBox(z) {
     const size = [z.max[0] - z.min[0], z.max[1] - z.min[1], z.max[2] - z.min[2]];
@@ -320,9 +324,11 @@ export function startApp(kit) {
     v: new Arrow("vel", { r: 0.008 }), a: new Arrow("acc", { r: 0.008 }), F: new Arrow("force", { r: 0.008 }),
     Fz: new Arrow("force", { r: 0.007 }), Fb: new Arrow("band", { r: 0.007 }), W: new Arrow("pos", { r: 0.007 }),
     apar: new Arrow("acc", { r: 0.005, opacity: 0.55 }), aperp: new Arrow("acc", { r: 0.005, opacity: 0.55 }),
+    Fk: new Arrow("force", { r: 0.007 }), J: new Arrow("force", { r: 0.013 }), vb: new Arrow("vel", { r: 0.007, opacity: 0.35 }),
   };
+  const K_J = 1.2; // m per N·s
   const K = { v: 0.3, a: 0.15, F: 0.3 };
-  const lab = { v: new Label("v", "vel"), a: new Label("a", "acc"), F: new Label("F", "force") };
+  const lab = { v: new Label("v", "vel"), a: new Label("a", "acc"), F: new Label("F", "force"), J: new Label("J", "force") };
   Object.values(lab).forEach((l) => { l.sp.scale.set(0.09, 0.034, 1); stage.add(l.sp); });
   const strobe = Array.from({ length: 60 }, () => { const m = new THREE.Mesh(sph, mat("tile2", { transparent: true, opacity: 0.55 })); m.scale.setScalar(0.012); m.visible = false; stage.add(m); return m; });
   let strobeN = 0, strobeT = 0;
@@ -334,15 +340,15 @@ export function startApp(kit) {
   let band = null;
   function clearBand() { band = null; bandTube.g.visible = false; }
   function attachBand(src, anchor) {
-    if (!track.band) { say(t("ev.noBand")); return false; }
+    if (!track.band) { if (!track.maxBlasts) say(t("ev.noBand")); return false; }
     const d = V.len(V.sub(run.ball.p, anchor));
     if (d > P.BAND.reach) { say(t("ev.tooFar")); return false; }
-    band = { src: src, anchor: anchor, rest: d };
+    band = { src: src, anchor: anchor, rest: d, lostAt: 0 };
     return true;
   }
   function drawBand() {
     if (!band) { bandTube.g.visible = false; return; }
-    const a = band.anchor, b = run.ball.p, d = V.len(V.sub(b, a)), free = band.rest + P.BAND.slack;
+    const a = band.anchor, b = run.ball.p, d = V.len(V.sub(b, a)), free = band.rest + opt.slack;
     const pts = [];
     if (d < free) { // molle: penzola (arco di parabola con la stessa lunghezza, verso il basso del mondo)
       const sag = Math.min(0.6, Math.sqrt(Math.max(0, 3 * d * (free - d) / 8)) + (d < 0.05 ? (free - d) / 2 : 0));
@@ -357,7 +363,9 @@ export function startApp(kit) {
     }
   }
 
-  function env() { return { zones: allZones(), g: gNow(), band: band ? { anchor: band.anchor, rest: band.rest } : null }; }
+  function env() { return { zones: allZones(), g: gNow(), band: band ? { anchor: band.anchor, rest: band.rest, slack: opt.slack } : null }; }
+  // per letture e frecce: in più la forza del colpo in corso (la fisica la aggiunge passo per passo in Run.advance)
+  function envShown() { const e = env(); if (run.kicks.length) e.kick = run.kicks.reduce((k, q) => V.add(k, q.F), [0, 0, 0]); return e; }
 
   // ---------- pannelli su canvas (in scena) ----------
   const panels = [];
@@ -409,13 +417,14 @@ export function startApp(kit) {
     let msg = ui.msg && now < ui.msgUntil ? ui.msg : track.sandbox ? t("msg.sandbox") : t("msg." + (run.state === "held" ? "held" : run.state));
     if (track.sandbox && ui.msg && now < ui.msgUntil) msg = ui.msg;
     const f = liveForces();
-    return { t: t, lang: lang(), track: track, run: { time: run.time, next: run.next, total: track.gates.length, state: run.state }, v: V.len(liveV()), a: V.len(f.a), F: V.len(f.net), mass: mNow(), g: gNow(), best: best[track.id], msg: msg };
+    return { t: t, lang: lang(), track: track, blasts: track.maxBlasts && !track.sandbox ? { left: run.blastsLeft(), max: track.maxBlasts } : null, run: { time: run.time, next: run.next, total: track.gates.length, state: run.state }, v: V.len(liveV()), a: V.len(f.a), F: V.len(f.net), mass: mNow(), g: gNow(), best: best[track.id], msg: msg };
   }
   function liveV() { return run.state === "held" && held ? held.est.velocity(performance.now(), held.kind) : run.ball.v; }
   const ZERO = { net: [0, 0, 0], a: [0, 0, 0], zone: [0, 0, 0], band: [0, 0, 0], weight: [0, 0, 0] };
   function liveForces() {
     if (run.state === "held" || run.state === "ready" && !band) return ZERO;
-    return P.forces(run.ball.p, run.ball.m, env());
+    if (run.state === "ready" && band) return P.forces(run.ball.p, run.ball.m, Object.assign(env(), { zones: [], g: 0 }));
+    return P.forces(run.ball.p, run.ball.m, envShown());
   }
 
   // ---------- messaggi ----------
@@ -435,6 +444,9 @@ export function startApp(kit) {
       else if (e.type === "void") say(t("ev.void"));
       else if (e.type === "notStart") say(t("ev.notStart"));
       else if (e.type === "launch") say(t("ev.launch"), 700);
+      else if (e.type === "blast") { say(t("ev.blast", { dv: X.num(P.BLAST.J / run.ball.m, 2, lang()), n: e.left }), 1400); kickVis = { J: e.J, vBefore: e.vBefore, until: performance.now() + 1200 }; }
+      else if (e.type === "noBlast") say(t("ev.noBlast"));
+      else if (e.type === "noBlastsLeft") say(t("ev.noBlastsLeft"));
     }
   }
 
@@ -448,6 +460,7 @@ export function startApp(kit) {
     else if (k === "snap" || k === "zsnap") opt.snap = !opt.snap;
     else if (k === "pred") opt.predict = v;
     else if (k === "slow") opt.slow = +v;
+    else if (k === "slack") opt.slack = +v;
     else if (k === "g") opt.g = +v;
     else if (k === "mass") { opt.mass = +v; if (track.sandbox) run.ball.m = opt.mass; }
     else if (k === "lang") setLang(v);
@@ -455,6 +468,7 @@ export function startApp(kit) {
     else if (k === "options") { ui.options = !ui.options; ui.gallery = null; }
     else if (k === "exit") { if (xrSession) xrSession.end(); }
     else if (k === "clearZones") { userZones.length = 0; selZone = null; ui.zoneMenu = null; syncZoneViews(); syncDom(); }
+    else if (k === "size") scaleAboutStart(+v);
     else if (k === "homeStage") { stage.position.set(0, 0, 0); stage.quaternion.identity(); stage.scale.setScalar(1); }
     else if (k === "retry") retry();
     else if (k === "addZone") addZone(ui.gallery && ui.gallery.anchor ? ui.gallery.anchor : null);
@@ -478,18 +492,19 @@ export function startApp(kit) {
   const SRC = [0, 1].map((i) => ({
     i: i, kind: null, handed: null, gp: null, eng: null, grip: false, trig: false, pinch: false, fist: false, palmT: 0, palmUp: false,
     btnA: new Input.Button(600), btnB: new Input.Button(600), stick: new Input.Stick(), est: new Input.ThrowEstimator(), drag: null, uiDown: false,
+    dbl: new Input.DoubleTap(), blastG: new Input.BlastGesture(), blastT: 0, swipe: null, open: false,
     pos: new THREE.Vector3(), quat: new THREE.Quaternion(), rayO: new THREE.Vector3(), rayD: new THREE.Vector3(), tip: null, palm: null, palmN: null,
   }));
   hands.forEach((h) => scene.add(h));
   ctrls.forEach((c, i) => {
     scene.add(c); scene.add(grips[i]); c.add(rays[i]);
-    const knob = new THREE.Mesh(new THREE.BoxBufferGeometry(0.03, 0.025, 0.09), mat("ink", null, "lambert")); grips[i].add(knob); grips[i].userData.knob = knob;
-    c.addEventListener("connected", (e) => { const s = SRC[i]; s.kind = e.data && e.data.hand ? "hand" : "controller"; s.gp = (e.data && e.data.gamepad) || null; s.handed = (e.data && e.data.handedness) || null; knob.visible = s.kind === "controller"; });
-    c.addEventListener("disconnected", () => { const s = SRC[i]; endEngagement(s); s.kind = null; s.gp = null; });
+    c.addEventListener("connected", (e) => { const s = SRC[i]; s.kind = e.data && e.data.hand ? "hand" : "controller"; s.gp = (e.data && e.data.gamepad) || null; s.handed = (e.data && e.data.handedness) || null; });
+    c.addEventListener("disconnected", () => { const s = SRC[i]; if (s.eng !== "band") endEngagement(s); s.kind = null; s.gp = null; });
   });
   const jointGeo = new THREE.SphereBufferGeometry(1, 8, 6), handMats = [new THREE.MeshBasicMaterial({ color: 0xf8fafc }), new THREE.MeshBasicMaterial({ color: 0xf8fafc })];
   const NEED = ["wrist", "thumb-tip", "index-finger-tip", "middle-finger-tip", "ring-finger-tip", "index-finger-metacarpal", "middle-finger-metacarpal", "pinky-finger-metacarpal"];
   const arr = (v) => [v.x, v.y, v.z];
+  const _f = new THREE.Vector3(), _s = new THREE.Vector3(), _u = new THREE.Vector3(), _m = new THREE.Matrix4();
   function readHand(s) {
     const J = hands[s.i].joints || {};
     for (const n of NEED) if (!J[n] || !J[n].visible) return false;
@@ -498,8 +513,11 @@ export function startApp(kit) {
     s.pinch = Grab.pinchUpdate(s.pinch, th.distanceTo(ix)); s.near = th.distanceTo(ix) < 0.04;
     const j = { wrist: arr(J["wrist"].position), indexMeta: arr(J["index-finger-metacarpal"].position), pinkyMeta: arr(J["pinky-finger-metacarpal"].position), middleMeta: arr(J["middle-finger-metacarpal"].position),
       indexTip: arr(ix), middleTip: arr(J["middle-finger-tip"].position), ringTip: arr(J["ring-finger-tip"].position) };
-    s.fist = Input.fist(j); s.palmN = Input.palmNormal(j, s.handed); s.palmUpNow = s.palmN[1] > 0.75;
+    s.fist = Input.fist(j); s.open = Input.openHand(j); s.palmN = Input.palmNormal(j, s.handed); s.palmUpNow = s.palmN[1] > 0.75;
     s.palm = j.middleMeta; s.tip = ix.clone();
+    _f.copy(J["middle-finger-metacarpal"].position).sub(J["wrist"].position).normalize();
+    _s.copy(J["index-finger-metacarpal"].position).sub(J["pinky-finger-metacarpal"].position); _s.addScaledVector(_f, -_s.dot(_f)).normalize();
+    _u.crossVectors(_f, _s); s.quat.setFromRotationMatrix(_m.makeBasis(_s, _u, _f));
     s.pos.copy(s.pinch || s.near ? th.clone().add(ix).multiplyScalar(0.5) : J["middle-finger-metacarpal"].position);
     handMats[s.i].color.setHex(s.pinch ? 0x34d399 : s.fist ? 0xfacc15 : 0xf8fafc);
     return true;
@@ -544,6 +562,16 @@ export function startApp(kit) {
       if (op.addScaledVector(d, -tt).length() < r) { bt = tt; best = { view: v, kind: h.userData.handle.kind, mesh: h, t: tt }; }
     }
     return best;
+  }
+  function knobWorld() { return built && built.knob ? built.knob.getWorldPosition(new THREE.Vector3()) : null; }
+  function nearKnob(posW) { const k = knobWorld(); return !!k && posW.distanceTo(k) < 0.07 + 0.06 * stageScale(); }
+  const otherOnStage = (s) => SRC.some((o) => o !== s && o.eng === "stage");
+  // dimensione della pista: scala attorno alla partenza, che resta dov'è (a portata di mano)
+  function scaleAboutStart(k) {
+    stage.updateMatrixWorld(true);
+    const before = toWorld(track.start.p);
+    stage.scale.setScalar(k); stage.updateMatrixWorld(true);
+    stage.position.add(before.sub(toWorld(track.start.p))); stage.updateMatrixWorld(true);
   }
   function zoneAt(p) { for (const z of userZones) if (P.inBox(p, z)) return zoneViews.get(z); return null; }
   function nearestZone(p) { let b = null, bd = 0.6; for (const z of userZones) { const v = zoneViews.get(z), d = V.len(V.sub(v.center(), p)); if (d < bd || P.inBox(p, z)) { bd = d; b = z; } } return b || selZone; }
@@ -606,7 +634,17 @@ export function startApp(kit) {
     let hoverHandle = null;
     for (const s of SRC) {
       rays[s.i].visible = false;
-      if (!s.active) { if (s.eng) endEngagement(s, now); continue; }
+      if (!s.active) {
+        // mano o controller fuori dal campo visivo: un elastico in tensione continua a tirare dall'ultimo punto noto
+        // (così si può far girare la palla attorno a sé); finisce se il grilletto è rilasciato o dopo BAND_LOST_MAX secondi
+        if (s.eng === "band" && band && band.src === s) {
+          if (!band.lostAt) band.lostAt = now;
+          const trigOff = s.kind === "controller" && s.gp && !(s.gp.buttons[GP.TRIG] && s.gp.buttons[GP.TRIG].pressed);
+          if (trigOff || now - band.lostAt > BAND_LOST_MAX * 1000) endEngagement(s, now);
+        } else if (s.eng) endEngagement(s, now);
+        continue;
+      }
+      if (band && band.src === s) band.lostAt = 0;
       const sp = toStage(s.pos);
       if (s.eng === "ball") { run.hold(sp); s.est.push(now, sp); }
       else s.est.push(now, sp);
@@ -629,14 +667,28 @@ export function startApp(kit) {
         if (dBall < 0.12) grabBall(s);
         else if (h) startDrag(s, h, false);
         else if (!isHand && zoneAt(sp)) { const v = zoneAt(sp); startDrag(s, { view: v, kind: "move" }, false); }
-        else if (!isHand && (V.len(V.sub(sp, [track.start.p[0], 0.9, track.start.p[2]])) < 0.15 || SRC.some((o) => o !== s && o.eng === "stage"))) s.eng = "stage";
+        else if (nearKnob(s.pos) || otherOnStage(s)) s.eng = "stage";
+        if (isHand && s.eng) s.blastBlock = true;   // un pugno che ha afferrato qualcosa non vale come colpo quando si riapre
       }
       if (gripUp && (s.eng === "ball" || s.eng === "drag" || s.eng === "stage")) endEngagement(s, now);
+      // colpo: doppio tocco del grilletto (controller) o pugno → mano aperta (mani), nella direzione del raggio / del palmo
+      const dbl = !isHand && s.dbl.update(trigDown, now);
+      if (dbl && !(rp && rp.item) && !(ui.gallery && ui.gallery.owner === s) && track.maxBlasts) {
+        if (band && band.src === s) clearBand();
+        if (s.eng === "band" || s.eng === "ui") s.eng = null;
+        if (!s.eng) { s.eng = "blast"; doBlast(s, s.rayO, s.rayD, now); }
+      }
+      const fired = isHand && s.blastG.update(s.fist && !s.pinch, s.open, now);
+      if (isHand) { if (s.fist) s.fistOffT = 0; else if (!s.fistOffT) s.fistOffT = now; else if (now - s.fistOffT > 250) s.blastBlock = false; }
+      if (fired && !s.blastBlock && !s.eng && dBall > 0.12 && s.palm && track.maxBlasts) {
+        doBlast(s, new THREE.Vector3(s.palm[0], s.palm[1], s.palm[2]), new THREE.Vector3(s.palmN[0], s.palmN[1], s.palmN[2]), now);
+      }
       // gesto "grilletto / pizzico"
       if (trigEdge && !s.eng) {
         if (ui.gallery && ui.gallery.owner === s && !isHand) { doAction("gplay"); }
         else if (tev.down) { const [pn, id] = tev.down.split("#"); const p = panels.find((q) => q.name === pn); if (p) pressPanel(p, id); s.eng = "ui"; buzz(s, 0.3, 20); }
         else if (isHand && dBall < 0.08) grabBall(s);
+        else if (isHand && (nearKnob(s.pos) || otherOnStage(s))) s.eng = "stage";      // pizzico sulla manopola (o seconda mano: scala)
         else {
           const h = isHand ? nearestHandle(sp, 0.06) : null;
           const hr = !isHand ? handleOnRay(s.rayO, s.rayD, 0.035) : null;
@@ -646,12 +698,12 @@ export function startApp(kit) {
           else if (rp) s.eng = "ui";
         }
       }
-      if (trigUp && (s.eng === "band" || s.eng === "ui" || (s.eng === "drag") || (isHand && s.eng === "ball"))) {
+      if (trigUp && (s.eng === "band" || s.eng === "ui" || s.eng === "blast" || (s.eng === "drag") || (isHand && (s.eng === "ball" || s.eng === "stage")))) {
         if (!(isHand && s.eng === "ball" && s.fist)) endEngagement(s, now);
       }
       if (isHand && s.eng === "ball" && !s.pinch && !s.fist) endEngagement(s, now);
       if (s.eng === "drag") updateDrag(s);
-      if (s.eng === "band" && band) { band.anchor = sp; if (V.len(V.sub(run.ball.p, sp)) > band.rest + P.BAND.slack && now - (s.buzzT || 0) > 120) { buzz(s, 0.15, 20); s.buzzT = now; } }
+      if (s.eng === "band" && band) { band.anchor = sp; if (V.len(V.sub(run.ball.p, sp)) > band.rest + opt.slack && now - (s.buzzT || 0) > 120) { buzz(s, 0.15, 20); s.buzzT = now; } }
       if (!s.eng) { const h = isHand ? nearestHandle(sp, 0.06) : handleOnRay(s.rayO, s.rayD, 0.035); if (h) hoverHandle = h.mesh; }
       // --- pulsanti dei controller ---
       if (!isHand) {
@@ -687,16 +739,66 @@ export function startApp(kit) {
       for (const p of activePanels()) {
         if (p === galP && ui.gallery && ui.gallery.owner === s) continue;
         p.mesh.updateMatrixWorld(true); _l.copy(s.tip); p.mesh.worldToLocal(_l);
+        if (p === galP) swipeCard(s, _l.x * p.mesh.scale.x, _l.y * p.mesh.scale.y, _l.z, p, now);
         const r = poke.update(s.i + p.name, { x: _l.x * p.mesh.scale.x, y: _l.y * p.mesh.scale.y, z: _l.z }, s.pinch, p.layout, 1);
         if (r.hover) p.hover = r.hover;
         if (r.press) pressPanel(p, r.press);
       }
     }
     for (const v of zoneViews.values()) v.update(hoverHandle);
+    if (built && built.knob) built.knob.scale.setScalar(SRC.some((s) => s.active && (s.eng === "stage" || (!s.eng && nearKnob(s.pos)))) ? 1.3 : 1);
     // pista: presa con una o due mani (GrabController)
     grab.update(SRC.filter((s) => s.active).map((s) => ({ id: "s" + s.i, active: true, pinching: s.eng === "stage", pos: s.pos.clone(), quat: s.quat.clone() })), dt, () => stage);
   }
   const grab = new Grab.GrabController(THREE, {});
+  // Scorrimento orizzontale dell'indice davanti alla scheda della galleria (entro 6 cm dal piano): ≥ 8 cm in 0,4 s = pista successiva/precedente
+  function swipeCard(s, x, y, z, p, now) {
+    const L = p.layout, hw = L.W * L.MPP / 2 + 0.03, hh = L.H * L.MPP / 2 + 0.03;
+    const inside = Math.abs(z) < 0.06 && Math.abs(x) < hw && Math.abs(y) < hh;
+    if (!inside) { s.swipe = null; return; }
+    if (!s.swipe || now - s.swipe.t > 400) { s.swipe = { x: x, t: now }; return; }
+    const dx = x - s.swipe.x;
+    if (Math.abs(dx) > 0.08) { doAction(dx > 0 ? "gnext" : "gprev"); s.swipe = { x: x, t: now + 250 }; } // breve pausa dopo uno scatto
+  }
+
+  // ---------- colpo (impulso) ----------
+  const shock = new THREE.Mesh(new THREE.ConeBufferGeometry(1, 1, 24, 1, true), mat("force", { transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false }));
+  shock.visible = false; scene.add(shock);
+  const SHOCK_MS = 280;
+  function showShock(oW, dW, hit, now) {
+    const d = dW.clone().normalize();
+    shock.userData = { o: oW.clone(), d: d, t0: now, hit: hit };
+    shock.material = mat(hit ? "force" : "muted", { transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false });
+    shock.visible = true;
+  }
+  function animShock(now) {
+    if (!shock.visible) return;
+    const u = shock.userData, k = (now - u.t0) / SHOCK_MS;
+    if (k >= 1) { shock.visible = false; return; }
+    const L = 0.15 + k * 0.6, r = Math.tan(P.BLAST.cone * Math.PI / 180) * L;
+    shock.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), u.d);         // la punta del cono è sulla mano
+    shock.position.copy(u.o).addScaledVector(u.d, L / 2); shock.scale.set(r, L, r);
+    shock.material.opacity = 0.45 * (1 - k);
+  }
+  let kickVis = null; // { J, vBefore, until }
+  // o, d: origine e direzione nel mondo
+  function doBlast(s, oW, dW, now) {
+    if (!track.maxBlasts) { say(t("ev.noBlast")); return; }
+    if (now - (s.blastT || 0) < P.BLAST.cooldown * 1000) return;
+    s.blastT = now;
+    const o = toStage(oW), d = toStageDir(dW, 1), hit = P.blastHits(o, d, run.ball.p);
+    showShock(oW, dW, hit, now);
+    if (!hit) { say(t("ev.miss"), 900); buzz(s, 0.2, 30); return; }
+    if (run.blast(d)) buzz(s, 1, 90);
+  }
+  // schermo: colpo dalla posizione del puntatore verso la palla (nessun cono)
+  function deskBlast() {
+    if (!track.maxBlasts) { say(t("ev.noBlast")); return; }
+    const p = bandToPointer(); if (!p) return;
+    const d = V.sub(run.ball.p, p); if (V.len(d) < 1e-3) return;
+    showShock(toWorld(p), toWorld(run.ball.p).sub(toWorld(p)), true, performance.now());
+    run.blast(d);
+  }
   function toStageDir(dw, len) { const a = toStage(new THREE.Vector3(0, 0, 0)), b = toStage(dw.clone()); return V.mul(V.norm(V.sub(b, a)), len); }
 
   // posizioni dei pannelli nel visore
@@ -736,6 +838,11 @@ export function startApp(kit) {
     show("Fz", opt.vec.F && opt.each, b.p, f.zone, K.F);
     show("Fb", opt.vec.F && opt.each, b.p, f.band, K.F);
     show("W", opt.vec.F && opt.each, b.p, f.weight, K.F);
+    show("Fk", opt.vec.F && opt.each, b.p, f.kick || [0, 0, 0], K.F);
+    const kv = kickVis && performance.now() < kickVis.until;
+    show("J", kv, b.p, kv ? kickVis.J : [0, 0, 0], K_J);
+    show("vb", kv && opt.vec.v, b.p, kv ? kickVis.vBefore : [0, 0, 0], K.v);
+    lab.J.sp.visible = !!kv; if (kv && ar.J.tip) lab.J.sp.position.set(ar.J.tip[0], ar.J.tip[1] + 0.035, ar.J.tip[2]);
     const sp = P.splitA(f.a, v);
     show("apar", opt.split && opt.vec.a, b.p, sp.par, K.a);
     show("aperp", opt.split && opt.vec.a, b.p, sp.perp, K.a);
@@ -830,10 +937,11 @@ export function startApp(kit) {
     return w ? toStage(w) : null;
   }
   addEventListener("keydown", (e) => {
-    if (renderer.xr.isPresenting || e.target.closest("input, textarea, dialog")) return;
+    if (renderer.xr.isPresenting || (e.target.closest && e.target.closest("input, textarea, dialog"))) return;
     if (e.code === "Space") { e.preventDefault(); if (!spaceDown) { spaceDown = true; const p = bandToPointer(); if (p) attachBand(desk, p); } }
     else if (e.key === "r" || e.key === "R") retry();
     else if (e.key === "f" || e.key === "F") addZone();
+    else if (e.key === "b" || e.key === "B") deskBlast();
     else if ((e.key === "Delete" || e.key === "Backspace") && selZone && !selZone.locked) deleteZone(selZone);
   });
   addEventListener("keyup", (e) => { if (e.code === "Space") { spaceDown = false; if (band && band.src === desk) clearBand(); } });
@@ -844,7 +952,7 @@ export function startApp(kit) {
   // ---------- pagina: elenco piste, opzioni su canvas, pulsanti ----------
   const optcv = $("optcv");
   function drawOptCanvas() {
-    const L = X.buildOptions({ t, lang: lang(), opt, sandbox: !!track.sandbox, xr: null });
+    const L = X.buildOptions({ t, lang: lang(), opt, sandbox: !!track.sandbox, xr: null, scale: stage.scale.x });
     optcv.width = L.W; optcv.height = L.H; optcv._layout = L;
     X.draw(optcv.getContext("2d"), L, null, null, C);
   }
@@ -937,12 +1045,13 @@ export function startApp(kit) {
     }
     safe("physics", () => physics(dt));
     safe("scene", updateScene);
+    animShock(now);
     safe("hud", () => {
       hudP.mesh.visible = presenting;
       const hs = hudState(), sig0 = hudP.sig;
-      hudP.render(X.buildHud(hs), JSON.stringify([hs.msg, X.num(hs.run.time, 2, "en"), hs.run.next, hs.v.toFixed(2), hs.a.toFixed(2), hs.F.toFixed(2), hs.best, hs.mass, hs.g, lang()]));
+      hudP.render(X.buildHud(hs), JSON.stringify([hs.msg, X.num(hs.run.time, 2, "en"), hs.run.next, hs.v.toFixed(2), hs.a.toFixed(2), hs.F.toFixed(2), hs.best, hs.mass, hs.g, lang(), hs.blasts && hs.blasts.left]));
       if (!presenting && hudP.sig !== sig0) { const hc = $("hudcv"); if (hc.width !== hudP.cv.width || hc.height !== hudP.cv.height) { hc.width = hudP.cv.width; hc.height = hudP.cv.height; } const c2 = hc.getContext("2d"); c2.clearRect(0, 0, hc.width, hc.height); c2.drawImage(hudP.cv, 0, 0); }
-      if (optP.mesh.visible || ui.options) { const L = X.buildOptions({ t, lang: lang(), opt, sandbox: !!track.sandbox, xr: ui.xr }); optP.render(L, JSON.stringify(opt) + lang() + track.id); }
+      if (optP.mesh.visible || ui.options) { const L = X.buildOptions({ t, lang: lang(), opt, sandbox: !!track.sandbox, xr: ui.xr, scale: stage.scale.x }); optP.render(L, JSON.stringify(opt) + lang() + track.id + stage.scale.x.toFixed(2)); }
       if (ui.gallery) {
         const tr = TR.TRACKS[ui.galleryIdx];
         galP.render(X.buildGallery({ t, lang: lang(), track: tr, index: tr.n, count: TR.TRACKS.length - 1, best: best[tr.id], medal: TR.medalFor(tr, best[tr.id]), palm: !!ui.gallery.palm, canAdd: userZones.length < track.maxZones }), ui.galleryIdx + lang() + !!ui.gallery.palm + userZones.length);

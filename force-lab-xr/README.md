@@ -12,10 +12,11 @@ Part of the math and physics labs: the look and behaviour follow the shared [lab
 ## Features
 - **Throw** the ball: it leaves with your hand's velocity (estimated over the last tenth of a second). The clock starts when you let go on the start pad; catching the ball in flight cancels the run.
 - **Force zones**: boxes with one uniform force in newtons (so the ball's mass matters); drag the arrow's tip for direction and strength, the corner for the size; overlapping zones add up. Snapping to axes and diagonals, 0.05 N steps.
-- **Rubber band** from the ball to your hand: slack (it dangles) until you stretch it beyond its rest length plus a dead zone, then F = k·stretch.
-- **8 tracks** of increasing difficulty, each about one idea (first law, speed, force across v, force against v, alternating forces with a time limit, circular motion, weight), plus a sandbox. Speed gates, a stop target, time limits, medals.
+- **Rubber band** from the ball to your hand: slack (it dangles) until you stretch it beyond its rest length plus a dead zone (0–10 cm, in the options), then F = k·stretch. If your hand leaves the headset's view while pulling, the band keeps pulling from where it was last seen, so you can swing the ball around you.
+- **Kicks**: close your fist and snap it open with the palm toward the ball (or double-tap the trigger) for an impulse J = F·Δt; the ball's velocity jumps by Δv = J/m in the direction of the kick.
+- **9 tracks** of increasing difficulty, each about one idea (first law, speed, force across v, force against v, alternating forces with a time limit, circular motion, weight, impulse), plus a sandbox. Speed gates, a stop target, time limits, medals.
 - **Readings**: v, a, F arrows, each force separately, a split into the parts along and across v, a strobe trail, a predicted path, slow motion, low or Earth gravity and ball mass in the sandbox.
-- **Comfort**: grab the knob under the start pad to move, turn or (with two hands) resize the whole track; the physics does not change.
+- **Small rooms**: grab the knob under the start pad (controller grip, pinch or fist) to move and turn the whole track, resize it with the other hand, or pick a size (50–150 %) in the options; it shrinks around the start pad, so nobody has to walk. The physics does not change (a half-size track wants half-speed throws).
 
 ## Run
 ```bash

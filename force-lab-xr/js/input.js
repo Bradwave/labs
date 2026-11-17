@@ -85,6 +85,34 @@
     return dist(j.indexTip, j.middleMeta) < thr && dist(j.middleTip, j.middleMeta) < thr && dist(j.ringTip, j.middleMeta) < thr;
   }
 
-  const api = { ThrowEstimator: ThrowEstimator, Button: Button, Stick: Stick, palmNormal: palmNormal, palmUp: palmUp, fist: fist, WINDOWS: WINDOWS, MAX_SPEED: MAX_SPEED };
+  // mano aperta: punte di indice, medio e anulare lontane dal centro del palmo
+  function openHand(j, thr) {
+    thr = thr === undefined ? 0.085 : thr;
+    return dist(j.indexTip, j.middleMeta) > thr && dist(j.middleTip, j.middleMeta) > thr && dist(j.ringTip, j.middleMeta) > thr;
+  }
+  // Colpo con la mano: pugno tenuto ≥ holdMs, poi mano aperta entro openMs da quando il pugno si scioglie.
+  function BlastGesture(holdMs, openMs) { this.holdMs = holdMs || 150; this.openMs = openMs || 150; this.fist0 = null; this.release = null; }
+  BlastGesture.prototype.update = function (isFist, isOpen, now) {
+    if (isFist) { if (this.fist0 === null) this.fist0 = now; this.release = null; return false; }
+    if (this.fist0 !== null) { this.release = now - this.fist0 >= this.holdMs ? now : null; this.fist0 = null; }
+    if (this.release !== null) {
+      if (now - this.release > this.openMs) { this.release = null; return false; }
+      if (isOpen) { this.release = null; return true; }
+    }
+    return false;
+  };
+  // Doppio tocco: la seconda pressione entro gapMs dall'inizio della prima, se la prima è stata breve (< tapMs).
+  function DoubleTap(gapMs, tapMs) { this.gapMs = gapMs || 320; this.tapMs = tapMs || 250; this.down = false; this.t0 = -1e9; this.short = false; }
+  DoubleTap.prototype.update = function (pressed, now) {
+    let fire = false;
+    if (pressed && !this.down) {
+      if (this.short && now - this.t0 <= this.gapMs) { fire = true; this.short = false; this.t0 = -1e9; }
+      else this.t0 = now;
+    } else if (!pressed && this.down) this.short = now - this.t0 < this.tapMs;
+    this.down = pressed;
+    return fire;
+  };
+
+  const api = { openHand: openHand, BlastGesture: BlastGesture, DoubleTap: DoubleTap, ThrowEstimator: ThrowEstimator, Button: Button, Stick: Stick, palmNormal: palmNormal, palmUp: palmUp, fist: fist, WINDOWS: WINDOWS, MAX_SPEED: MAX_SPEED };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Input = api;
 })(typeof window !== 'undefined' ? window : globalThis);
