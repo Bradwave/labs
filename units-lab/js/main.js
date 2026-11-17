@@ -11,6 +11,8 @@ import { parseUnit, unitLabel, ratio } from "./units.js";
 import { visualsFor, commaPlan, figuresHtml, ladderVisual } from "./visuals.js";
 import { createFree, createWidget } from "./input.js";
 import { mountainSvg, moveClimber } from "./climb.js";
+import { planFor, guidedProblem } from "./guided.js";
+import { createGuided } from "./guidedui.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -18,7 +20,7 @@ const PARAMS = readParams(location.search);
 const MODULES = [1, 2, 3, 4, 5, 6, 7];
 const MIXED_N = 12;
 
-const G = { mode: "module", module: 1, problem: null, ctl: null, answered: false, hinted: false, predicted: true, recent: [], counter: 0, mixed: null, picks: [] };
+const G = { mode: "module", module: 1, problem: null, plan: null, ctl: null, answered: false, hinted: false, predicted: true, recent: [], counter: 0, mixed: null, picks: [] };
 
 // ---------- helpers ----------
 
@@ -32,7 +34,8 @@ function toast(msg) {
 }
 
 const loc = () => getLang();
-const level = () => PARAMS.level ?? S.settings.level;
+// two modes: 1 guided (also the old levels 1 and 2), 3 autonomous
+const level = () => ((PARAMS.level ?? S.settings.level) >= 3 ? 3 : 1);
 const maxTier = () => PARAMS.tier ?? (level() === 1 ? 2 : 3);
 const isPick = (p) => p.kind === "order" || p.kind === "intruder" || p.choice === true;
 const moduleName = (m) => (m === "mixed" ? t("mixed") : t(`m${m}`));
@@ -101,6 +104,13 @@ function nextQuestion() {
   const m = pickModule();
   const opts = { maxTier: maxTier(), avoid: G.recent };
   G.problem = generate(m, nextSeed(), opts);
+  G.plan = null;
+  // guided mode, gym 3: the balance method, so only conversions by a power of ten
+  if (level() === 1 && m === 3) {
+    for (let k = 0; k < 40 && !planFor(G.problem); k++) G.problem = generate(m, nextSeed(), opts);
+    G.plan = planFor(G.problem);
+    if (G.plan) G.problem = guidedProblem(G.problem, G.counter);
+  }
   if (G.problem.ctx) {
     G.recent.push(G.problem.ctx);
     if (G.recent.length > 8) G.recent.shift();
@@ -135,6 +145,7 @@ function renderQuestion() {
   $("#btnHint").hidden = !hintOk;
 
   if (isPick(p)) renderCompareQuestion(p);
+  else if (G.plan) renderGuidedQuestion(p);
   else if (p.kind === "prefix") renderTypedQuestion(p, lv);
   else if (p.kind === "oom") renderTypedQuestion(p, lv);
   else renderNumberQuestion(p, lv);
@@ -184,6 +195,27 @@ function renderNumberQuestion(p, lv) {
     }
   }
   gate();
+}
+
+// ---------- guided (balance method) ----------
+
+function renderGuidedQuestion(p) {
+  const unit = ` <span class="u">${unitLabel(parseUnit(p.fromUnit), true)}</span>`;
+  $("#qStmt").innerHTML = `<span class="num">${numberHtml(p)}</span>${unit}`;
+  $("#qAsk").innerHTML = t("ask_convert", unitLabel(parseUnit(p.toUnit), true));
+  $("#qAsk2").innerHTML = "";
+  $("#qSf").textContent = "";
+  const host = $("#answer");
+  host.className = "card answer is-guided";
+  G.predicted = false;
+  G.ctl = createGuided(host, {
+    problem: p,
+    plan: G.plan,
+    loc: loc(),
+    onPredict: () => {
+      G.predicted = true;
+    },
+  });
 }
 
 /** the visuals offered before answering (level 1): they help, they never print the answer */
@@ -263,6 +295,7 @@ function choiceLabel(p, i) {
 }
 
 function gate() {
+  if (G.ctl.kind === "guided") return G.ctl.setLocked(G.answered);
   $("#answer").classList.toggle("gated", !G.predicted);
   G.ctl.setLocked(!G.predicted || G.answered);
 }
@@ -375,10 +408,14 @@ function renderCompareQuestion(p) {
 // ---------- checking ----------
 
 function onCheck() {
-  if (G.answered || !G.predicted) return;
+  if (G.answered) return;
+  if (!G.predicted) return G.ctl?.kind === "guided" ? toast(t("gPredFirst")) : undefined;
   const p = G.problem;
   let res;
-  if (isPick(p)) {
+  if (G.ctl.kind === "guided") {
+    res = G.ctl.check();
+    if (!res) return;
+  } else if (isPick(p)) {
     if (G.ctl.isEmpty()) return;
     const good = p.kind === "order" ? G.picks.every((v, i) => v === p.answer[i]) : G.picks[0] === p.answer;
     res = { status: good ? "correct" : "wrong", codes: [] };
@@ -459,7 +496,11 @@ function showFeedback(res, move) {
   let cls = "wrong";
   let title;
   let body = "";
-  if (res.status === "invalid") {
+  if (G.plan && res.status !== "invalid") {
+    cls = res.status === "correct" ? "ok" : "part";
+    title = res.status === "correct" ? t("fbCorrect") : t("gDoneWith");
+    if (res.codes.length) body = `<p>${res.codes.map(errName).join(" · ")}</p>`;
+  } else if (res.status === "invalid") {
     cls = "invalid";
     title = t("fbInvalid");
     body = `<p>${t(`inv_${res.error}`)}</p>`;
@@ -489,7 +530,7 @@ function showFeedback(res, move) {
   }
   el.className = `card fb ${cls}`;
   el.innerHTML = `<div class="ft">${title}</div>${body}${mv}<div class="sug" id="sug"></div>`;
-  if (res.status === "invalid") return;
+  if (res.status === "invalid" || G.plan) return;
   renderSolution(res);
 }
 
@@ -532,10 +573,10 @@ function centerScrollers(root) {
 }
 
 function offerLevel(dir) {
-  const target = dir === "up" ? level() + 1 : level() - 1;
+  const target = dir === "up" ? 3 : 1;
   const el = $("#sug");
   if (!el) return;
-  el.innerHTML = `<span>${t(dir === "up" ? "suggestUp" : "suggestDown", target)}</span> <button class="btn small" type="button" data-y>${t("yes")}</button> <button class="btn small" type="button" data-n>${t("no")}</button>`;
+  el.innerHTML = `<span>${t(dir === "up" ? "suggestUp" : "suggestDown")}</span> <button class="btn small" type="button" data-y>${t("yes")}</button> <button class="btn small" type="button" data-n>${t("no")}</button>`;
   el.onclick = (e) => {
     if (e.target.closest("[data-y]")) {
       S.settings.level = target;

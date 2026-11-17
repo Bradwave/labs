@@ -337,3 +337,84 @@ details.alt .vis{margin-top:6px}
 .oomlbl span{position:absolute;top:2px;transform:translateX(-50%)}
 .oomlbl span:first-child{transform:none}
 .oomlbl span:last-child{transform:translateX(-100%)}
+
+/* guided: prediction, three steps, the balance. Same colour = same step (token, sum, result line). */
+.is-guided{gap:12px}
+.gd{display:flex;flex-direction:column;gap:10px;--s1:var(--c4);--s2:var(--c3);--s3:var(--c1)}
+.gpred{display:flex;flex-direction:column;gap:8px;background:var(--tile2);color:#1A0F45;border:2px solid var(--ink);padding:10px 12px}
+.gpred .gq{font-weight:700}
+.gpo{display:flex;gap:10px}
+.gpo .btn{flex:1;background:var(--surface);color:var(--ink)}
+.gpo .btn sup{font-size:.8em}
+.gpo .btn.on{background:var(--ink);color:var(--surface);opacity:1}
+.gpo .btn:disabled:not(.on){opacity:.35}
+.gd:not(.wait) .gpred{padding:6px 12px;flex-direction:row;align-items:center}
+.gd:not(.wait) .gpo .btn:not(.on){display:none}
+.gd:not(.wait) .gpo .btn{min-height:32px;flex:none;padding:2px 10px;box-shadow:none}
+.gs{border:2px solid var(--ink);background:var(--surface);display:flex;flex-direction:column}
+.gs .ghd{display:flex;align-items:center;gap:8px;padding:8px 10px;flex-wrap:wrap;font-size:13px}
+.gs .gn{width:26px;height:26px;flex:none;display:grid;place-items:center;border:2px solid var(--ink);font-weight:700;color:#1A0F45}
+.gn.c1{background:var(--s1)}.gn.c2{background:var(--s2)}.gn.c3{background:var(--s3)}
+.gs .gr{margin-left:auto;font-weight:700;font-size:15px;overflow-wrap:anywhere}
+.gs .gr .u{color:var(--accent)}
+.gs .gsh{color:var(--part);font-size:16px;width:16px;vertical-align:-3px}
+.gs .gok{color:var(--ok);font-size:12.5px}
+.gs .gbody{display:none;flex-direction:column;gap:12px;padding:4px 10px 12px}
+.gs.open .gbody{display:flex}
+.gs.open{box-shadow:4px 4px 0 var(--ink)}
+.gs.todo{opacity:.4;border-style:dashed}
+.gd.wait .gs{opacity:.4;border-style:dashed}
+.gs.done .ghd b{font-weight:400;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.gs.shake{animation:shake .35s}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* powers coloured by the step they come from */
+.pw{white-space:nowrap;padding:0 3px;border-bottom:3px solid transparent}
+.pw.c0{border-bottom-color:var(--muted)}
+.pw.c1{border-bottom-color:var(--s1)}
+.pw.c2{border-bottom-color:var(--s2)}
+.pw.c3{border-bottom-color:var(--s3)}
+
+/* the balance: beam on a pivot, two pans that go up and down */
+.bil{position:relative;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:14px;padding-top:28px;align-items:center}
+.bil .beam{position:absolute;left:18%;right:18%;top:8px;height:5px;background:var(--ink);transform:rotate(var(--t,0deg));transition:transform .35s ease,background .2s}
+.bil .piv{position:absolute;left:50%;top:13px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:13px solid var(--ink);transform:translateX(-50%)}
+.bil.level .beam{background:var(--ok)}
+.bil .pan{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid var(--ink);padding:8px 4px 6px;background:color-mix(in srgb,var(--bg) 14%,var(--surface));transition:transform .35s ease;min-width:0}
+.bil .pan.l{transform:translateY(calc(var(--dy,0px) * -1))}
+.bil .pan.r{transform:translateY(var(--dy,0px))}
+.bil .pan .pl{font-weight:700;font-size:17px;overflow-wrap:anywhere;text-align:center}
+.bil .pan small{font-size:11px;color:var(--muted)}
+.bil .pan.l{justify-content:center}
+.bil .pan .pl .u{color:var(--accent)}
+.bil .pr{display:flex;flex-direction:column;align-items:center;gap:2px}
+.bil .pan.r{gap:8px}
+
+/* exponent token: − ×10ⁿ + */
+.stp{display:inline-flex;align-items:stretch;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);max-width:100%}
+.stp button{width:36px;min-height:44px;border:none;font-size:22px;font-weight:700;cursor:pointer;color:#1A0F45;padding:0;flex:none}
+.stp output{min-width:70px;display:grid;place-items:center;font-size:18px;font-weight:700;background:var(--surface);color:var(--ink);border-left:2px solid var(--ink);border-right:2px solid var(--ink);padding:0 4px;white-space:nowrap}
+.stp.c1 button{background:var(--s1)}.stp.c2 button{background:var(--s2)}.stp.c3 button{background:var(--s3)}
+.stp.big output{font-size:22px;min-width:84px}
+.tok{display:inline-grid;place-items:center;min-height:44px;min-width:70px;border:2px dashed var(--ink);font-size:18px;font-weight:700;padding:0 8px}
+.tok.c2{border-color:var(--s2);border-width:3px}
+.gs .row.mant{display:flex;align-items:center;gap:10px}
+.gs .row.mant .tiles{flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;justify-content:center}
+.gsum{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:20px;font-weight:700}
+.ghint:empty{display:none}
+.ghint{display:flex;flex-direction:column;gap:6px;background:var(--partbg);border-left:6px solid var(--part);padding:6px 10px;font-size:12.5px}
+.ghint p{margin:0;font-weight:700}
+.ghint .vis.line svg{min-width:640px}
+.gend{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0 2px}
+.gfin{font-size:clamp(24px,8vw,32px);font-weight:700}
+.gfin .u{color:var(--accent)}
+.gpv{font-size:12.5px;font-weight:700;border:2px solid var(--ink);padding:2px 10px}
+.gpv.ok{background:var(--okbg);color:var(--ok)}
+.gpv.no{background:var(--badbg);color:var(--bad)}
+.is-guided.done .stp button,.is-guided.done .step{opacity:.4;pointer-events:none}
+@media (max-width:420px){
+  .bil{gap:8px}
+  .stp button{width:32px}
+  .stp output{min-width:62px;font-size:16px}
+}
+.vis .cap:empty{display:none}

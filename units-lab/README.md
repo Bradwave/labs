@@ -14,7 +14,7 @@ Vibecoded with Claude, with <3.
 - **Exact numbers.** Values are digit strings with an exponent (BigInt), never floats. The result keeps the significant figures of the data; when it is not exact it is rounded half-up. Trailing zeros of an integer written without a decimal separator are not significant (`5200` has 2 figures, `5200,` has 4).
 - **Both notations.** `5,2·10^3`, `5,2*10^3`, `5,2e3`; decimal comma in Italian, decimal point in English. A lone `1.000` is refused as ambiguous.
 - **Data in scientific notation too.** Exercises start from decimal or scientific data, sometimes not normalized (`0,042·10^-3`), and ask for decimal or scientific results.
-- **Three support levels.** 1 assisted: a prediction first ("bigger or smaller?"), visual aids and a live invariance badge. 2 guided: mantissa and exponent in separate boxes. 3 independent: the task only, with an optional hint. The app suggests a level change after a few answers; it never penalizes a hint.
+- **Two modes.** Guided: a prediction first (the sign of the final exponent), then one step at a time. In gym 3 this is the balance method used in class: ① change the unit (the unit is multiplied by 10ᵏ, the number by 10⁻ᵏ: the beam is level when the exponents cancel), ② one digit before the comma (the mantissa shrinks, the power compensates), ③ add the exponents; the result is written in the asked notation and the prediction is checked. A wrong step gets a one-line hint, after two tries the value is shown; any help leaves the climber where it is. Independent: the task only, with an optional hint. The app suggests a mode change after a few answers; it never penalizes a hint.
 - **Visual feedback.** Sliding comma on the digits with a ghost of its starting position and a shift counter; balance bars (one big tile against many small ones, same length); prefix scale and exponent line; composite units by substitution (`km/h = 10³ m / 3600 s`) with unit factors as an alternative view; mantissa bar for the order of magnitude; power substitution `cm³ = (10⁻² m)³ = 10⁻⁶ m³`; greyed filler zeros; log line for ordering. The method can be replayed after every answer.
 - **Diagnosis, not just right/wrong.** Typical misconceptions are modelled (wrong direction, exponent sign flipped, exponents added instead of subtracted, exponent not multiplied by 2 or 3, rounding at 5 versus √10, time treated as decimal, litre bridge, m/M/µ swap, forgotten or doubled shift, off by one, not normalized, wrong figures, truncation) and named in the feedback.
 - **The climb.** Right answer: up one station. Wrong: down one, never below the last base camp (every 4 stations). Value right but form off (figures, normalization): stay.
@@ -44,7 +44,7 @@ The numeric engine, checker, misconception models, generators, visuals and state
 | Parameter | Effect |
 |---|---|
 | `lang=it` / `lang=en` | interface language |
-| `level=1..3` | fixes the support level and locks the selector |
+| `level=1` / `level=3` | fixes the mode (1 guided, 3 independent; 2 counts as guided) and locks the selector |
 | `modules=1,2,3` | only the listed gyms (1-7) |
 | `tier=1..3` | unit difficulty: 1 SI and prefixes, 2 + common units, 3 + advanced units |
 | `seed=N` | reproducible sequence of exercises |
@@ -66,6 +66,8 @@ js/
   checker.js          value, form, figures, rounding, diagnosis
   visuals.js          HTML/SVG builders for the visual feedback
   input.js            keypad and mantissa/exponent widget
+  guided.js           the balance method: plan of the steps and their checks
+  guidedui.js         the guided card: prediction, three steps, the balance
   climb.js            mountain and climber
   state.js            progress, statistics, adaptive level, link parameters
   i18n.js             all strings (it, en)
