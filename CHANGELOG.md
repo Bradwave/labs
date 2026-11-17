@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0 · 2026-11-18
+
+- `kit/qr.js`: QR codes with no dependencies (byte mode UTF-8, level M or L, versions 1–13, automatic mask), `qrMatrix(text)` and `qrSVG(text, opts)`. Checked against the Reed–Solomon example of the standard and decoded with a real reader for every version range and mask. New tool `tools/qr.mjs <url> [out.svg]` for worksheets.
+
 ## Unreleased · 2026-11-09
 
 - One repository for all the labs (`Bradwave/labs`): the kit lives at `kit/` and every lab loads it from `../kit/` instead of holding a copy; `sync-kit` now writes only the manifest and the service worker (whose precache list and cache name include the shared kit files), plus a frozen copy for labs that pin one (`kitCopy`).

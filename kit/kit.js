@@ -3,7 +3,7 @@
 // toast, storage, colours for canvas, service worker and install. See DESIGN.md §5–8, §14–15.
 // Generated copy in each app: edit lab-kit/kit/kit.js, then run tools/sync-kit.mjs.
 
-export const KIT_VERSION = "0.1.0";
+export const KIT_VERSION = "0.2.0";
 
 // ---------- kit strings ----------
 const KIT_STRINGS = {

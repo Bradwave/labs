@@ -1,6 +1,6 @@
 {
   "$comment": "Registry of the labs: names, slugs, palettes, ports, test commands (run from the lab folder by tools/test-all.mjs; surface-lab-xr needs npm install in tests/ and is left out). Read by tools/*.mjs and, later, by the landing page. Palettes: current brand tokens; 'proposed' only where two apps clash today (DESIGN.md §2). 'kit' becomes true once an app has been migrated to the kit.",
-  "kitVersion": "0.1.0",
+  "kitVersion": "0.2.0",
   "apps": [
     {
       "slug": "attractor-lab",

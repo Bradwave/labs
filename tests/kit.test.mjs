@@ -47,3 +47,33 @@ test("mathtext renders subscripts, superscripts and Greek", () => {
   assert.equal(toHTML("\\Delta s"), "Δ s");
   assert.equal(plain("a_{max}"), "a_max");
 });
+
+// ---------- qr.js ----------
+import { qrMatrix, qrSVG, _test as qr } from "../kit/qr.js";
+test("QR: Reed–Solomon matches the textbook example (HELLO WORLD, 1-M)", () => {
+  const data = [32, 91, 11, 120, 209, 114, 220, 77, 67, 64, 236, 17, 236, 17, 236, 17];
+  assert.deepEqual(qr.rsRemainder(data, qr.rsDivisor(10)), [196, 35, 39, 119, 235, 215, 231, 226, 93, 23]);
+});
+test("QR: alignment positions", () => {
+  assert.deepEqual(qr.alignmentPositions(1), []);
+  assert.deepEqual(qr.alignmentPositions(2), [6, 18]);
+  assert.deepEqual(qr.alignmentPositions(7), [6, 22, 38]);
+  assert.deepEqual(qr.alignmentPositions(13), [6, 34, 62]);
+});
+test("QR: versions grow with the text, finders in the corners, SVG out", () => {
+  const a = qrMatrix("https://labs.matephis.com/collision-lab/#p=urti/s4");
+  assert.equal(a.ecl, "M");
+  assert.equal(a.size, a.version * 4 + 17);
+  // the three finder patterns: dark 7 × 7 ring corners and centre
+  for (const [x, y] of [[0, 0], [a.size - 7, 0], [0, a.size - 7]]) {
+    assert.equal(a.modules[y][x], true);
+    assert.equal(a.modules[y + 3][x + 3], true);
+    assert.equal(a.modules[y + 1][x + 1], false);
+  }
+  const long = qrMatrix("https://labs.matephis.com/collision-lab/#" + "x".repeat(180));
+  assert.ok(long.version >= 10);
+  assert.throws(() => qrMatrix("x".repeat(430)));
+  const svg = qrSVG("hello", { title: "a < b" });
+  assert.match(svg, /^<svg[^>]+viewBox="0 0 29 29"/);
+  assert.match(svg, /<title>a &lt; b<\/title>/);
+});
