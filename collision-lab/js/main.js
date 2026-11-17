@@ -195,6 +195,7 @@ function buildParams() {
     box.append(div);
     const input = div.querySelector("input");
     input.value = P()[q.k];
+    input.disabled = locked();
     input.addEventListener("input", () => {
       P()[q.k] = +input.value;
       $(id + "-v").textContent = fmtParam(q, +input.value);
@@ -225,10 +226,18 @@ function syncCollision() {
   $("eSeg").hidden = eh;
   if (eh) $("eR").value = 0.5; // the thumb would show it too
   segSync($("eSeg"), st.e);
-  $("eR").disabled = st.sticky;
   $("eSeg").classList.toggle("dim", st.sticky);
   $("tgStick").setAttribute("aria-pressed", String(st.sticky));
   $("tgWalls").setAttribute("aria-pressed", String(st.walls));
+  // a locked scene keeps play, step, reset, frame and the display switches; everything physical is frozen
+  const lk = locked();
+  $("eR").disabled = st.sticky || lk;
+  for (const b of $$("#eSeg button")) b.disabled = lk;
+  $("tgStick").disabled = lk;
+  $("tgWalls").disabled = lk;
+  sceneSel.disabled = lk;
+  for (const i of $$("#params input")) i.disabled = lk;
+  $("lockNote").hidden = !lk;
 }
 function changed() {
   syncCollision();
@@ -317,7 +326,8 @@ addEventListener("keydown", (e) => {
 const cv = $("cv");
 const stage = createStage(cv);
 const atStart = () => world.t === 0;
-const canDrag = () => atStart() && st.frame === "lab";
+const locked = () => pres.lock;
+const canDrag = () => atStart() && st.frame === "lab" && !locked();
 function localXY(e) {
   const r = cv.getBoundingClientRect();
   return [e.clientX - r.left, e.clientY - r.top];
@@ -325,7 +335,10 @@ function localXY(e) {
 cv.addEventListener("pointerdown", (e) => {
   const [x, y] = localXY(e);
   if (!canDrag()) {
-    if (!atStart()) {
+    if (locked() && atStart()) {
+      const w = stage.toWorld(x, y);
+      if (states(world).some((s, i) => Math.hypot(s.x - w.x, s.y - w.y) < world.discs[i].r + 0.03)) toast(t("lock.toast"));
+    } else if (!atStart()) {
       const w = stage.toWorld(x, y);
       if (states(world).some((s, i) => Math.hypot(s.x - w.x, s.y - w.y) < world.discs[i].r + 0.03)) toast(t("toast.locked"));
     }
@@ -542,13 +555,30 @@ function applyHide() {
   dirty = true;
 }
 function syncBar() {
-  const anyHidden = hiddenNow(pres, revealed).size > 0;
+  const anyHidden = hiddenNow(pres, revealed).size > 0, lk = locked();
   $("revealBtn").hidden = !anyHidden;
   $("revealBtn").title = t("reveal.tip");
-  $("sbTitle").textContent = anyHidden ? t("reveal.hidden") : "";
-  $("sbNote").textContent = "";
-  $("sceneBar").hidden = !anyHidden;
+  $("backBtn").hidden = !lk;
+  $("unlockBtn").hidden = !lk;
+  const title = lk ? t("lock.title") : anyHidden ? t("reveal.hidden") : "";
+  $("sbTitle").textContent = title;
+  $("sbNote").textContent = lk && anyHidden ? t("reveal.hidden") : "";
+  $("sceneBar").hidden = !title;
 }
+const LOCK = '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>';
+$("unlockIc").innerHTML = icon(LOCK);
+// back to the scene of the link: the hash the page was opened with, hidden values hidden again
+$("backBtn").addEventListener("click", () => {
+  loadLink(linkHash);
+  applyAll();
+});
+$("unlockBtn").addEventListener("click", () => {
+  pres.lock = false;
+  syncCollision();
+  syncBar();
+  save();
+  dirty = true;
+});
 $("revealBtn").addEventListener("click", () => $("revealDlg").showModal());
 $("revealYes").addEventListener("click", () => {
   $("revealDlg").close();

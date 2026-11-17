@@ -40,6 +40,8 @@
     <div class="scenebar card" id="sceneBar" hidden>
       <div class="sb-text"><b id="sbTitle"></b><span class="sb-note" id="sbNote"></span></div>
       <button class="btn primary" type="button" id="revealBtn" hidden><span id="revealIc"></span><span class="lbl" data-i18n="reveal.btn">Mostra</span></button>
+      <button class="btn" type="button" id="backBtn" hidden data-ic="reset" data-i18n-title="lock.backTip" data-i18n-aria="lock.backTip"><span class="lbl" data-i18n="lock.back">Torna alla scena del link</span></button>
+      <button class="btn" type="button" id="unlockBtn" hidden data-i18n-title="lock.unlockTip" data-i18n-aria="lock.unlockTip"><span id="unlockIc"></span><span class="lbl" data-i18n="lock.unlock">Sblocca</span></button>
     </div>
     <div class="canvas-wrap card" id="wrap">
       <canvas id="cv" data-i18n-aria="stage"></canvas>
@@ -86,6 +88,7 @@
     </div>
 
     <div class="tabpane card" role="tabpanel" id="pane-setup" hidden>
+      <p class="note locknote" id="lockNote" hidden data-i18n="lock.note">Scena bloccata: per cambiarla usa Sblocca, sopra il tavolo.</p>
       <h3 class="grp" data-i18n="g.scene">Esperimento</h3>
       <label class="sel"><select id="sceneSel" data-i18n-aria="g.scene">
         <option value="headon" data-i18n="scene.headon">Urto frontale</option>

@@ -285,6 +285,11 @@ header .word span.puck:last-of-type {
   min-height: 30px;
   padding: 4px 10px;
 }
+.locknote {
+  border: 1.5px dashed var(--ink);
+  padding: 5px 8px;
+  margin: 0 0 8px;
+}
 dialog.confirm {
   max-width: 420px;
 }
@@ -305,6 +310,12 @@ dialog.confirm {
   }
   .scenebar .sb-note {
     display: none;
+  }
+  .scenebar .btn .lbl {
+    display: none;
+  }
+  .scenebar #revealBtn .lbl {
+    display: inline;
   }
   .readout {
     font-size: 10.5px;
