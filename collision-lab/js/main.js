@@ -6,7 +6,7 @@ import { toHTML } from "../../kit/mathtext.js";
 import STRINGS from "./strings.js";
 import { createWorld, cloneWorld, step, explode, totals, states } from "./physics.js";
 import { TABLE, sceneById } from "./scenes.js";
-import { initialSettings, toHash, fromHash } from "./state.js";
+import { toHash, parseLink, SHOW_KEYS } from "./state.js";
 import { createStage, EXTRA_COLORS, lineOf, fillOf } from "./render.js";
 import { drawMomentum, fillTables, drawEnergy, drawGraph, buildCsv } from "./panels.js";
 import { DEFAULT_QUANTITY, axisLabel, extraKind, valueOf, extraOf } from "./quantities.js";
@@ -42,13 +42,27 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 for (const b of $$("[data-ic]")) b.insertAdjacentHTML("afterbegin", icon(b.dataset.ic));
 
 // ---------- settings ----------
-let st = fromHash(location.hash.length > 2 ? location.hash : store.get("state") || "");
-const show = Object.assign({ mom: true, vel: false, cm: true, trail: false, strobe: true }, store.getJSON("show", {}));
+// st: physical settings; pres: presentation given by the link (show, tab, g, hide, lock); preset: its id or null.
+// A link with presentation keys sets them for this session only: the saved preferences are left alone.
+const linkHash = location.hash.length > 2 ? location.hash : "";
+let st, pres, preset;
+function loadLink(hash) {
+  ({ st, pres, preset } = parseLink(hash || store.get("state") || ""));
+}
+loadLink(linkHash);
+const SHOW_DEFAULT = { mom: true, vel: false, cm: true, trail: false, strobe: true };
+const show = {};
+function applyShow() {
+  const saved = Object.assign({}, SHOW_DEFAULT, store.getJSON("show", {}));
+  for (const k of SHOW_KEYS) show[k] = pres.show ? pres.show.includes(k) : !!saved[k];
+}
+applyShow();
 let speed = 1;
+// a link that hides or locks something is a prepared scene: it does not replace the user's own saved scene
+const prepared = () => pres.hide.length > 0 || pres.lock || !!preset;
 function save() {
-  const h = toHash(st);
-  store.set("state", h);
-  history.replaceState(null, "", h);
+  if (!prepared()) store.set("state", toHash(st));
+  history.replaceState(null, "", toHash(st, pres, preset));
 }
 
 // ---------- simulation state ----------
@@ -233,12 +247,17 @@ $("tgWalls").addEventListener("click", () => {
   st.walls = !st.walls;
   changed();
 });
+function syncShow() {
+  for (const b of $$("[data-show]")) b.setAttribute("aria-pressed", String(!!show[b.dataset.show]));
+}
 for (const b of $$("[data-show]")) {
-  b.setAttribute("aria-pressed", String(!!show[b.dataset.show]));
   b.addEventListener("click", () => {
     show[b.dataset.show] = !show[b.dataset.show];
     b.setAttribute("aria-pressed", String(show[b.dataset.show]));
-    store.setJSON("show", show);
+    if (pres.show) {
+      pres.show = SHOW_KEYS.filter((k) => show[k]);
+      save();
+    } else store.setJSON("show", show);
     dirty = true;
   });
 }
@@ -253,7 +272,9 @@ function showTab(i) {
     b.tabIndex = i === j ? 0 : -1;
     $(b.getAttribute("aria-controls")).hidden = i !== j;
   });
-  store.set("tab", String(i));
+  if (pres.tab != null) {
+    if (pres.tab !== i) (pres.tab = i), save();
+  } else store.set("tab", String(i));
   dirty = true;
 }
 tabs.forEach((b, i) => {
@@ -343,9 +364,10 @@ cv.addEventListener("pointerleave", () => {
 // ---------- graphs: quantity and series chips ----------
 let gq = DEFAULT_QUANTITY;
 const hiddenSeries = new Set();
-function setQuantity(q) {
+function setQuantity(q, fromUser = true) {
   gq = q;
   $("gq").value = q;
+  if (fromUser && pres.g) (pres.g = q), save();
   dirty = true;
 }
 $("gq").addEventListener("change", () => setQuantity($("gq").value));
@@ -492,12 +514,19 @@ ro.observe(cv);
 for (const id of ["pcv", "kcv", "gcv"]) ro.observe($(id));
 document.fonts?.ready.then(() => (dirty = true));
 
-rebuild();
-buildParams();
-syncCollision();
-segSync($("frameSeg"), st.frame);
-setPlaying(false);
-showTab(Math.min(2, Math.max(0, +(store.get("tab") || 0))));
+// everything that depends on the link: also used by "back to the linked scene"
+function applyAll() {
+  applyShow();
+  syncShow();
+  setPlaying(false);
+  rebuild();
+  buildParams();
+  syncCollision();
+  segSync($("frameSeg"), st.frame);
+  setQuantity(pres.g || DEFAULT_QUANTITY, false);
+  showTab(pres.tab ?? Math.min(2, Math.max(0, +(store.get("tab") || 0))));
+  save();
+}
+applyAll();
 stage.resize();
-save();
 requestAnimationFrame(loop);
