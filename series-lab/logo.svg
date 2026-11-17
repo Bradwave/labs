@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Series Lab">
+<title>Series Lab</title>
+<style>
+/* the partial sums S_N add one term at a time and spiral in to the sum of the series */
+.path { stroke-dasharray: 100; animation: grow 4s cubic-bezier(.2,.7,.3,1) infinite; }
+.lim { animation: lim 4s linear infinite; }
+@keyframes grow { 0% { stroke-dashoffset: 100; } 70%, 92% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes lim { 0%, 55% { opacity: .35; } 70%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#B665E2" stroke="#1E0B38" stroke-width="6"/>
+<rect x="16" y="16" width="88" height="88" fill="#FAF5FF" stroke="#1E0B38" stroke-width="3"/>
+<polyline class="path" pathLength="100" points="24.0,84.3 87.8,84.3 96.0,45.6 73.6,35.7 64.7,48.0 71.0,55.0 76.0,52.1 74.9,48.6 72.7,48.8 72.5,50.2 73.4,50.5 73.6,50.0 73.4,49.8" fill="none" stroke="#1E0B38" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect class="lim" x="67.3" y="44.0" width="12" height="12" fill="#C2410C" stroke="#1E0B38" stroke-width="3"/>
+</svg>

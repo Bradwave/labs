@@ -1,39 +1,39 @@
 /* Series Lab · app.css
    Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
 :root {
-  --bg: #2DB9BD;
+  --bg: #B665E2;
   --bgline: rgba(0, 0, 0, 0.12);
-  --surface: #F2FCFC;
-  --ink: #04242A;
-  --muted: color-mix(in srgb, #04242A 65%, #F2FCFC);
+  --surface: #FAF5FF;
+  --ink: #1E0B38;
+  --muted: #5E4A7A;
   --accent: #C2410C;
-  --onaccent: #04242A;
+  --onaccent: #FFFFFF;
   --tile2: #FFD23F;
-  --gridline: color-mix(in srgb, #04242A 16%, transparent);
+  --gridline: color-mix(in srgb, #1E0B38 16%, transparent);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #04222A;
+    --bg: #170A2B;
     --bgline: rgba(255, 255, 255, 0.07);
-    --surface: #0B343D;
-    --ink: #E4FAFB;
-    --muted: color-mix(in srgb, #E4FAFB 65%, #0B343D);
+    --surface: #251442;
+    --ink: #F2EAFF;
+    --muted: #BBA6DA;
     --accent: #FF8A5C;
-    --onaccent: #04222A;
+    --onaccent: #170A2B;
     --tile2: #E9B92A;
-    --gridline: color-mix(in srgb, #E4FAFB 14%, transparent);
+    --gridline: color-mix(in srgb, #F2EAFF 14%, transparent);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #04222A;
+  --bg: #170A2B;
   --bgline: rgba(255, 255, 255, 0.07);
-  --surface: #0B343D;
-  --ink: #E4FAFB;
-  --muted: color-mix(in srgb, #E4FAFB 65%, #0B343D);
+  --surface: #251442;
+  --ink: #F2EAFF;
+  --muted: #BBA6DA;
   --accent: #FF8A5C;
-  --onaccent: #04222A;
+  --onaccent: #170A2B;
   --tile2: #E9B92A;
-  --gridline: color-mix(in srgb, #E4FAFB 14%, transparent);
+  --gridline: color-mix(in srgb, #F2EAFF 14%, transparent);
 }
 
 /* ---------- app-specific styles below ---------- */

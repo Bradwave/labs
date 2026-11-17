@@ -567,7 +567,7 @@
       "name": "Series Lab",
       "kind": "2d",
       "subject": "mathematics",
-      "port": 8115,
+      "port": 8117,
       "kit": true,
       "test": "node --test 'tests/**/*.test.*'",
       "description": {
@@ -576,23 +576,40 @@
       },
       "palette": {
         "light": {
-          "bg": "#2DB9BD",
-          "surface": "#F2FCFC",
-          "ink": "#04242A",
-          "muted": "#3F6A70",
+          "bg": "#B665E2",
+          "surface": "#FAF5FF",
+          "ink": "#1E0B38",
+          "muted": "#5E4A7A",
           "accent": "#C2410C",
           "onaccent": "#FFFFFF",
           "tile2": "#FFD23F"
         },
         "dark": {
-          "bg": "#04222A",
-          "surface": "#0B343D",
-          "ink": "#E4FAFB",
-          "muted": "#90C4CA",
+          "bg": "#170A2B",
+          "surface": "#251442",
+          "ink": "#F2EAFF",
+          "muted": "#BBA6DA",
           "accent": "#FF8A5C",
-          "onaccent": "#04222A",
+          "onaccent": "#170A2B",
           "tile2": "#E9B92A"
-        }
+        },
+        "previous": {
+          "light": {
+            "bg": "#2DB9BD",
+            "surface": "#F2FCFC",
+            "ink": "#04242A",
+            "accent": "#C2410C",
+            "tile2": "#FFD23F"
+          },
+          "dark": {
+            "bg": "#04222A",
+            "surface": "#0B343D",
+            "ink": "#E4FAFB",
+            "accent": "#FF8A5C",
+            "tile2": "#E9B92A"
+          }
+        },
+        "note": "violet; keeps its orange accent (the partial-sum path). Moved off teal, which clashed with Force Lab XR (2026-11-17, to review)"
       }
     }
   ]

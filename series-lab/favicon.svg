@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x="1" y="1" width="30" height="30" fill="#2DB9BD" stroke="#04242A" stroke-width="2"/><rect x="6" y="6" width="20" height="20" fill="#FFF8F2" stroke="#04242A" stroke-width="2"/><polyline points="10,21 22,12 21,22 12,17 18,13 19,19 16,16" fill="none" stroke="#04242A" stroke-width="1.6"/><rect x="14.6" y="14.6" width="3.6" height="3.6" fill="#C2410C"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+<rect x="4" y="4" width="112" height="112" fill="#B665E2" stroke="#1E0B38" stroke-width="6"/>
+<rect x="16" y="16" width="88" height="88" fill="#FAF5FF" stroke="#1E0B38" stroke-width="3"/>
+<polyline pathLength="100" points="24.0,84.3 87.8,84.3 96.0,45.6 73.6,35.7 64.7,48.0 71.0,55.0 76.0,52.1 74.9,48.6 72.7,48.8 72.5,50.2 73.4,50.5 73.6,50.0 73.4,49.8" fill="none" stroke="#1E0B38" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="67.3" y="44.0" width="12" height="12" fill="#C2410C" stroke="#1E0B38" stroke-width="3"/>
+</svg>
