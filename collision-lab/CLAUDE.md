@@ -13,6 +13,11 @@ Follow `../DESIGN.md`: it is the design standard of all the labs (header, settin
 - Not Carts Lab (one rail experiment with sensors and data analysis) and not Impulse Lab (the force during one collision): this lab is about conservation, in 2D, in the lab and centre-of-mass frames.
 - Physics is pure and tested: `js/physics.js` (discs, rigid clusters, exact contact times, sticking, explosions, bumpers) and `js/scenes.js` (experiments, drag handles). Model: `docs/MODEL.md`.
 - Disc colours: `--d1…--d5` (fills, both themes) and `--l1…--l5` (lines in graphs and diagrams, darker in the light theme); physics quantities use the kit tokens (`--vel`, `--mom`, `--ek`).
-- Dragging works only at t = 0 and in the lab frame. Settings travel in the URL hash (`js/state.js`); display switches are stored as `collision-lab.show`.
+- Dragging works only at t = 0, in the lab frame and when the scene is not locked.
+- Links (`js/state.js`, pure and tested): physical keys (`s`, parameters, `e`, `st`, `w`, `f`) as in 0.1.0, and presentation keys (`show`, `tab`, `g`, `hide`, `lock`) kept apart in `pres`. `parseLink` applies defaults → preset (`#p=`, `js/presets.js`) → hash keys; physical keys count only once a scene is known (from `s` or a preset), as before. `toHash` writes presentation keys only when the link gave them and, with a preset, writes `p=` plus only what differs, so hidden values (e in `urti/s4`) stay out of the URL. `tests/state.test.mjs` compares every kind of old link with a frozen copy of the 0.1.0 parser: keep it passing.
+- A link's `show`, `tab` and `g` last for the session and do not touch the saved preferences (`collision-lab.show`, `collision-lab.tab`). A prepared scene (preset, `hide` or `lock`) does not overwrite the saved scene (`collision-lab.state`).
+- Hiding: `isHidden(k)` in `main.js` (from `hiddenNow` in `state.js`); "Show" asks for confirmation in the `#revealDlg` dialog and reveals for the session only. With `hide=e` the e control shows "?" and its slider and quick buttons are hidden (`eLabel`).
+- The scene bar (`#sceneBar`) appears for a preset, a lock or hidden values: title and note, Show, Back to the linked scene (the hash the page was opened with), Unlock.
+- Graph quantities: `js/quantities.js`; positions get the centre of mass (dashed) instead of a total.
 - Version: `VERSION` in `js/main.js` and `package.json`.
 <!-- physics model, decisions, open questions -->

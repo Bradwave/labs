@@ -218,7 +218,8 @@ All classes below are defined in `kit/kit.css`; `demo.html` shows each one in bo
 ## 14. Storage and links
 
 - localStorage keys: `<slug>.<name>` (`metric-lab.lang`, `units-lab.v2`). Every access goes through `kit.store` (try/catch, the app works without storage).
-- Shareable state lives in the URL hash (`#v=10&L=30`) and is parsed defensively; the settings menu offers "Copy link" when an app supports it.
+- Shareable state lives in the URL hash (`#v=10&L=30`) and is parsed defensively; the settings menu offers "Copy link" when an app supports it, and next to it "Show QR code" (`showQR()` from the kit, offline, kit 0.2).
+- A new hash key never changes what an old link opens: read keys with defaults that reproduce the old state, and write them only when they differ from the default.
 
 ## 15. PWA and offline
 

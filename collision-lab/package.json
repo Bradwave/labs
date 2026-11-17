@@ -1,6 +1,6 @@
 {
   "name": "collision-lab",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Collisions in two dimensions on an air table: momentum, centre of mass and lost energy",
   "private": true,
   "license": "MIT",

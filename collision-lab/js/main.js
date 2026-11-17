@@ -12,7 +12,7 @@ import { createStage, EXTRA_COLORS, lineOf, fillOf } from "./render.js";
 import { drawMomentum, fillTables, drawEnergy, drawGraph, buildCsv } from "./panels.js";
 import { DEFAULT_QUANTITY, axisLabel, extraKind, valueOf, extraOf } from "./quantities.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 const PHYS_STEP = 1 / 240; // s
 const SAMPLE = 0.02; // s between recorded samples (graphs, trails, CSV)
 const T_MAX = 15; // s: the run stops here
