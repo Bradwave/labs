@@ -9,6 +9,7 @@ import { TABLE, sceneById } from "./scenes.js";
 import { initialSettings, toHash, fromHash } from "./state.js";
 import { createStage, EXTRA_COLORS, lineOf, fillOf } from "./render.js";
 import { drawMomentum, fillTables, drawEnergy, drawGraph, buildCsv } from "./panels.js";
+import { DEFAULT_QUANTITY, axisLabel, extraKind, valueOf, extraOf } from "./quantities.js";
 
 export const VERSION = "0.1.0";
 const PHYS_STEP = 1 / 240; // s
@@ -340,18 +341,18 @@ cv.addEventListener("pointerleave", () => {
 });
 
 // ---------- graphs: quantity and series chips ----------
-let gq = "px";
+let gq = DEFAULT_QUANTITY;
 const hiddenSeries = new Set();
-$("gq").addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  gq = b.dataset.v;
-  segSync($("gq"), gq);
+function setQuantity(q) {
+  gq = q;
+  $("gq").value = q;
   dirty = true;
-});
+}
+$("gq").addEventListener("change", () => setQuantity($("gq").value));
 function buildChips() {
   const box = $("gchips");
-  const items = world.discs.map((d, i) => [d.label, d.label, fillOf(C, i)]).concat([["tot", t("b.total"), gq === "K" ? C.ek : C.mom]]);
+  const extra = extraKind(gq) === "cm" ? ["tot", t("g.cm"), C.ink] : ["tot", t("b.total"), gq === "K" ? C.ek : gq.startsWith("v") ? C.vel : C.mom];
+  const items = world.discs.map((d, i) => [d.label, d.label, fillOf(C, i)]).concat([extra]);
   box.innerHTML = items
     .map(([k, name, col]) => `<button type="button" class="lg${hiddenSeries.has(k) ? "" : " on"}" data-k="${k}" aria-pressed="${!hiddenSeries.has(k)}"><i style="background:${col}"></i>${name}</button>`)
     .join("");
@@ -442,26 +443,19 @@ function verdict(Tlab) {
 }
 function graph() {
   const series = [];
-  const val = (s, d, i, f) => {
-    const p = s.p[i], vx = p.vx - (f ? s.Vx : 0), vy = p.vy - (f ? s.Vy : 0);
-    return gq === "px" ? d.m * vx : gq === "py" ? d.m * vy : 0.5 * d.m * (vx * vx + vy * vy);
-  };
-  const f = st.frame === "cm";
+  const cm = st.frame === "cm";
   world.discs.forEach((d, i) => {
     if (hiddenSeries.has(d.label)) return;
-    series.push({ data: rec.map((s) => [s.t, val(s, d, i, f)]), color: lineOf(C, i), width: 2 });
+    series.push({ data: rec.map((s) => [s.t, valueOf(gq, s, d, i, cm)]), color: lineOf(C, i), width: 2 });
   });
-  if (!hiddenSeries.has("tot"))
-    series.push({ data: rec.map((s) => [s.t, world.discs.reduce((a, d, i) => a + val(s, d, i, f), 0)]), color: gq === "K" ? C.ek : C.mom, width: 3 });
+  if (!hiddenSeries.has("tot")) {
+    const kind = extraKind(gq);
+    const color = kind === "cm" ? C.ink : gq === "K" ? C.ek : gq.startsWith("v") ? C.vel : C.mom;
+    series.push({ data: rec.map((s) => [s.t, extraOf(gq, s, world.discs, cm)]), color, width: kind === "cm" ? 2 : 3, dash: kind === "cm" ? [6, 4] : null });
+  }
   const events = [];
   for (const e of world.events) if (!events.length || e.t - events[events.length - 1] > 0.05) events.push(e.t);
-  drawGraph($("gcv"), C, {
-    series,
-    tmax: Math.max(2, Math.ceil(world.t)),
-    cursor: world.t,
-    events,
-    ylabel: gq === "px" ? "p_x (kg·m/s)" : gq === "py" ? "p_y (kg·m/s)" : "K (J)",
-  });
+  drawGraph($("gcv"), C, { series, tmax: Math.max(2, Math.ceil(world.t)), cursor: world.t, events, ylabel: axisLabel(gq) });
 }
 
 let last = 0;

@@ -65,9 +65,15 @@
     </div>
 
     <div class="tabpane card" role="tabpanel" id="pane-graphs" hidden>
-      <div class="seg small" id="gq" role="group">
-        <button type="button" data-v="px" class="on" aria-pressed="true">p<sub>x</sub></button><button type="button" data-v="py" aria-pressed="false">p<sub>y</sub></button><button type="button" data-v="K" aria-pressed="false">K</button>
-      </div>
+      <label class="sel"><select id="gq" data-i18n-aria="gq.label">
+        <option value="x" data-i18n="gq.x">Posizione x (m)</option>
+        <option value="y" data-i18n="gq.y">Posizione y (m)</option>
+        <option value="vx" data-i18n="gq.vx">Velocità x (m/s)</option>
+        <option value="vy" data-i18n="gq.vy">Velocità y (m/s)</option>
+        <option value="px" data-i18n="gq.px" selected>Quantità di moto x (kg·m/s)</option>
+        <option value="py" data-i18n="gq.py">Quantità di moto y (kg·m/s)</option>
+        <option value="K" data-i18n="gq.K">Energia cinetica (J)</option>
+      </select></label>
       <div class="chips gchips" id="gchips"></div>
       <canvas id="gcv" class="gcv" data-i18n-aria="g.canvas"></canvas>
       <p class="note" data-i18n="g.note">Le linee tratteggiate segnano gli urti.</p>

@@ -150,7 +150,7 @@ export function drawEnergy(canvas, C, before, now) {
 }
 
 // ---------- graph over time (DESIGN.md §10) ----------
-// series: [{ data: [[t, v]], color, width, label }]; events: times of the collisions
+// series: [{ data: [[t, v]], color, width, dash? }]; events: times of the collisions
 export function drawGraph(canvas, C, { series, tmax, cursor, events, ylabel }) {
   const { ctx, w, h } = prep(canvas);
   if (w < 20) return;
@@ -213,9 +213,11 @@ export function drawGraph(canvas, C, { series, tmax, cursor, events, ylabel }) {
     ctx.strokeStyle = s.color;
     ctx.lineWidth = s.width || 2;
     ctx.lineJoin = "round";
+    ctx.setLineDash(s.dash || []);
     ctx.beginPath();
     s.data.forEach(([x, y], n) => (n ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))));
     ctx.stroke();
+    ctx.setLineDash([]);
   }
   if (cursor != null && cursor > 0) {
     ctx.strokeStyle = C.ink;
@@ -239,7 +241,7 @@ export function buildCsv(discs, history) {
   const num = (x, d = 4) => (it ? x.toFixed(d).replace(".", ",") : x.toFixed(d));
   const head = ["t (s)"];
   for (const d of discs) head.push(`x_${d.label} (m)`, `y_${d.label} (m)`, `v_x,${d.label} (m/s)`, `v_y,${d.label} (m/s)`);
-  head.push("P_x (kg·m/s)", "P_y (kg·m/s)", "K (J)");
+  head.push("x_CM (m)", "y_CM (m)", "P_x (kg·m/s)", "P_y (kg·m/s)", "K (J)");
   const rows = [head.join(sep)];
   for (const s of history) {
     const r = [num(s.t, 2)];
@@ -251,7 +253,7 @@ export function buildCsv(discs, history) {
       Py += d.m * p.vy;
       K += 0.5 * d.m * (p.vx * p.vx + p.vy * p.vy);
     });
-    r.push(num(Px), num(Py), num(K));
+    r.push(num(s.X), num(s.Y), num(Px), num(Py), num(K));
     rows.push(r.join(sep));
   }
   return rows.join("\n");
