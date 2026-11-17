@@ -81,6 +81,40 @@
       }
     },
     {
+      "slug": "collision-lab",
+      "test": "node --test 'tests/**/*.test.*'",
+      "name": "Collision Lab",
+      "kind": "2d",
+      "subject": "physics",
+      "port": 8116,
+      "kit": true,
+      "description": {
+        "it": "Urti in due dimensioni su un tavolo a cuscino d'aria: quantità di moto, centro di massa ed energia persa.",
+        "en": "Collisions in two dimensions on an air table: momentum, centre of mass and the energy that is lost."
+      },
+      "palette": {
+        "light": {
+          "bg": "#E0622A",
+          "surface": "#FFF6EF",
+          "ink": "#2A0E04",
+          "muted": "#7A4630",
+          "accent": "#0B7C86",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD23F"
+        },
+        "dark": {
+          "bg": "#1E0C05",
+          "surface": "#311A0F",
+          "ink": "#FFEDE2",
+          "muted": "#D9AC95",
+          "accent": "#3FCFD6",
+          "onaccent": "#1E0C05",
+          "tile2": "#E9B92A"
+        },
+        "note": "rust orange (the air table's bumpers); teal accent (2026-11-17, new lab)"
+      }
+    },
+    {
       "slug": "crackler",
       "test": "node --test 'tests/**/*.test.*'",
       "name": "Crackler",

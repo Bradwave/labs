@@ -1,0 +1,11 @@
+{
+  "name": "collision-lab",
+  "version": "0.1.0",
+  "description": "Collisions in two dimensions on an air table: momentum, centre of mass and lost energy",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "type": "module"
+}

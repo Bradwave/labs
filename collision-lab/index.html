@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Collision Lab</title>
+<meta name="description" content="Collisions in two dimensions on an air table: momentum, centre of mass and the energy that is lost. In Italian and English.">
+<meta name="theme-color" content="#E0622A">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1E0C05">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Collision Lab"><span>c</span><span class="b puck">o</span><span>l</span><span>l</span><span class="a">i</span><span>s</span><span>i</span><span class="b puck">o</span><span>n</span><b class="lab">lab</b></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="playBtn"><span id="playIc"></span><span class="lbl" id="playLbl" data-i18n="play">Avvia</span></button>
+      <button class="btn" type="button" id="stepBtn" data-ic="step" data-i18n-title="stepTip" data-i18n-aria="stepTip"><span class="lbl" data-i18n="step">Passo</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset" data-i18n-title="resetTip" data-i18n-aria="resetTip"><span class="lbl" data-i18n="reset">Azzera</span></button>
+      <div class="seg small" id="speedSeg" role="group" data-i18n-aria="speed">
+        <button type="button" data-v="0.25" aria-pressed="false">¼×</button><button type="button" data-v="0.5" aria-pressed="false">½×</button><button type="button" data-v="1" class="on" aria-pressed="true">1×</button>
+      </div>
+      <span class="num-t" id="clock">t = 0,00 s</span>
+      <span class="grow"></span>
+      <div class="seg small" id="frameSeg" role="group" data-i18n-aria="frame.label">
+        <button type="button" data-v="lab" class="on" aria-pressed="true" data-ic="axes" data-i18n-title="frame.labTip"><span class="t" data-i18n="frame.lab">Lab</span></button><button type="button" data-v="cm" aria-pressed="false" data-ic="target" data-i18n-title="frame.cmTip"><span class="t" data-i18n="frame.cm">CM</span></button>
+      </div>
+    </div>
+    <div class="canvas-wrap card" id="wrap">
+      <canvas id="cv" data-i18n-aria="stage"></canvas>
+      <div class="readout" id="readout"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" type="button" aria-selected="true" aria-controls="pane-balance" data-ic="table"><span class="t" data-i18n="tab.balance">Bilancio</span></button>
+      <button class="tab" role="tab" type="button" aria-selected="false" aria-controls="pane-graphs" data-ic="chart"><span class="t" data-i18n="tab.graphs">Grafici</span></button>
+      <button class="tab" role="tab" type="button" aria-selected="false" aria-controls="pane-setup" data-ic="sliders"><span class="t" data-i18n="tab.setup">Imposta</span></button>
+    </div>
+
+    <div class="tabpane card" role="tabpanel" id="pane-balance">
+      <h3 class="grp" data-i18n="b.momentum">Quantità di moto</h3>
+      <canvas id="pcv" class="pcv" data-i18n-aria="b.momNote"></canvas>
+      <p class="note" data-i18n="b.momNote">I vettori p dei dischi, uno dopo l'altro: la loro somma è P. Confronta prima e adesso.</p>
+      <table class="ptable" id="ptab"></table>
+      <h3 class="grp" data-i18n="b.energy">Energia cinetica</h3>
+      <canvas id="kcv" class="kcv" data-i18n-aria="b.energy"></canvas>
+      <table class="ptable" id="ktab"></table>
+      <p class="note" data-i18n-html="b.energyNote"></p>
+      <p class="verdict" id="verdict"></p>
+      <p class="note" id="frameNote"></p>
+    </div>
+
+    <div class="tabpane card" role="tabpanel" id="pane-graphs" hidden>
+      <div class="seg small" id="gq" role="group">
+        <button type="button" data-v="px" class="on" aria-pressed="true">p<sub>x</sub></button><button type="button" data-v="py" aria-pressed="false">p<sub>y</sub></button><button type="button" data-v="K" aria-pressed="false">K</button>
+      </div>
+      <div class="chips gchips" id="gchips"></div>
+      <canvas id="gcv" class="gcv" data-i18n-aria="g.canvas"></canvas>
+      <p class="note" data-i18n="g.note">Le linee tratteggiate segnano gli urti.</p>
+      <div class="csvrow"><button class="btn" id="csvBtn" type="button" data-ic="copy"><span data-i18n="csv.copy">Copia i dati in CSV</span></button><span class="note" data-i18n="csv.note">Posizioni, velocità e totali</span></div>
+      <textarea id="csvOut" class="field" hidden readonly data-i18n-aria="csv.aria"></textarea>
+    </div>
+
+    <div class="tabpane card" role="tabpanel" id="pane-setup" hidden>
+      <h3 class="grp" data-i18n="g.scene">Esperimento</h3>
+      <label class="sel"><select id="sceneSel" data-i18n-aria="g.scene">
+        <option value="headon" data-i18n="scene.headon">Urto frontale</option>
+        <option value="glancing" data-i18n="scene.glancing">Urto obliquo</option>
+        <option value="free" data-i18n="scene.free">Urto libero</option>
+        <option value="explosion" data-i18n="scene.explosion">Esplosione</option>
+        <option value="break" data-i18n="scene.break">Spaccata (molti dischi)</option>
+      </select></label>
+      <p class="note" id="sceneNote"></p>
+      <div id="params"></div>
+
+      <h3 class="grp" data-i18n="g.collision">Urto</h3>
+      <div class="ctl"><label for="eR"><span data-i18n="p.e">Coefficiente di restituzione e</span> <b id="eL"></b></label><input type="range" id="eR" min="0" max="1" step="0.05" value="1"></div>
+      <div class="seg small full" id="eSeg" role="group">
+        <button type="button" data-v="1" data-i18n="e.elastic">elastico</button><button type="button" data-v="0.5" data-i18n="e.inelastic">anelastico</button><button type="button" data-v="0" data-i18n="e.zero">e = 0</button>
+      </div>
+      <button class="tg" type="button" id="tgStick" aria-pressed="false"><span class="txt"><span data-i18n="tg.stick">I dischi si attaccano</span><small data-i18n="tg.stickHint">velcro</small></span><span class="box"></span></button>
+      <button class="tg" type="button" id="tgWalls" aria-pressed="false"><span class="txt"><span data-i18n="tg.walls">Sponde elastiche</span><small data-i18n="tg.wallsHint">una forza esterna</small></span><span class="box"></span></button>
+
+      <h3 class="grp" data-i18n="g.show">Mostra</h3>
+      <button class="tg" type="button" data-show="mom" aria-pressed="true"><span class="sw" style="color:var(--mom)"></span><span class="txt"><span data-i18n="tg.mom">Quantità di moto</span><small data-i18n="tg.momHint"></small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-show="vel" aria-pressed="false"><span class="sw" style="color:var(--vel)"></span><span class="txt"><span data-i18n="tg.vel">Velocità</span><small data-i18n="tg.velHint"></small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-show="cm" aria-pressed="true"><span class="sw dot cmdot"></span><span class="txt"><span data-i18n="tg.cm">Centro di massa</span><small data-i18n="tg.cmHint"></small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-show="trail" aria-pressed="false"><span class="txt"><span data-i18n="tg.trail">Scie</span><small data-i18n="tg.trailHint"></small></span><span class="box"></span></button>
+      <button class="tg" type="button" data-show="strobe" aria-pressed="true"><span class="txt"><span data-i18n="tg.strobe">Foto stroboscopica</span><small data-i18n="tg.strobeHint"></small></span><span class="box"></span></button>
+    </div>
+  </aside>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span>c</span><span class="b">o</span><span>l</span><span>l</span><span class="a">i</span><span>s</span><span>i</span><span class="b">o</span><span>n</span><b class="lab">lab</b></h1>
+  <p data-i18n="info.about">Urti in due dimensioni su un tavolo a cuscino d'aria: quantità di moto, centro di massa ed energia persa.</p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <div data-i18n-html="help.body"></div>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
