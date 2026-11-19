@@ -1,0 +1,75 @@
+/* Composition Lab XR · app.css
+   Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
+:root {
+  --bg: #ECEEF2;
+  --bgline: #E1E4EA;
+  --surface: #FFFFFF;
+  --ink: #15161A;
+  --muted: #5B6070;
+  --accent: #2449D6;
+  --onaccent: #FFFFFF;
+  --tile2: #FFD84D;
+  --gridline: #C2C7D0;
+  /* the three graphs: f orange, g green, g∘f violet; the second point x₁ is drawn in ink */
+  --cf: #C96A00;
+  --cg: #0F9A63;
+  --cgf: #6E3FE0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #13151A;
+    --bgline: #1B1E25;
+    --surface: #1D2028;
+    --ink: #EEF0F4;
+    --muted: #9AA1AE;
+    --accent: #8AA4FF;
+    --onaccent: #13151A;
+    --tile2: #E9B92A;
+    --gridline: #3A3F4A;
+    --cf: #FFB44D;
+    --cg: #3DDC97;
+    --cgf: #B59CFF;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #13151A;
+  --bgline: #1B1E25;
+  --surface: #1D2028;
+  --ink: #EEF0F4;
+  --muted: #9AA1AE;
+  --accent: #8AA4FF;
+  --onaccent: #13151A;
+  --tile2: #E9B92A;
+  --gridline: #3A3F4A;
+  --cf: #FFB44D;
+  --cg: #3DDC97;
+  --cgf: #B59CFF;
+}
+
+/* ---------- app-specific styles below ---------- */
+[hidden] { display: none !important; }
+.word .xr { width: auto; padding: 0 0.25em; margin-left: 6px; border: 2px solid var(--ink); background: var(--ink); color: var(--surface); font-size: 0.6em; height: 1.6em; align-self: flex-end; display: grid; place-items: center; }
+#cv { cursor: grab; touch-action: none; }
+#cv.held { cursor: grabbing; }
+.side { padding: 12px 14px 16px; overflow: auto; }
+body.inxr .top, body.inxr .layout { visibility: hidden; }
+.cf { color: var(--cf); font-weight: 700; }
+.cg { color: var(--cg); font-weight: 700; }
+.cgf { color: var(--cgf); font-weight: 700; }
+.rel { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.rel label { flex: none; min-width: 5.2ch; }
+.rel input.field { font-size: 15px; }
+.note.err { color: var(--err); min-height: 0; margin: 2px 0 0 24px; }
+.note.err:empty { display: none; }
+.note.q { font-style: italic; color: var(--ink); }
+.tg + .tg { margin-top: 4px; }
+#clear { margin-top: 8px; }
+.ord { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin-top: 8px; font-size: 12.5px; }
+.ord .sum { font-weight: 700; }
+.tag { padding: 0 6px; border: 1.5px solid var(--ink); font-size: 12px; }
+.tag.keep { background: var(--cg); color: var(--bg); }
+.tag.flip { background: var(--cf); color: var(--bg); }
+.tag.flat { background: var(--surface); color: var(--muted); }
+details.adv { margin-top: 14px; border-top: 2px solid var(--ink); padding-top: 8px; }
+details.adv summary { cursor: pointer; font-weight: 700; text-transform: uppercase; font-size: 12px; letter-spacing: 0.06em; padding: 6px 0; }
+details.adv[open] summary { margin-bottom: 6px; }

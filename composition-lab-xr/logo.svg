@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Composition Lab XR">
+<title>Composition Lab XR</title>
+<style>
+.dot { animation: go 4.2s ease-in-out infinite alternate; }
+.up { animation: lift 4.2s ease-in-out infinite alternate; }
+@keyframes go { from { transform: translateX(-26px); } to { transform: translateX(26px); } }
+@keyframes lift { from { transform: translateY(24px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#ECEEF2" stroke="#15161A" stroke-width="6"/>
+<path d="M18 92H102M60 100V24" fill="none" stroke="#15161A" stroke-width="3.5" stroke-linecap="round"/>
+<path d="M22 84C40 84 50 60 60 56S80 38 98 30" fill="none" stroke="#6E3FE0" stroke-width="5" stroke-linecap="round"/>
+<path d="M22 70L58 88" fill="none" stroke="#C96A00" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 7"/>
+<g class="dot"><circle cx="60" cy="92" r="8" fill="#FFD84D" stroke="#15161A" stroke-width="3.5"/></g>
+<g class="up"><circle cx="60" cy="52" r="5" fill="#0F9A63" stroke="#15161A" stroke-width="2.5"/></g>
+</svg>

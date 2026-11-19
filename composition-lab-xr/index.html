@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Composition Lab XR</title>
+<meta name="description" content="Function composition in augmented reality: move x with your hand; f lives on the xy plane, g on the yz plane and g∘f on the xz plane.">
+<meta name="theme-color" content="#ECEEF2">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#13151A">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Composition Lab XR"><span class="b">g</span><span>∘</span><span class="a">f</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="arBtn" disabled><span class="lbl" data-i18n="ar">Realtà aumentata</span></button>
+      <button class="btn" type="button" id="vrBtn" disabled><span class="lbl" data-i18n="vr">Entra in VR</span></button>
+      <span class="grow"></span>
+      <button class="btn" type="button" id="playBtn"><span id="playIcon"></span><span class="lbl" id="playLbl" data-i18n="sweep">Anima x</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+    </div>
+    <div class="canvas-wrap card" id="view">
+      <canvas id="cv" tabindex="0" data-i18n-aria="stage">Scena 3D</canvas>
+      <div class="hint" data-i18n="hint">Trascina la sfera sull'asse x · trascina altrove per ruotare</div>
+      <div class="readout" id="readout"></div>
+    </div>
+    <p class="note" id="xrnote"></p>
+  </section>
+
+  <aside class="panel">
+    <div class="card side">
+      <h3 class="grp" data-i18n="p.preset">Esempio</h3>
+      <label class="sel"><select id="presetSel" data-i18n-aria="p.preset"></select></label>
+      <p class="note q" id="question"></p>
+
+      <h3 class="grp" data-i18n="p.fns">Funzioni</h3>
+      <div class="rel"><label for="fx" class="cf">f(x) =</label><input class="field" id="fx" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"></div>
+      <p class="note err" id="errF" role="alert"></p>
+      <div class="rel"><label for="gy" class="cg">g(y) =</label><input class="field" id="gy" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"></div>
+      <p class="note err" id="errG" role="alert"></p>
+      <p class="note" data-i18n="p.syntax">Per esempio x^2, 2x+1, sqrt(x), 1/x, sin(x), exp(x), ln(x).</p>
+
+      <h3 class="grp" data-i18n="p.levels">Cosa mostrare</h3>
+      <div class="seg full" id="levels" role="group">
+        <button type="button" data-l="1" aria-pressed="false">f</button>
+        <button type="button" data-l="2" aria-pressed="false">f, g</button>
+        <button type="button" data-l="3" aria-pressed="true" class="on">f, g, g∘f</button>
+      </div>
+      <p class="note" data-i18n="p.levelsHint">Costruisci la composizione un piano alla volta.</p>
+
+      <h3 class="grp"><span class="cgf">g∘f</span> <span data-i18n="p.onxz">sul piano xz</span></h3>
+      <div class="seg full" id="modeGF" role="group">
+        <button type="button" data-m="trace" class="on" aria-pressed="true" data-i18n="trace">Traccia</button>
+        <button type="button" data-m="full" aria-pressed="false" data-i18n="full">Completa</button>
+      </div>
+      <button class="btn" type="button" id="clear" data-ic="reset"><span class="lbl" data-i18n="clear">Cancella traccia</span></button>
+
+      <h3 class="grp" data-i18n="p.order">Ordine</h3>
+      <button class="tg" type="button" id="tgOrder" aria-pressed="false"><span class="txt"><span data-i18n="compare">Secondo punto x₁</span><small data-i18n="compareSub">f e g conservano o invertono l'ordine?</small></span><span class="box"></span></button>
+      <div class="ord" id="ordOut" hidden></div>
+      <details class="adv" id="adv">
+        <summary data-i18n="p.adv">Impostazioni avanzate</summary>
+        <button class="tg" type="button" id="tgTraceFG" aria-pressed="false"><span class="txt"><span data-i18n="tg.traceFG">Traccia anche f e g</span><small data-i18n="tg.traceFGSub"></small></span><span class="box"></span></button>
+        <button class="tg" type="button" id="tgSpace" aria-pressed="false"><span class="txt"><span data-i18n="tg.space">Curva nello spazio</span><small data-i18n="tg.spaceSub"></small></span><span class="box"></span></button>
+        <button class="tg" type="button" id="tgBall" aria-pressed="false"><span class="txt"><span data-i18n="tg.ball">Impulso che viaggia</span><small data-i18n="tg.ballSub"></small></span><span class="box"></span></button>
+      </details>
+    </div>
+  </aside>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="b">g</span><span>∘</span><span class="a">f</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <p data-i18n="info.about"></p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <ul>
+    <li data-i18n="info.how1"></li>
+    <li data-i18n="info.how2"></li>
+    <li data-i18n="info.how3"></li>
+    <li data-i18n="info.how4"></li>
+  </ul>
+  <h3 data-i18n="info.ctrl">Comandi nel visore</h3>
+  <ul>
+    <li data-i18n="info.c1"></li>
+    <li data-i18n="info.c2"></li>
+    <li data-i18n="info.c3"></li>
+  </ul>
+  <h3 data-i18n="info.keys">Sullo schermo</h3>
+  <p data-i18n="info.k1"></p>
+  <p class="note" data-i18n="info.funcs"></p>
+  <p class="note" data-i18n="info.unverified"></p>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script src="js/three.min.js"></script>
+<script src="js/expr.js"></script>
+<script src="js/compose.js"></script>
+<script src="js/grab.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
