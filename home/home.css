@@ -357,7 +357,7 @@ body {
   pointer-events: auto !important;
 }
 
-/* ---------- bottom game camera & wing switcher bar ---------- */
+/* ---------- bottom room switcher & minimal camera HUD ---------- */
 .bottom-hud {
   position: fixed;
   left: 0;
@@ -367,99 +367,186 @@ body {
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   padding: 8px max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.overview-float {
+  display: flex;
+  justify-content: flex-start;
+  pointer-events: none;
+}
+.reset-view-btn {
+  pointer-events: auto;
+  min-height: 34px;
+  padding: 5px 11px;
+  font-size: 11.5px;
+  background: var(--tile2);
+  color: #14202b;
 }
 .bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 10px;
+  gap: 10px;
 }
-.room-nav-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  overflow-x: auto;
-  padding: 2px 2px 4px;
-  scrollbar-width: none;
-}
-.room-nav-group::-webkit-scrollbar {
-  display: none;
-}
-.room-tabs {
-  pointer-events: auto;
-  flex: none;
-  box-shadow: 3px 3px 0 var(--ink);
-  background: var(--hud-glass);
-}
-.room-tabs button {
-  min-height: 32px;
-  padding: 4px 10px;
-  font-size: 11.5px;
-}
-.r-cnt {
-  font-size: 10px;
-  opacity: 0.72;
-  margin-left: 3px;
-  font-variant-numeric: tabular-nums;
-}
-.zone-bar {
+.room-stepper {
   pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: none;
+  min-width: 0;
+  flex: 0 1 380px;
 }
-.zone-btn {
-  display: inline-flex;
+.room-picker {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.room-trigger {
+  width: 100%;
+  min-height: 38px;
+  padding: 5px 10px 5px 6px;
+  display: flex;
   align-items: center;
-  gap: 5px;
-  min-height: 34px;
-  padding: 4px 9px;
+  gap: 7px;
   border: 2px solid var(--ink);
-  background: var(--hud-glass);
+  background: var(--surface);
   color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 700;
-  white-space: nowrap;
+  text-align: left;
   cursor: pointer;
   touch-action: manipulation;
 }
-.zone-btn b {
-  display: inline-block;
-  padding: 1px 4px;
+.room-trigger:active,
+.room-trigger[aria-expanded="true"] {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.rt-code {
+  flex: none;
+  padding: 2px 5px;
+  font-size: 10.5px;
   background: var(--ink);
   color: var(--surface);
+  line-height: 1.1;
+}
+.rt-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rt-cnt {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.rt-chev {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(-135deg) translate(-1px, -1px);
+  transition: transform 0.14s ease-out;
+}
+.room-trigger[aria-expanded="true"] .rt-chev {
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+/* Kit-styled Neo-Brutalist drop-up room menu (works identically across Safari, Chrome, Firefox & mobile) */
+.room-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  max-height: min(320px, 52dvh);
+  overflow-y: auto;
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 0;
+}
+.rm-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px dotted var(--gridline);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.rm-opt:last-child {
+  border-bottom: none;
+}
+.rm-code {
+  flex: none;
+  padding: 2px 5px;
   font-size: 10px;
+  background: var(--ink);
+  color: var(--surface);
+  line-height: 1.1;
 }
-.zone-btn.on {
+.rm-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rm-cnt {
+  flex: none;
+  font-size: 11px;
+  opacity: 0.72;
+  font-variant-numeric: tabular-nums;
+}
+.rm-opt:hover,
+.rm-opt:focus-visible {
+  background: var(--tile2);
+  color: #14202b;
+  outline: none;
+}
+.rm-opt:hover .rm-code,
+.rm-opt:focus-visible .rm-code {
+  background: #14202b;
+  color: #f7f9fb;
+}
+.rm-opt[aria-selected="true"] {
   background: var(--ink);
   color: var(--surface);
 }
-.zone-btn.on b {
+.rm-opt[aria-selected="true"] .rm-code {
   background: var(--tile2);
   color: #14202b;
 }
-.zone-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
+.rm-opt[aria-selected="true"] .rm-cnt {
+  opacity: 0.9;
 }
-
-.orbit-controls {
+.cam-actions {
   pointer-events: auto;
   display: flex;
+  align-items: center;
   gap: 6px;
   flex: none;
 }
 .orbit-btn {
-  min-width: 36px;
-  height: 36px;
-  padding: 0 7px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border: 2px solid var(--ink);
   background: var(--hud-glass);
   color: var(--ink);
@@ -469,13 +556,8 @@ body {
   cursor: pointer;
   display: grid;
   place-items: center;
+  flex: none;
   touch-action: manipulation;
-}
-.orbit-btn.px-btn {
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
-  background: var(--tile2);
-  color: #14202b;
 }
 .orbit-btn:active {
   transform: translate(2px, 2px);
@@ -524,12 +606,6 @@ body {
 
 /* ---------- responsive & touch ---------- */
 @media (max-width: 820px) {
-  .zone-btn .z-lbl {
-    display: none;
-  }
-  .zone-btn {
-    padding: 4px 8px;
-  }
   .mini-foot {
     display: none;
   }
@@ -546,7 +622,21 @@ body {
   }
   .bottom-hud {
     padding: 6px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+    gap: 6px;
   }
+  .room-stepper {
+    flex: 1;
+  }
+  /* Keep one 45° rotate button on narrow phones so the room selector stays spacious */
+  .rot-left {
+    display: none;
+  }
+  .controls-bar {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
   .controls-bar {
     display: none;
   }
@@ -559,12 +649,18 @@ body {
   .controls-hint.touch {
     display: inline-block;
   }
-  .zone-btn {
-    min-height: 40px;
-  }
   .orbit-btn {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
+  }
+  .room-trigger {
+    min-height: 42px;
+  }
+  .rm-opt {
+    min-height: 44px;
+  }
+  .reset-view-btn {
+    min-height: 40px;
   }
 }
 

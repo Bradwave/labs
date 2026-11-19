@@ -38,14 +38,25 @@
 </div>
 
 <div class="bottom-hud">
+  <div class="overview-float">
+    <button class="btn reset-view-btn" id="overviewBtn" type="button" hidden data-i18n="overviewBtn">↩ Vista sala</button>
+  </div>
   <div class="bottom-row">
-    <div class="room-nav-group">
-      <div class="seg small room-tabs" id="roomTabs" role="group" aria-label="Sale del laboratorio"></div>
-      <nav class="zone-bar" id="zoneBar" aria-label="Banchi della sala"></nav>
+    <div class="room-stepper" role="region" data-i18n-aria="roomSelector" aria-label="Selettore sala">
+      <button class="orbit-btn" id="prevRoomBtn" type="button" data-i18n-aria="prevRoom" data-i18n-title="prevRoom" aria-label="Sala precedente" title="Sala precedente">◀</button>
+      <div class="room-picker" id="roomPicker">
+        <button class="room-trigger" id="roomTrigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="roomMenu" data-i18n-aria="roomSelector" aria-label="Selettore sala">
+          <b class="rt-code" id="rtCode">01</b>
+          <span class="rt-name" id="rtName"></span>
+          <span class="rt-cnt" id="rtCnt"></span>
+          <span class="rt-chev" aria-hidden="true"></span>
+        </button>
+        <div class="room-menu card" id="roomMenu" role="listbox" data-i18n-aria="roomSelector" aria-label="Selettore sala" hidden></div>
+      </div>
+      <button class="orbit-btn" id="nextRoomBtn" type="button" data-i18n-aria="nextRoom" data-i18n-title="nextRoom" aria-label="Sala successiva" title="Sala successiva">▶</button>
     </div>
-    <div class="orbit-controls">
-      <button class="orbit-btn px-btn" id="pxScaleBtn" type="button" data-i18n-aria="pixelScale" data-i18n-title="pixelScale" aria-label="Dimensione pixel" title="Dimensione pixel">PX</button>
-      <button class="orbit-btn" id="rotLeftBtn" type="button" data-i18n-aria="rotateLeft" data-i18n-title="rotateLeft" aria-label="Ruota a sinistra" title="Ruota a sinistra">⟲</button>
+    <div class="cam-actions">
+      <button class="orbit-btn rot-left" id="rotLeftBtn" type="button" data-i18n-aria="rotateLeft" data-i18n-title="rotateLeft" aria-label="Ruota a sinistra" title="Ruota a sinistra">⟲</button>
       <button class="orbit-btn" id="rotRightBtn" type="button" data-i18n-aria="rotateRight" data-i18n-title="rotateRight" aria-label="Ruota a destra" title="Ruota a destra">⟳</button>
     </div>
   </div>
@@ -60,7 +71,7 @@
   <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
   <h2 data-i18n="title">Laboratori di matematica e fisica</h2>
   <p data-i18n="about">Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.</p>
-  <p data-i18n="aboutRoom">Il laboratorio è organizzato in sale tematiche (Fisica, Matematica, XR Studio). Fai clic su un banco o scorri per avvicinarti e vedere i titoli degli apparati, usa la ricerca globale per volare in qualsiasi sala, e clicca qualsiasi apparato colorato per aprirlo.</p>
+  <p data-i18n="aboutRoom">Il laboratorio è organizzato in sale tematiche. Usa il selettore in basso per cambiare sala, clicca un banco o scorri per avvicinarti e vedere i titoli degli apparati, usa la ricerca globale per volare in qualsiasi sala, e clicca qualsiasi apparato colorato per aprirlo.</p>
   <p class="meta kit-meta"></p>
 </dialog>
 <script src="home/three.min.js"></script>

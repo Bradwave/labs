@@ -18,7 +18,10 @@ const strings = {
     searchPlaceholder: "Cerca in tutto il lab… (es. urti, orbita, XR, frattali)",
     searchLabel: "Cerca tra tutti i laboratori",
     searchClear: "Cancella ricerca",
-    overview: "Sala",
+    roomSelector: "Selettore sala",
+    prevRoom: "Sala precedente",
+    nextRoom: "Sala successiva",
+    overviewBtn: "↩ Vista sala",
     rotateLeft: "Ruota a sinistra",
     rotateRight: "Ruota a destra",
     pixelScale: "Dimensione pixel",
@@ -32,14 +35,17 @@ const strings = {
     about:
       "Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.",
     aboutRoom:
-      "Il laboratorio è organizzato in sale tematiche (Fisica, Matematica, XR Studio). Fai clic su un banco o scorri per avvicinarti e vedere i titoli degli apparati, usa la ricerca globale per volare in qualsiasi sala, e clicca qualsiasi apparato colorato per aprirlo.",
+      "Il laboratorio è organizzato in sale tematiche. Usa il selettore in basso per cambiare sala, clicca un banco o scorri per avvicinarti e vedere i titoli degli apparati, usa la ricerca globale per volare in qualsiasi sala, e clicca qualsiasi apparato colorato per aprirlo.",
     foot: "Codice libero (MIT) su",
   },
   en: {
     searchPlaceholder: "Search all rooms… (e.g. orbit, collision, XR, fractal)",
     searchLabel: "Search all labs",
     searchClear: "Clear search",
-    overview: "Room",
+    roomSelector: "Room selector",
+    prevRoom: "Previous room",
+    nextRoom: "Next room",
+    overviewBtn: "↩ Room view",
     rotateLeft: "Rotate left",
     rotateRight: "Rotate right",
     pixelScale: "Pixel scale",
@@ -53,10 +59,22 @@ const strings = {
     about:
       "Each lab is a small app that opens in the browser and can be installed. Everything runs on the device: no data is sent anywhere.",
     aboutRoom:
-      "The laboratory is organized into themed rooms (Physics, Mathematics, XR Studio). Click a bench or zoom in to reveal apparatus titles, use global search to jump to any room, and click any coloured apparatus to open it.",
+      "The laboratory is organized into themed rooms. Use the bottom selector to switch rooms, click a bench or zoom in to reveal apparatus titles, use global search to jump to any room, and click any coloured apparatus to open it.",
     foot: "Open source (MIT) at",
   },
 };
+
+const PIXEL_PRESETS = [
+  { label: "PX", mult: 1.0 },
+  { label: "PX+", mult: 1.32 },
+  { label: "PX−", mult: 0.78 },
+];
+let pixelPresetIdx = 0;
+
+function cyclePixelPreset() {
+  pixelPresetIdx = (pixelPresetIdx + 1) % PIXEL_PRESETS.length;
+  if (pixelPass) pixelPass.setPixelSize(computePixelSize(camState.zoom));
+}
 
 initKit({
   slug: "labs",
@@ -65,6 +83,15 @@ initKit({
   strings,
   sw: false,
   landing: "https://matephis.com",
+  menu: [
+    {
+      icon: "palette",
+      label: "pixelScale",
+      value: () => PIXEL_PRESETS[pixelPresetIdx].label,
+      keepOpen: true,
+      onClick: cyclePixelPreset,
+    },
+  ],
 });
 
 const esc = (s) =>
@@ -78,11 +105,6 @@ const ISO_YAW = Math.PI / 4;
 const ISO_PITCH = Math.atan(1 / Math.sqrt(2));
 const CAM_RADIUS = 38;
 const BASE_FRUSTUM_H = 19.5;
-const PIXEL_PRESETS = [
-  { label: "PX", mult: 1.0 },
-  { label: "PX+", mult: 1.32 },
-  { label: "PX−", mult: 0.78 },
-];
 
 let apps = [];
 let activeRoomId = ROOMS[0].id;
@@ -110,7 +132,6 @@ let query = "";
 let activeBenchId = "overview";
 let hoveredSlug = null;
 let focusedSlug = null;
-let pixelPresetIdx = 0;
 
 const camState = {
   target: new THREE.Vector3(0, 0.9, -0.3),
@@ -234,38 +255,44 @@ function setHovered(slug) {
 }
 
 function renderRoomTabs(highlightId = activeRoomId) {
-  const el = document.getElementById("roomTabs");
-  if (!el) return;
+  const menu = document.getElementById("roomMenu");
+  const codeEl = document.getElementById("rtCode");
+  const nameEl = document.getElementById("rtName");
+  const cntEl = document.getElementById("rtCnt");
   const lang = getLang();
-  el.innerHTML = ROOMS.map((r) => {
+
+  const curIdx = Math.max(0, ROOMS.findIndex((r) => r.id === highlightId));
+  const cur = ROOMS[curIdx];
+  if (codeEl) codeEl.textContent = String(curIdx + 1).padStart(2, "0");
+  if (nameEl) nameEl.textContent = cur.title?.[lang] || cur.title?.en || cur.id;
+  if (cntEl) cntEl.textContent = `(${appsInRoom(cur.id, apps).length})`;
+
+  if (!menu) return;
+  menu.innerHTML = ROOMS.map((r, i) => {
     const n = appsInRoom(r.id, apps).length;
-    const on = r.id === highlightId;
     const label = r.title?.[lang] || r.title?.en || r.id;
-    return `<button type="button" data-room="${esc(r.id)}" class="${on ? "on" : ""}" aria-pressed="${on}">${esc(label)}<span class="r-cnt">(${n})</span></button>`;
+    const num = String(i + 1).padStart(2, "0");
+    const on = r.id === highlightId;
+    return `<button type="button" class="rm-opt" role="option" data-room="${esc(r.id)}" aria-selected="${on}">
+      <b class="rm-code">${num}</b>
+      <span class="rm-name">${esc(label)}</span>
+      <span class="rm-cnt">${n}</span>
+    </button>`;
   }).join("");
 }
 
 function updateZoneButtons() {
-  for (const b of document.querySelectorAll("#zoneBar button[data-zone]")) {
-    const on = b.dataset.zone === activeBenchId;
-    b.classList.toggle("on", on);
-    b.setAttribute("aria-pressed", String(on));
-  }
+  const btn = document.getElementById("overviewBtn");
+  if (!btn) return;
+  const awayFromOverview =
+    activeBenchId !== "overview" ||
+    Math.abs(camState.goalZoom - getOverviewZoom()) > 0.25 ||
+    Math.hypot(camState.goalTarget.x, camState.goalTarget.z + 0.25) > 1.2;
+  btn.hidden = !awayFromOverview;
 }
 
 function renderZoneBar() {
-  const bar = document.getElementById("zoneBar");
-  if (!bar || !layout) return;
-  const lang = getLang();
-  const btns = [
-    `<button type="button" class="zone-btn ${activeBenchId === "overview" ? "on" : ""}" data-zone="overview" aria-pressed="${activeBenchId === "overview"}">${esc(t("overview"))}</button>`,
-    ...layout.benches.map((b) => {
-      const title = b.title?.[lang] || b.title?.en || b.id;
-      const on = activeBenchId === b.tableId;
-      return `<button type="button" class="zone-btn ${on ? "on" : ""}" data-zone="${esc(b.tableId)}" aria-pressed="${on}" title="${esc(title)}"><b>${esc(b.displayCode)}</b><span class="z-lbl">${esc(title)}</span></button>`;
-    }),
-  ];
-  bar.innerHTML = btns.join("");
+  updateZoneButtons();
 }
 
 function updateHudCount(globalMatchedCount = null) {
@@ -517,26 +544,74 @@ function bootScene(allApps) {
   resize();
   window.addEventListener("resize", resize);
 
-  // Wing / Room switcher tabs (triggers tactile 3D diorama swap animation)
-  document.getElementById("roomTabs")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-room]");
-    if (!btn) return;
-    switchRoom(btn.dataset.room, () => {
+  // Scalable Room Switcher: ◀ [ Kit Drop-Up Room Menu ] ▶ (triggers tactile 3D diorama swap)
+  const roomTrigger = document.getElementById("roomTrigger");
+  const roomMenu = document.getElementById("roomMenu");
+  const roomPicker = document.getElementById("roomPicker");
+
+  const closeRoomMenu = (refocus = false) => {
+    if (!roomMenu || roomMenu.hidden) return;
+    roomMenu.hidden = true;
+    roomTrigger?.setAttribute("aria-expanded", "false");
+    if (refocus) roomTrigger?.focus({ preventScroll: true });
+  };
+  const openRoomMenu = () => {
+    if (!roomMenu) return;
+    roomMenu.hidden = false;
+    roomTrigger?.setAttribute("aria-expanded", "true");
+    const activeOpt = roomMenu.querySelector('[aria-selected="true"]') || roomMenu.querySelector(".rm-opt");
+    activeOpt?.focus({ preventScroll: true });
+  };
+
+  const stepRoom = (delta) => {
+    closeRoomMenu(false);
+    const baseId = roomAnim.phase === "out" && roomAnim.nextRoomId ? roomAnim.nextRoomId : activeRoomId;
+    const idx = ROOMS.findIndex((r) => r.id === baseId);
+    const next = ROOMS[(idx + delta + ROOMS.length) % ROOMS.length];
+    switchRoom(next.id, () => {
+      if (query.trim()) applySearch(false);
+    });
+  };
+  document.getElementById("prevRoomBtn")?.addEventListener("click", () => stepRoom(-1));
+  document.getElementById("nextRoomBtn")?.addEventListener("click", () => stepRoom(1));
+
+  roomTrigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (roomMenu.hidden) openRoomMenu();
+    else closeRoomMenu(false);
+  });
+  roomMenu?.addEventListener("click", (e) => {
+    const opt = e.target.closest(".rm-opt[data-room]");
+    if (!opt) return;
+    closeRoomMenu(true);
+    switchRoom(opt.dataset.room, () => {
       if (query.trim()) applySearch(false);
     });
   });
-
-  // Pixel preset button
-  const pxBtn = document.getElementById("pxScaleBtn");
-  const syncPxBtn = () => {
-    if (pxBtn) pxBtn.textContent = PIXEL_PRESETS[pixelPresetIdx].label;
-  };
-  syncPxBtn();
-  pxBtn?.addEventListener("click", () => {
-    pixelPresetIdx = (pixelPresetIdx + 1) % PIXEL_PRESETS.length;
-    syncPxBtn();
-    pixelPass.setPixelSize(computePixelSize(camState.zoom));
+  roomMenu?.addEventListener("keydown", (e) => {
+    const opts = [...roomMenu.querySelectorAll(".rm-opt")];
+    const i = opts.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      opts[(i + 1) % opts.length]?.focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      opts[(i - 1 + opts.length) % opts.length]?.focus();
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      opts[0]?.focus();
+    } else if (e.key === "End") {
+      e.preventDefault();
+      opts[opts.length - 1]?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closeRoomMenu(true);
+    }
   });
+  document.addEventListener("click", (e) => {
+    if (roomMenu && !roomMenu.hidden && !roomPicker?.contains(e.target)) closeRoomMenu(false);
+  });
+  document.getElementById("overviewBtn")?.addEventListener("click", () => flyToOverview());
 
   // Search tray hover preview (if match is in active room, spotlight it!)
   document.getElementById("searchResults")?.addEventListener("mouseover", (e) => {
@@ -628,6 +703,7 @@ function bootScene(allApps) {
       lastPinchDist = d;
       lastPinchAngle = ang;
       clampCamera();
+      updateZoneButtons();
       return;
     }
 
@@ -679,12 +755,13 @@ function bootScene(allApps) {
       e.preventDefault();
       camState.goalZoom *= 1 - Math.sign(e.deltaY) * Math.min(0.15, Math.abs(e.deltaY) * 0.0014);
       clampCamera();
+      updateZoneButtons();
     },
     { passive: false },
   );
 
   window.addEventListener("keydown", (e) => {
-    if (document.activeElement && ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+    if (document.activeElement && ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) return;
     const k = e.key.toLowerCase();
     if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) {
       keys.add(k);
@@ -698,16 +775,6 @@ function bootScene(allApps) {
   });
   window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 
-  document.getElementById("zoneBar").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-zone]");
-    if (!btn) return;
-    const z = btn.dataset.zone;
-    if (z === "overview") flyToOverview();
-    else {
-      const bench = layout?.benches.find((b) => b.tableId === z);
-      if (bench) flyToBench(bench);
-    }
-  });
   document.getElementById("rotLeftBtn")?.addEventListener("click", () => {
     camState.goalYaw -= Math.PI / 4;
   });
