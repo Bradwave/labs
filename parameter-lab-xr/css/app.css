@@ -1,0 +1,75 @@
+/* Parameter Lab XR · app.css
+   Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
+:root {
+  --bg: #FFB9CE;
+  --bgline: rgba(46, 16, 32, 0.12);
+  --surface: #FFF6F9;
+  --ink: #2E1020;
+  --muted: color-mix(in srgb, #2E1020 66%, #FFF6F9);
+  --accent: #6B2FD6;
+  --onaccent: #FFFFFF;
+  --tile2: #FFD23F;
+  --gridline: color-mix(in srgb, #2E1020 16%, transparent);
+  /* the two relations: a colour-blind safe pair (blue, orange); violet (accent) always means "solution" */
+  --ca: #2155CD;
+  --cb: #D96A00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #2B1220;
+    --bgline: rgba(255, 185, 206, 0.07);
+    --surface: #3B1B2E;
+    --ink: #FFE3EE;
+    --muted: color-mix(in srgb, #FFE3EE 65%, #3B1B2E);
+    --accent: #B79CFF;
+    --onaccent: #2B1220;
+    --tile2: #E9B92A;
+    --gridline: color-mix(in srgb, #FFE3EE 14%, transparent);
+    --ca: #7FA8FF;
+    --cb: #FFA24D;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #2B1220;
+  --bgline: rgba(255, 185, 206, 0.07);
+  --surface: #3B1B2E;
+  --ink: #FFE3EE;
+  --muted: color-mix(in srgb, #FFE3EE 65%, #3B1B2E);
+  --accent: #B79CFF;
+  --onaccent: #2B1220;
+  --tile2: #E9B92A;
+  --gridline: color-mix(in srgb, #FFE3EE 14%, transparent);
+  --ca: #7FA8FF;
+  --cb: #FFA24D;
+}
+
+/* ---------- app-specific styles below ---------- */
+[hidden] { display: none !important; }
+/* XR suffix after the lab badge (as in the other XR labs) */
+.word .xr { width: auto; padding: 0 0.25em; margin-left: 6px; border: 2px solid var(--ink); background: var(--ink); color: var(--surface); font-size: 0.6em; height: 1.6em; align-self: flex-end; display: grid; place-items: center; }
+#cv { cursor: grab; touch-action: none; }
+#cv.held { cursor: grabbing; }
+.side { padding: 12px 14px 16px; overflow: auto; }
+body.inxr .top, body.inxr .layout { visibility: hidden; }
+
+.rel { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.rel i { flex: none; width: 16px; height: 16px; border: 2px solid var(--ink); }
+.rel .swA { background: var(--ca); }
+.rel .swB { background: var(--cb); }
+.rel input.field { font-size: 15px; }
+.note.err { color: var(--err); min-height: 0; margin: 2px 0 0 24px; }
+.note.err:empty { display: none; }
+.note.q { font-style: italic; color: var(--ink); }
+.nums { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 8px; }
+.nums .num { flex-direction: column; align-items: flex-start; gap: 3px; }
+.nums .num input { width: 56px; }
+.nums .num .step input { width: 58px; }
+#plot { display: block; width: 100%; aspect-ratio: 1; max-height: 52vh; max-width: 52vh; margin: 0 auto; border: 1.5px solid var(--ink); background: var(--surface); touch-action: pan-y; }
+#disc { display: block; width: 100%; height: 74px; border: 1.5px solid var(--ink); background: var(--surface); cursor: pointer; touch-action: pan-y; }
+.info { font-size: 12.5px; margin: 8px 0 0; font-variant-numeric: tabular-nums; min-height: 2.6em; }
+.info b { color: var(--accent); }
+:root:not([data-theme="dark"]) .info b { color: var(--accent); }
+.chips { margin: 8px 0; min-height: 4px; }
+.chips .lg { border-color: var(--accent); }
+.chips .lg .sw { background: var(--accent); }
+.tg + .tg { margin-top: 4px; }

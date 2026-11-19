@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Parameter Lab XR">
+<title>Parameter Lab XR</title>
+<style>
+.slice { transform-box: fill-box; transform-origin: center; animation: slide 4.2s ease-in-out infinite alternate; }
+.knob { animation: rise 4.2s ease-in-out infinite alternate; }
+@keyframes slide { from { transform: translateY(42px) scale(0.42); } to { transform: none; } }
+@keyframes rise { from { transform: translateY(42px); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="4" y="4" width="112" height="112" fill="#FFB9CE" stroke="#2E1020" stroke-width="6"/>
+<path d="M17 102V20" fill="none" stroke="#2E1020" stroke-width="3.5" stroke-linecap="round"/>
+<ellipse cx="62" cy="86" rx="15" ry="6" fill="none" stroke="#2155CD" stroke-width="4"/>
+<ellipse cx="62" cy="65" rx="25" ry="10" fill="none" stroke="#2155CD" stroke-width="4"/>
+<g class="slice"><ellipse cx="62" cy="44" rx="33" ry="13" fill="#6B2FD6" fill-opacity="0.3" stroke="#6B2FD6" stroke-width="5"/></g>
+<rect class="knob" x="10" y="38" width="14" height="12" fill="#FFD23F" stroke="#2E1020" stroke-width="3.5"/>
+</svg>

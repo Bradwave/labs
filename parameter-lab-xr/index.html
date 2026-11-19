@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Parameter Lab XR</title>
+<meta name="description" content="Parametric equations and inequalities in augmented reality: the plane is extruded along k, curves become surfaces and a slice shows the plot for any value of k.">
+<meta name="theme-color" content="#FFB9CE">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#2B1220">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Parameter Lab XR"><span class="k">p</span><span>a</span><span class="a">r</span><span>a</span><span class="b">m</span><span>e</span><span class="a">t</span><span>e</span><span class="k">r</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn primary" type="button" id="arBtn" disabled><span class="lbl" data-i18n="ar">Realtà aumentata</span></button>
+      <button class="btn" type="button" id="vrBtn" disabled><span class="lbl" data-i18n="vr">Entra in VR</span></button>
+      <span class="grow"></span>
+      <button class="btn" type="button" id="playBtn"><span id="playIcon"></span><span class="lbl" id="playLbl" data-i18n="sweep">Scorri k</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+    </div>
+    <div class="canvas-wrap card" id="view">
+      <canvas id="cv" tabindex="0" data-i18n-aria="stage">Scena 3D</canvas>
+      <div class="hint" data-i18n="hint">Trascina la maniglia gialla lungo k · trascina altrove per ruotare</div>
+      <div class="readout" id="readout"></div>
+    </div>
+    <p class="note" id="xrnote"></p>
+  </section>
+
+  <aside class="panel">
+    <div class="card side">
+      <h3 class="grp" data-i18n="p.preset">Esempio</h3>
+      <label class="sel"><select id="presetSel" data-i18n-aria="p.preset"></select></label>
+      <p class="note q" id="question"></p>
+
+      <h3 class="grp" data-i18n="p.rel">Relazioni</h3>
+      <div class="rel"><i class="swA" aria-hidden="true"></i><input class="field" id="relA" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n-aria="p.relA"></div>
+      <p class="note err" id="errA" role="alert"></p>
+      <div class="rel"><i class="swB" aria-hidden="true"></i><input class="field" id="relB" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n-aria="p.relB" data-i18n-placeholder="p.relBph" placeholder="(seconda relazione, facoltativa)"></div>
+      <p class="note err" id="errB" role="alert"></p>
+      <p class="note" data-i18n="p.syntax">Usa x, y, k (e a) · ^ per le potenze · sqrt(), abs(), sin() … · =, &lt;, ≤, &gt;, ≥</p>
+
+      <h3 class="grp" data-i18n="p.k">Parametro</h3>
+      <div class="ctl"><label for="kR"><span data-i18n="p.kname">k (la fetta)</span> <b id="kL"></b></label><input type="range" id="kR" min="-4" max="4" step="0.01" value="0"></div>
+      <div class="ctl" id="aCtl" hidden><label for="aR"><span data-i18n="p.a">a (parametro fisso)</span> <b id="aL"></b></label><input type="range" id="aR" min="-3" max="3" step="0.05" value="1"></div>
+      <div class="nums">
+        <label class="num"><span data-i18n="p.kmin">k min</span><input id="k0In" type="text" data-step="1" value="-4"></label>
+        <label class="num"><span data-i18n="p.kmax">k max</span><input id="k1In" type="text" data-step="1" value="4"></label>
+        <label class="num"><span data-i18n="p.win">Finestra ±</span><input id="wIn" type="text" data-step="1" data-min="1" value="4"></label>
+      </div>
+
+      <h3 class="grp" data-i18n="p.slice">Grafico alla fetta</h3>
+      <canvas id="plot" role="img" data-i18n-aria="plot.aria"></canvas>
+      <div class="info" id="sliceInfo" aria-live="polite"></div>
+
+      <h3 class="grp" data-i18n="p.disc">Discussione</h3>
+      <canvas id="disc" role="img" data-i18n-aria="disc.aria"></canvas>
+      <div class="chips" id="crits"></div>
+      <button class="tg" type="button" id="tgDisc" aria-pressed="true"><span class="txt"><span data-i18n="tg.disc">Mostra la discussione</span><small data-i18n="tg.discHint">Nascondila per far prevedere prima la risposta</small></span><span class="box"></span></button>
+
+      <h3 class="grp" data-i18n="p.show">Mostra</h3>
+      <button class="tg" type="button" id="tgLayers" aria-pressed="true"><span class="txt"><span data-i18n="tg.layers">Strati</span></span><span class="box"></span></button>
+      <button class="tg" type="button" id="tgSurface" aria-pressed="true"><span class="txt"><span data-i18n="tg.surface">Superfici</span></span><span class="box"></span></button>
+      <button class="tg" type="button" id="tgFocus" aria-pressed="false"><span class="txt"><span data-i18n="tg.focus">Solo la fetta</span><small data-i18n="tg.focusHint">Attenua il resto per guardare un solo grafico</small></span><span class="box"></span></button>
+    </div>
+  </aside>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="k">p</span><span>a</span><span class="a">r</span><span>a</span><span class="b">m</span><span>e</span><span class="a">t</span><span>e</span><span class="k">r</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <p data-i18n="info.about"></p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <ul>
+    <li data-i18n="info.how1"></li>
+    <li data-i18n="info.how2"></li>
+    <li data-i18n="info.how3"></li>
+    <li data-i18n="info.how4"></li>
+  </ul>
+  <h3 data-i18n="info.ctrl">Comandi nel visore</h3>
+  <ul>
+    <li data-i18n="info.c1"></li>
+    <li data-i18n="info.c2"></li>
+    <li data-i18n="info.c3"></li>
+  </ul>
+  <h3 data-i18n="info.keys">Sullo schermo</h3>
+  <p data-i18n="info.k1"></p>
+  <p class="note" data-i18n="info.funcs"></p>
+  <p class="note" data-i18n="info.unverified"></p>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script src="js/three.min.js"></script>
+<script src="js/expr.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/presets.js"></script>
+<script src="js/grab.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
