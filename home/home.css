@@ -1,11 +1,12 @@
 /* Labs · home/home.css
-   The crowded laboratory landing page: room architecture, muted non-clickable scenery,
-   vivid clickable animated apparatuses, bench plaques, compact index mode, responsive & dark themes. */
+   2D cutaway game-scene laboratory: multi-floor architectural cross-section, day/night windows,
+   pendant lamps, continuous wooden workbenches, vivid foreground animated apparatuses,
+   game-style targeting brackets on hover/focus, compact diegetic title tags, search-only HUD. */
 
-/* ---------- room tokens (light & dark) ---------- */
+/* ---------- daytime lab room palette (light mode) ---------- */
 :root {
   --bg: #c9d3dd;
-  --bgline: rgba(20, 32, 43, 0.11);
+  --bgline: rgba(20, 32, 43, 0.1);
   --surface: #f7f9fb;
   --ink: #14202b;
   --muted: #4f5f6e;
@@ -14,25 +15,38 @@
   --tile2: #ffd23f;
   --gridline: rgba(20, 32, 43, 0.16);
 
-  /* Laboratory furniture & non-clickable scenery tokens (deliberately muted & desaturated) */
-  --table-top: #dfe5eb;
-  --table-edge: #b9c5d1;
-  --table-apron: #cfd8e1;
-  --sc-fill: #d7e0e8;
-  --sc-fill-2: #c2ced9;
-  --sc-stroke: rgba(20, 32, 43, 0.36);
-  --sc-soft: rgba(20, 32, 43, 0.16);
-  --sc-board: #2a3c3b;
-  --sc-chalk: #e9f0ec;
-  --sc-lamp-cone: rgba(255, 224, 130, 0.14);
-  --sc-bulb: #f5d26b;
-  --bench-wall: rgba(247, 249, 251, 0.34);
+  /* Architectural cutaway & muted scenery tokens */
+  --wall-bg: #dde5ec;
+  --wall-wainscot: #cfd9e3;
+  --wall-trim: #c3ced9;
+  --wall-slab: #b4c1ce;
+  --bench-top: #d8b992;
+  --bench-front: #be9a6f;
+  --table-apron: #c5d0db;
+  --under-cavity: #a5b2be;
+
+  --sc-fill: #d3dde6;
+  --sc-fill-2: #becad6;
+  --sc-stroke: rgba(20, 32, 43, 0.42);
+  --sc-soft: rgba(20, 32, 43, 0.18);
+  --sc-board: #283d3b;
+  --sc-chalk: #e7f0ec;
+
+  --win-sky: #a9d8f4;
+  --win-cloud: rgba(255, 255, 255, 0.85);
+  --win-gleam: rgba(255, 255, 255, 0.28);
+  --win-moon: #ffd86b;
+  --win-star: #e8f1ff;
+
+  --lamp-cone: rgba(255, 224, 128, 0.17);
+  --lamp-bulb: #f7d560;
 }
 
+/* ---------- late-night lab room palette (dark mode) ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111a22;
-    --bgline: rgba(201, 211, 221, 0.065);
+    --bg: #0f171f;
+    --bgline: rgba(201, 211, 221, 0.055);
     --surface: #1b2731;
     --ink: #e8eef3;
     --muted: #9fb0bf;
@@ -41,24 +55,36 @@
     --tile2: #e9b92a;
     --gridline: rgba(232, 238, 243, 0.15);
 
-    --table-top: #22303c;
-    --table-edge: #15202a;
-    --table-apron: #18232d;
-    --sc-fill: #18242e;
-    --sc-fill-2: #22313e;
-    --sc-stroke: rgba(214, 226, 236, 0.3);
-    --sc-soft: rgba(214, 226, 236, 0.13);
-    --sc-board: #142222;
-    --sc-chalk: #cfe0da;
-    --sc-lamp-cone: rgba(255, 210, 90, 0.08);
-    --sc-bulb: #ffd666;
-    --bench-wall: rgba(27, 39, 49, 0.32);
+    --wall-bg: #17232e;
+    --wall-wainscot: #121c25;
+    --wall-trim: #202f3d;
+    --wall-slab: #243342;
+    --bench-top: #59412f;
+    --bench-front: #412f21;
+    --table-apron: #1b2732;
+    --under-cavity: #0b1117;
+
+    --sc-fill: #1b2834;
+    --sc-fill-2: #243442;
+    --sc-stroke: rgba(210, 224, 236, 0.34);
+    --sc-soft: rgba(210, 224, 236, 0.14);
+    --sc-board: #132222;
+    --sc-chalk: #cce0da;
+
+    --win-sky: #0b1426;
+    --win-cloud: rgba(255, 255, 255, 0.1);
+    --win-gleam: rgba(255, 255, 255, 0.06);
+    --win-moon: #ffd86b;
+    --win-star: #e8f1ff;
+
+    --lamp-cone: rgba(255, 206, 94, 0.1);
+    --lamp-bulb: #ffd666;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #111a22;
-  --bgline: rgba(201, 211, 221, 0.065);
+  --bg: #0f171f;
+  --bgline: rgba(201, 211, 221, 0.055);
   --surface: #1b2731;
   --ink: #e8eef3;
   --muted: #9fb0bf;
@@ -67,98 +93,76 @@
   --tile2: #e9b92a;
   --gridline: rgba(232, 238, 243, 0.15);
 
-  --table-top: #22303c;
-  --table-edge: #15202a;
-  --table-apron: #18232d;
-  --sc-fill: #18242e;
-  --sc-fill-2: #22313e;
-  --sc-stroke: rgba(214, 226, 236, 0.3);
-  --sc-soft: rgba(214, 226, 236, 0.13);
-  --sc-board: #142222;
-  --sc-chalk: #cfe0da;
-  --sc-lamp-cone: rgba(255, 210, 90, 0.08);
-  --sc-bulb: #ffd666;
-  --bench-wall: rgba(27, 39, 49, 0.32);
+  --wall-bg: #17232e;
+  --wall-wainscot: #121c25;
+  --wall-trim: #202f3d;
+  --wall-slab: #243342;
+  --bench-top: #59412f;
+  --bench-front: #412f21;
+  --table-apron: #1b2732;
+  --under-cavity: #0b1117;
+
+  --sc-fill: #1b2834;
+  --sc-fill-2: #243442;
+  --sc-stroke: rgba(210, 224, 236, 0.34);
+  --sc-soft: rgba(210, 224, 236, 0.14);
+  --sc-board: #132222;
+  --sc-chalk: #cce0da;
+
+  --win-sky: #0b1426;
+  --win-cloud: rgba(255, 255, 255, 0.1);
+  --win-gleam: rgba(255, 255, 255, 0.06);
+  --win-moon: #ffd86b;
+  --win-star: #e8f1ff;
+
+  --lamp-cone: rgba(255, 206, 94, 0.1);
+  --lamp-bulb: #ffd666;
 }
 
-/* ---------- page shell ---------- */
+/* Toggle day vs night window sky elements */
+.win-night { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .win-day { display: none; }
+  :root:not([data-theme="light"]) .win-night { display: inline; }
+}
+:root[data-theme="dark"] .win-day { display: none; }
+:root[data-theme="dark"] .win-night { display: inline; }
+
+/* ---------- page container ---------- */
 .home {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 6px max(16px, env(safe-area-inset-right, 0px)) 44px max(16px, env(safe-area-inset-left, 0px));
+  padding: 6px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
 }
 
-/* ---------- overhead lab wall scenery (non-clickable) ---------- */
-.room-wall-decor {
-  margin: 4px 0 0;
-  border: 2px solid var(--sc-stroke);
-  border-bottom: none;
-  background: var(--bench-wall);
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-}
-.room-wall-svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 132px;
-}
-.wall-clock-sec {
-  transform-origin: 0 0;
-  animation: st-clock-tick 60s steps(60, end) infinite;
-}
-@keyframes st-clock-tick {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ---------- lab control strip (intro, filters, search, view toggle, bench jump) ---------- */
-.lab-bar {
-  padding: 12px 14px;
-  margin-bottom: 24px;
+/* ---------- minimal game-HUD search bar ---------- */
+.hud-bar {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.lab-bar-top {
-  display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 16px;
-}
-.intro {
-  margin: 0;
-  max-width: 68ch;
-  font-size: 13px;
-  color: var(--ink);
-}
-.lab-controls {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
+  gap: 10px 14px;
+  margin: 6px 0 14px;
 }
 .search-wrap {
   position: relative;
-  flex: 1 1 200px;
-  max-width: 300px;
-  min-width: 170px;
+  flex: 1 1 260px;
+  max-width: 380px;
 }
 .search-wrap input.field {
-  min-height: 34px;
-  padding: 5px 30px 5px 10px;
-  font-size: 12.5px;
+  min-height: 38px;
+  padding: 6px 34px 6px 12px;
+  font-size: 13px;
+  box-shadow: 3px 3px 0 var(--ink);
 }
 .search-clear {
   position: absolute;
-  right: 4px;
+  right: 5px;
   top: 50%;
   transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border: none;
   background: transparent;
   color: var(--muted);
@@ -171,160 +175,177 @@
 .search-clear:hover {
   color: var(--ink);
 }
-.count-badge {
-  font-size: 10.5px;
-  opacity: 0.72;
-  margin-left: 2px;
+.hud-status {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-variant-numeric: tabular-nums;
 }
-
-/* Quick bench jump strip for scalable navigation */
-.bench-jump {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  padding-top: 8px;
-  border-top: 1px dotted var(--gridline);
-  scrollbar-width: thin;
-}
-.bench-jump-label {
+.hud-pill {
+  display: inline-block;
+  padding: 2px 7px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  margin-right: 4px;
-}
-.jump-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 700;
+  background: var(--surface);
   color: var(--ink);
-  text-decoration: none;
-  background: var(--bg);
-  border: 1.5px solid var(--ink);
-  white-space: nowrap;
-  transition: transform 0.12s ease-out, background-color 0.12s ease-out;
-}
-.jump-pill b {
-  background: var(--ink);
-  color: var(--surface);
-  padding: 0 4px;
-  font-size: 10px;
-}
-.jump-pill:hover {
-  background: var(--tile2);
-  color: #14202b;
-  transform: translate(-1px, -1px);
+  border: 2px solid var(--ink);
   box-shadow: 2px 2px 0 var(--ink);
 }
-.jump-pill:active {
-  transform: translate(1px, 1px);
-  box-shadow: none;
-}
 
-/* ---------- lab room container ---------- */
-.lab-room {
-  display: flex;
-  flex-direction: column;
-  gap: 34px;
-}
-
-/* ---------- individual lab bench / table ---------- */
-.bench {
-  scroll-margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Bench wall signboard & muted wall shelf decor */
-.bench-wall {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 6px 8px;
-}
-.bench-sign {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-}
-.bench-code {
-  display: inline-grid;
-  place-items: center;
-  min-width: 34px;
-  padding: 3px 7px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  background: var(--ink);
-  color: var(--surface);
-  border: 2px solid var(--ink);
-}
-.bench-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.bench-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-.bench-note {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--muted);
-}
-.bench-wall-decor {
-  flex: none;
-  width: 180px;
-  height: 42px;
+/* ---------- 2D cutaway laboratory building ---------- */
+.building-roof {
+  width: 100%;
+  line-height: 0;
   pointer-events: none;
   user-select: none;
 }
-.bench-wall-decor svg {
+.building-roof svg {
+  width: 100%;
+  height: auto;
+  max-height: 54px;
+  display: block;
+}
+
+.lab-building {
+  border-left: 5px solid var(--ink);
+  border-right: 5px solid var(--ink);
+  border-bottom: 5px solid var(--ink);
+  box-shadow: 8px 8px 0 var(--ink);
+  background: var(--wall-bg);
+}
+
+/* ---------- individual floor / 2D room ---------- */
+.lab-floor {
+  position: relative;
+  background: var(--wall-bg);
+}
+.floor-scroll {
+  width: 100%;
+  overflow: visible;
+}
+.floor-scene {
+  position: relative;
+  width: 100%;
+  background: var(--wall-bg);
+}
+
+/* Subtle room sign pinned to the upper-left wall (clearly non-clickable) */
+.room-sign {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 8px 2px 3px;
+  background: var(--wall-trim);
+  border: 1.5px solid var(--sc-stroke);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
+.room-sign b {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 10px;
+}
+.room-swipe-hint {
+  display: none;
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+/* Back-wall interior SVG layer */
+.floor-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 234px;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.floor-backdrop svg {
   width: 100%;
   height: 100%;
   display: block;
 }
 
-/* The bench structure: stations sit on top of a continuous tabletop surface */
-.bench-surface {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  position: relative;
+/* Continuous unbroken wooden workbench top & front rail spanning the entire room */
+.floor-benchtop-bar {
+  position: absolute;
+  top: 230px;
+  left: 0;
+  right: 0;
+  height: 46px;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    var(--bench-top) 0%,
+    var(--bench-top) 26%,
+    var(--bench-front) 26%,
+    var(--bench-front) 100%
+  );
+  border-top: 2.5px solid var(--ink);
+  border-bottom: 2.5px solid var(--ink);
+  pointer-events: none;
 }
-.bench-surface.cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.bench-surface.cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.bench-surface.cols-1 {
-  grid-template-columns: minmax(0, 1fr);
-}
-/* When a 2- or 3-station bench includes a non-clickable clutter bay on desktop, give clutter a compact column */
-.bench-surface.has-clutter-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, 0.62fr);
-}
-.bench-surface.has-clutter-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(180px, 0.72fr);
+/* Subtle horizontal plank bevel line on the workbench edge */
+.floor-benchtop-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 26%;
+  height: 1.5px;
+  background: var(--ink);
+  opacity: 0.32;
 }
 
-/* ---------- clickable apparatus station ---------- */
+/* Foreground stations row aligned directly onto the workbench top (y = 230px) */
+.floor-stations {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  gap: 8px;
+  padding: 62px 58px 0;
+}
+
+/* Under-bench cabinets, stools, power cords, sleeping cat & concrete slab */
+.floor-underbench {
+  position: relative;
+  z-index: 1;
+  height: 80px;
+  pointer-events: none;
+  user-select: none;
+}
+.floor-underbench svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- clickable game-object apparatus station ---------- */
 .station {
+  flex: 0 1 258px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   color: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -333,340 +354,197 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Apparatus bay: sits above the tabletop line */
-.apparatus-bay {
+/* Stage directly above the tabletop seam (height 168px + 62px top pad = 230px tabletop!) */
+.apparatus-stage {
   position: relative;
+  width: 100%;
+  height: 168px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 10px 10px 0;
-  min-height: 168px;
-  background: var(--bench-wall);
-  border-top: 1.5px dashed var(--sc-soft);
-  transition: background-color 0.16s ease-out;
-}
-.station:first-child .apparatus-bay {
-  border-left: 1.5px dashed var(--sc-soft);
-}
-.bench-surface > :last-child .apparatus-bay,
-.bench-surface > :last-child .clutter-bay {
-  border-right: 1.5px dashed var(--sc-soft);
+  padding: 0 6px;
 }
 
-/* Subtle brand-colored interactive mat/halo behind the apparatus that clearly lights up on hover/focus */
-.apparatus-bay::before {
+/* Crisp grounded contact shadow bar right under the apparatus base on the wooden bench */
+.apparatus-stage::after {
   content: "";
   position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 10px;
-  background: var(--st-brand, var(--accent));
-  border: 2px solid var(--ink);
-  border-bottom: none;
-  opacity: 0.85;
-  transition: height 0.15s ease-out, opacity 0.15s ease-out;
+  left: 16%;
+  right: 16%;
+  bottom: -2px;
+  height: 5px;
+  background: var(--ink);
+  opacity: 0.26;
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out;
 }
+
 .app-svg {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
-  max-width: 260px;
+  max-width: 248px;
   height: auto;
   aspect-ratio: 260 / 156;
   display: block;
+  transform: translateY(7px); /* puts SVG y=148 flush onto the wooden tabletop top border */
   transform-origin: bottom center;
-  transition: transform 0.16s ease-out;
+  transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
-/* Continuous thick tabletop edge directly beneath the apparatus feet */
-.table-strip {
-  position: relative;
-  height: 16px;
-  background: linear-gradient(to bottom, var(--table-top) 0%, var(--table-top) 62%, var(--table-edge) 62%, var(--table-edge) 100%);
-  border-top: 2.5px solid var(--ink);
-  border-bottom: 2.5px solid var(--ink);
-  z-index: 2;
-}
-.station:first-child .table-strip {
-  border-left: 2.5px solid var(--ink);
-}
-.bench-surface > :last-child .table-strip {
-  border-right: 2.5px solid var(--ink);
-}
-/* Active brand indicator notch right on the front bevel of the table under each clickable apparatus */
-.station .table-strip::after {
-  content: "";
+/* Classic 2D game selection brackets + bouncing pointer arrow (revealed on hover / focus-visible) */
+.game-reticle {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 3px;
-  height: 4px;
-  background: var(--st-brand, var(--accent));
-  border: 1px solid var(--ink);
+  inset: 4px 2px -2px;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.14s ease-out, transform 0.14s ease-out;
 }
-
-/* Front apron + unmistakably clickable station plaque card */
-.station-apron {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 10px 14px;
-  background: var(--table-apron);
-  border-bottom: 2.5px solid var(--ink);
-}
-.station:first-child .station-apron {
-  border-left: 2.5px solid var(--ink);
-}
-.bench-surface > :last-child .station-apron,
-.bench-surface > :last-child .clutter-apron {
-  border-right: 2.5px solid var(--ink);
-}
-
-/* The physical clickable lab placard card */
-.plaque {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  background: var(--surface);
-  border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-  padding: 9px 11px 10px;
-  position: relative;
-  transition: transform 0.14s ease-out, box-shadow 0.14s ease-out, border-color 0.14s ease-out;
-}
-/* Vivid top brand color bar on every clickable plaque */
-.plaque::before {
-  content: "";
+.game-reticle i {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: var(--st-brand, var(--accent));
-  border-bottom: 1.5px solid var(--ink);
+  width: 13px;
+  height: 13px;
+  border-color: var(--st-brand, var(--accent));
+  border-style: solid;
+  border-width: 0;
+  filter: drop-shadow(1.5px 1.5px 0 var(--ink));
 }
-.plaque-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 3px;
+.game-reticle .c1 { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; }
+.game-reticle .c2 { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; }
+.game-reticle .c3 { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; }
+.game-reticle .c4 { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; }
+
+.game-pointer {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 9px solid var(--st-brand, var(--accent));
+  filter: drop-shadow(0 2px 0 var(--ink));
+  animation: sc-bob 0.65s ease-in-out infinite alternate;
 }
-.plaque-title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--ink);
+@keyframes sc-bob {
+  from { transform: translate(-50%, 0); }
+  to { transform: translate(-50%, -5px); }
+}
+
+/* Compact diegetic nameplate tag bolted right onto the wooden front rail of the workbench */
+.station-tag-slot {
+  height: 46px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 4px 0;
 }
-.plaque-swatch {
-  display: inline-block;
-  width: 11px;
-  height: 11px;
-  flex: none;
-  background: var(--st-brand, var(--accent));
-  border: 1.5px solid var(--ink);
-}
-.plaque-go {
-  flex: none;
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid var(--ink);
-  background: var(--bg);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  transition: background-color 0.14s ease-out, color 0.14s ease-out, transform 0.14s ease-out;
-}
-.plaque-desc {
-  margin: 0;
-  font-size: 11.5px;
-  line-height: 1.42;
-  color: var(--muted);
-  flex: 1;
-}
-.plaque-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 2px;
-}
-.tag {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 1px 6px;
-  border: 1.5px solid var(--ink);
+.station-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 8px;
   background: var(--surface);
   color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.1;
   white-space: nowrap;
+  overflow: hidden;
+  transition: transform 0.13s ease-out, box-shadow 0.13s ease-out, background-color 0.13s ease-out, color 0.13s ease-out;
 }
-.tag.xr {
-  background: var(--ink);
-  color: var(--surface);
+.station-pip {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  background: var(--st-brand, var(--accent));
+  border: 1.5px solid var(--ink);
 }
-.tag.wip {
-  border-style: dashed;
-  color: var(--muted);
-  border-color: var(--muted);
+.station-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.station-arrow {
+  flex: none;
+  font-size: 11px;
+  opacity: 0.72;
+  transition: transform 0.13s ease-out, opacity 0.13s ease-out;
 }
 
-/* ---------- unmistakable hover / focus / active states on clickable stations ---------- */
-.station:hover .plaque,
-.station:focus-visible .plaque {
-  transform: translate(-2px, -3px);
-  box-shadow: 7px 7px 0 var(--ink);
-}
-.station:hover .plaque-go,
-.station:focus-visible .plaque-go {
-  background: var(--st-brand, var(--accent));
-  color: var(--st-brand-ink, var(--ink));
-  transform: translate(1px, -1px);
-}
+/* ---------- unmistakable hover / focus / active states ---------- */
 .station:hover .app-svg,
 .station:focus-visible .app-svg {
-  transform: translateY(-4px) scale(1.025);
+  transform: translateY(1px) scale(1.045);
 }
-.station:hover .apparatus-bay::before,
-.station:focus-visible .apparatus-bay::before {
-  height: 15px;
+.station:hover .apparatus-stage::after,
+.station:focus-visible .apparatus-stage::after {
+  transform: scaleX(0.84);
+  opacity: 0.18;
+}
+.station:hover .game-reticle,
+.station:focus-visible .game-reticle {
   opacity: 1;
+  transform: scale(1);
 }
-.station:focus-visible .plaque {
+.station:hover .station-tag,
+.station:focus-visible .station-tag {
+  background: var(--st-brand, var(--accent));
+  color: var(--st-brand-ink, var(--ink));
+  transform: translate(-1px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.station:hover .station-pip,
+.station:focus-visible .station-pip {
+  background: var(--surface);
+}
+.station:hover .station-arrow,
+.station:focus-visible .station-arrow {
+  opacity: 1;
+  transform: translate(2px, -1px);
+}
+.station:focus-visible .station-tag {
   outline: 3px solid var(--ink);
-  outline-offset: 3px;
-}
-.station:active .plaque {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--ink);
+  outline-offset: 2px;
 }
 .station:active .app-svg {
-  transform: translateY(1px) scale(0.99);
+  transform: translateY(6px) scale(0.99);
+}
+.station:active .station-tag {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
-/* ---------- non-clickable tabletop clutter bay (spare slots on 2/3-app benches) ---------- */
-.bench-clutter {
+/* ---------- muted non-clickable tabletop prop on spare bench slots ---------- */
+.bench-prop {
+  flex: 0 1 190px;
+  height: 214px; /* 168px above bench + 46px rail slot (empty below) */
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 26px;
   pointer-events: none;
   user-select: none;
+  opacity: 0.9;
 }
-.clutter-bay {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 10px 8px 0;
-  min-height: 168px;
-  background: var(--bench-wall);
-  border-top: 1.5px dashed var(--sc-soft);
-}
-.clutter-bay svg {
+.prop-svg {
   width: 100%;
-  max-width: 210px;
+  max-width: 184px;
   height: auto;
   aspect-ratio: 220 / 156;
   display: block;
-}
-.clutter-apron {
-  flex: 1;
-  background: var(--table-apron);
-  border-bottom: 2.5px solid var(--ink);
-  position: relative;
-}
-/* Subtle riveted under-drawer silhouette on the non-clickable clutter apron */
-.clutter-apron::before {
-  content: "";
-  position: absolute;
-  inset: 14px 12px;
-  border: 1.5px solid var(--sc-stroke);
-  background: var(--sc-fill);
-}
-.clutter-apron::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 34px;
-  height: 6px;
-  transform: translate(-50%, -50%);
-  border: 1.5px solid var(--sc-stroke);
-  background: var(--sc-fill-2);
+  transform: translateY(18px);
 }
 
-/* ---------- under-bench steel legs & floor scenery ---------- */
-.bench-underframe {
-  width: 100%;
-  height: 54px;
-  pointer-events: none;
-  user-select: none;
-}
-.bench-underframe svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* ---------- compact list / directory view (for rapid scanning of large collections) ---------- */
-.lab-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 14px;
-}
-.list-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 12px 11px;
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  border-left: 8px solid var(--st-brand, var(--accent));
-  transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
-}
-.list-item:hover,
-.list-item:focus-visible {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--ink);
-}
-.list-item:active {
-  transform: translate(3px, 3px);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-.list-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.list-head h2 {
-  margin: 0;
-  font-size: 14.5px;
-}
-.list-bench {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.list-item p {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-  flex: 1;
-}
-
-/* ---------- empty state ---------- */
+/* ---------- empty search state ---------- */
 .empty-state {
-  padding: 28px 20px;
+  padding: 36px 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -681,7 +559,7 @@
 
 /* ---------- footer ---------- */
 .foot {
-  margin-top: 32px;
+  margin-top: 24px;
   font-size: 11.5px;
   color: var(--muted);
   display: flex;
@@ -691,6 +569,47 @@
 }
 .foot a {
   color: inherit;
+}
+
+/* ==========================================================================
+   AMBIENT GAME-SCENE SCENERY ANIMATIONS (ultra-subtle)
+   ========================================================================== */
+.wall-clock-sec {
+  transform-origin: 0 0;
+  animation: st-spin-360 60s steps(60, end) infinite;
+}
+.sc-cloud {
+  animation: sc-drift 28s linear infinite;
+}
+.sc-cloud-slow {
+  animation: sc-drift 42s linear infinite reverse;
+}
+.sc-twinkle {
+  animation: st-twinkle 3.2s ease-in-out infinite alternate;
+}
+.sc-steam {
+  animation: sc-steam 2.8s ease-in-out infinite;
+}
+.sc-puff {
+  animation: sc-steam 3.6s ease-in-out infinite;
+}
+.sc-cat {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: sc-breathe 3.4s ease-in-out infinite alternate;
+}
+@keyframes sc-drift {
+  0%, 100% { transform: translateX(-8px); }
+  50% { transform: translateX(12px); }
+}
+@keyframes sc-steam {
+  0% { transform: translateY(3px); opacity: 0.15; }
+  50% { transform: translateY(-2px); opacity: 0.65; }
+  100% { transform: translateY(-6px); opacity: 0.1; }
+}
+@keyframes sc-breathe {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(1.07); }
 }
 
 /* ==========================================================================
@@ -748,7 +667,7 @@
   48%, 52% { opacity: 1; }
 }
 
-/* 03 · Collision Lab (equal-mass 90° elastic scatter) */
+/* 03 · Collision Lab */
 .st-coll-pa { animation: st-coll-pa 3.4s linear infinite; }
 .st-coll-pb { animation: st-coll-pb 3.4s linear infinite; }
 @keyframes st-coll-pa {
@@ -795,7 +714,7 @@
   100% { opacity: 0; }
 }
 
-/* 05 · Motus 1D Lab (uniform acceleration: quadratic ease) */
+/* 05 · Motus 1D Lab */
 .st-m1d-cart { animation: st-m1d-cart 3.4s infinite; }
 .st-m1d-curve { animation: st-m1d-curve 3.4s linear infinite; }
 @keyframes st-m1d-cart {
@@ -809,7 +728,7 @@
   100% { stroke-dashoffset: 0; opacity: 0; }
 }
 
-/* 06 · Relative Motion Lab (Galilean parabola = linear X + quadratic Y) */
+/* 06 · Relative Motion Lab */
 .st-rel-train { animation: st-rel-train 3s linear infinite; }
 .st-rel-ball { animation: st-rel-ball 3s infinite; }
 @keyframes st-rel-train {
@@ -822,7 +741,7 @@
   84%, 100% { transform: translateY(0); }
 }
 
-/* 07 · Crackler (quadratic free fall + stroboscopic crosshairs) */
+/* 07 · Crackler */
 .st-crk-ball { animation: st-crk-fall 3.2s infinite; }
 .st-crk-rec { animation: st-crk-rec 1.2s steps(2, end) infinite; }
 .st-crk-d0 { animation: st-crk-d0 3.2s linear infinite; }
@@ -845,7 +764,7 @@
 @keyframes st-crk-d3 { 0%, 58.4% { opacity: 0; } 58.5%, 92% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes st-crk-d4 { 0%, 77.9% { opacity: 0; } 78%, 92% { opacity: 1; } 100% { opacity: 0; } }
 
-/* 08 · Units Lab (rocking balance + stepped summit flag) */
+/* 08 · Units Lab */
 .st-uni-beam {
   transform-box: view-box;
   transform-origin: 66px 56px;
@@ -912,7 +831,7 @@
   100% { opacity: 0; }
 }
 
-/* 12 · Force Lab XR (straight -> parabolic deflection -> straight through hoop) */
+/* 12 · Force Lab XR */
 .st-fxr-ball { animation: st-fxr-fly 3.4s linear infinite; }
 .st-fxr-arr { animation: st-fxr-arr 1.7s ease-in-out infinite alternate; }
 @keyframes st-fxr-fly {
@@ -1052,7 +971,7 @@
   to { transform: translateX(28px); }
 }
 
-/* Fallback modular console */
+/* Fallback console */
 .st-fb-needle {
   transform-box: view-box;
   transform-origin: 188px 58px;
@@ -1060,142 +979,101 @@
 }
 .st-fb-led { animation: st-crk-rec 1.5s steps(2, end) infinite; }
 
-/* ---------- performance & accessibility: pause offscreen, hidden tab, or reduced motion ---------- */
-.station.paused *,
-body.tab-hidden .station *,
-body.tab-hidden .wall-clock-sec {
+/* ---------- pause animations offscreen, on hidden tab, or reduced motion ---------- */
+.lab-floor.paused *,
+body.tab-hidden .lab-building *,
+body.tab-hidden .building-roof * {
   animation-play-state: paused !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .station *,
-  .wall-clock-sec {
+  .lab-building *,
+  .building-roof * {
     animation: none !important;
   }
   .station,
-  .plaque,
-  .plaque-go,
   .app-svg,
-  .apparatus-bay::before,
-  .jump-pill,
-  .list-item {
+  .game-reticle,
+  .station-tag,
+  .station-arrow {
     transition: none !important;
   }
 }
 
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS (Tablet, Phone Portrait, Short Landscape, Touch)
+   RESPONSIVE: side-scrolling 2D game floors on tablets & phones
    ========================================================================== */
-
-/* Medium screens / tablets: 2 stations per bench row, clutter hidden cleanly */
-@media (max-width: 1080px) {
-  .bench-surface,
-  .bench-surface.cols-3,
-  .bench-surface.has-clutter-3,
-  .bench-surface.has-clutter-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 940px) {
+  .floor-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
   }
-  .bench-clutter {
-    display: none;
+  .floor-scene {
+    min-width: 920px;
   }
-  /* Ensure left/right borders close properly on every 2-col row */
-  .station:nth-child(odd) .table-strip,
-  .station:nth-child(odd) .station-apron {
-    border-left: 2.5px solid var(--ink);
+  .floor-scene.count-2 {
+    min-width: 580px;
   }
-  .station:nth-child(even) .table-strip,
-  .station:nth-child(even) .station-apron,
-  .station:last-child .table-strip,
-  .station:last-child .station-apron {
-    border-right: 2.5px solid var(--ink);
+  .floor-scene.count-1 {
+    min-width: 100%;
   }
-  .station:nth-child(odd) .apparatus-bay {
-    border-left: 1.5px dashed var(--sc-soft);
+  .station {
+    scroll-snap-align: center;
   }
-  .station:nth-child(even) .apparatus-bay,
-  .station:last-child .apparatus-bay {
-    border-right: 1.5px dashed var(--sc-soft);
+  .room-swipe-hint {
+    display: inline;
   }
 }
 
-/* Narrow tablets & large phones */
-@media (max-width: 720px) {
-  .room-wall-decor {
-    margin-top: 2px;
-  }
-  .bench-wall-decor {
-    display: none;
-  }
-  .lab-room {
-    gap: 26px;
-  }
-  .bench-underframe {
-    height: 40px;
-  }
-}
-
-/* Phone portrait: 1 big, vivid station per bench bay so apparatuses & plaques stay crisp and easy to tap */
 @media (max-width: 580px) {
   .home {
-    padding: 4px max(10px, env(safe-area-inset-right, 0px)) 36px max(10px, env(safe-area-inset-left, 0px));
+    padding: 4px max(8px, env(safe-area-inset-right, 0px)) 32px max(8px, env(safe-area-inset-left, 0px));
   }
-  .lab-bar {
-    padding: 10px 10px;
-    margin-bottom: 18px;
+  .lab-building {
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    box-shadow: 4px 4px 0 var(--ink);
   }
-  .lab-controls {
-    width: 100%;
+  .hud-bar {
+    margin: 4px 0 10px;
   }
   .search-wrap {
     max-width: none;
     flex: 1 1 100%;
   }
-  .bench-surface,
-  .bench-surface.cols-3,
-  .bench-surface.cols-2,
-  .bench-surface.has-clutter-3,
-  .bench-surface.has-clutter-2 {
-    grid-template-columns: minmax(0, 1fr);
+  .floor-scene {
+    min-width: 840px;
   }
-  .station .table-strip,
-  .station .station-apron {
-    border-left: 2.5px solid var(--ink);
-    border-right: 2.5px solid var(--ink);
+  .floor-scene.count-3 {
+    min-width: 680px;
   }
-  .station .apparatus-bay {
-    border-left: 1.5px dashed var(--sc-soft);
-    border-right: 1.5px dashed var(--sc-soft);
-    min-height: 152px;
+  .floor-scene.count-2 {
+    min-width: 480px;
   }
-  .app-svg {
-    max-width: 245px;
+  .floor-stations {
+    padding: 58px 44px 0;
   }
-  .plaque {
-    box-shadow: 4px 4px 0 var(--ink);
-  }
-  .bench-title {
-    font-size: 13.5px;
-  }
-  .lab-list {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* Short landscape phones */
-@media (max-height: 600px) and (orientation: landscape) {
-  .room-wall-decor {
+  .bench-prop {
     display: none;
   }
-  .bench-underframe {
-    height: 32px;
+  .station {
+    flex: 0 0 212px;
+  }
+  .station-tag {
+    font-size: 11px;
+    padding: 5px 8px;
   }
 }
 
-/* Coarse touch pointers: guarantee >= 44px touch targets on controls */
+/* Coarse touch targets */
 @media (pointer: coarse) {
-  .jump-pill {
-    min-height: 36px;
-    padding: 6px 10px;
+  .station-tag {
+    min-height: 34px;
+    padding: 6px 9px;
   }
   .search-clear {
     width: 36px;

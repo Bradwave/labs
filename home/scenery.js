@@ -1,331 +1,439 @@
 // Labs · home/scenery.js
-// Non-clickable architectural and laboratory scenery: overhead lamps, chalkboard, wall shelves,
-// tabletop props and under-bench stools/crates. Drawn strictly in muted tones so clickable
-// apparatuses always stand out unambiguously.
+// 2D cutaway game-scene interior art: rooftop cornice, per-floor room walls (windows with day clouds
+// and night stars, pendant lamps with light cones, chalkboard, bookshelves, pegboards, observatory
+// porthole, vertical ladder), continuous workbench under-cabinets, stools, tabletop props and a lab cat.
+// All scenery is muted and non-interactive so clickable apparatuses always stand out unambiguously.
 
 /**
- * Overhead lab ceiling lamps, wall chalkboard with chalk formulas, analog wall clock and shelf.
- * Rendered as a crisp architectural header strip at the top of the lab room.
+ * Rooftop cutaway cornice with skylight, gently spinning anemometer, and vent stack.
  */
-export function renderRoomCeilingScenery() {
-  return `<div class="room-wall-decor" aria-hidden="true">
-    <svg class="room-wall-svg" viewBox="0 0 1200 132" preserveAspectRatio="xMidYMax slice">
-      <!-- Subtle ceiling conduit & pipe -->
-      <line x1="0" y1="8" x2="1200" y2="8" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <line x1="0" y1="14" x2="1200" y2="14" stroke="var(--sc-soft)" stroke-width="1"/>
-
-      <!-- Left hanging workshop lamp + subtle geometric light cone -->
-      <polygon points="158,40 202,40 246,132 114,132" fill="var(--sc-lamp-cone)"/>
-      <line x1="180" y1="8" x2="180" y2="26" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <path d="M156,40 L168,26 H192 L204,40 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2" stroke-linejoin="miter"/>
-      <rect x="171" y="40" width="18" height="4" fill="var(--sc-bulb)"/>
-
-      <!-- Center hanging workshop lamp -->
-      <polygon points="578,40 622,40 676,132 524,132" fill="var(--sc-lamp-cone)"/>
-      <line x1="600" y1="8" x2="600" y2="26" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <path d="M576,40 L588,26 H612 L624,40 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2" stroke-linejoin="miter"/>
-      <rect x="591" y="40" width="18" height="4" fill="var(--sc-bulb)"/>
-
-      <!-- Right hanging workshop lamp -->
-      <polygon points="998,40 1042,40 1086,132 954,132" fill="var(--sc-lamp-cone)"/>
-      <line x1="1020" y1="8" x2="1020" y2="26" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <path d="M996,40 L1008,26 H1032 L1044,40 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2" stroke-linejoin="miter"/>
-      <rect x="1011" y="40" width="18" height="4" fill="var(--sc-bulb)"/>
-
-      <!-- Left wall shelf with flasks & notebooks -->
-      <g transform="translate(26, 56)">
-        <rect x="0" y="48" width="112" height="6" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <path d="M14,54 v14 l12,-14 M98,54 v14 l-12,-14" fill="none" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <!-- Stacked books -->
-        <rect x="8" y="37" width="34" height="11" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="11" y="27" width="30" height="10" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <line x1="16" y1="32" x2="36" y2="32" stroke="var(--sc-soft)" stroke-width="1"/>
-        <!-- Erlenmeyer flask -->
-        <path d="M64,16 h8 v10 l11,22 h-30 l11,-22 z" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5" stroke-linejoin="miter"/>
-        <path d="M58,39 h20 l4,9 h-28 z" fill="var(--sc-soft)"/>
-        <line x1="62" y1="16" x2="74" y2="16" stroke="var(--sc-stroke)" stroke-width="2"/>
-        <!-- Graduated cylinder -->
-        <rect x="92" y="18" width="10" height="30" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <path d="M92,26 h4 M92,32 h5 M92,38 h4 M92,43 h5" stroke="var(--sc-stroke)" stroke-width="1"/>
-      </g>
-
-      <!-- Center classroom chalkboard with chalk sketches -->
-      <g transform="translate(300, 32)">
-        <rect x="0" y="0" width="440" height="84" fill="var(--sc-board)" stroke="var(--sc-stroke)" stroke-width="2"/>
-        <rect x="5" y="5" width="430" height="74" fill="none" stroke="var(--sc-chalk)" stroke-width="1" stroke-opacity="0.25"/>
-        <!-- Chalk formulas & diagrams -->
-        <g fill="var(--sc-chalk)" font-family="Space Mono, monospace" font-size="11" opacity="0.65">
-          <text x="18" y="26">F = m·a</text>
-          <text x="18" y="48">Δp = ∫ F(t) dt</text>
-          <text x="18" y="68">T = 2π√(L/g)</text>
-          <text x="290" y="26">e^(iπ) + 1 = 0</text>
-          <text x="290" y="68">x(t) = x₀ + v₀t + ½at²</text>
-        </g>
-        <!-- Small chalk wave & parabola sketches -->
-        <g fill="none" stroke="var(--sc-chalk)" stroke-width="1.4" opacity="0.5">
-          <path d="M150,58 H255 M160,64 V18"/>
-          <path d="M160,58 Q182,16 204,58 T248,58" stroke-dasharray="3 2"/>
-          <path d="M160,58 Q204,20 248,58"/>
-          <path d="M292,44 c8,-12 16,-12 24,0 s16,12 24,0 s16,-12 24,0 s16,12 24,0"/>
-        </g>
-        <!-- Chalk tray + eraser + chalk sticks -->
-        <rect x="-6" y="84" width="452" height="6" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="36" y="78" width="26" height="6" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="80" y="81" width="14" height="3" fill="var(--sc-chalk)" opacity="0.8"/>
-        <rect x="98" y="81" width="10" height="3" fill="var(--sc-chalk)" opacity="0.6"/>
-      </g>
-
-      <!-- Analog lab wall clock -->
-      <g transform="translate(804, 68)">
-        <circle cx="0" cy="0" r="28" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2"/>
-        <circle cx="0" cy="0" r="23" fill="none" stroke="var(--sc-soft)" stroke-width="1"/>
-        <path d="M0,-21 v4 M21,0 h-4 M0,21 v-4 M-21,0 h4" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <line x1="0" y1="0" x2="0" y2="-13" stroke="var(--sc-stroke)" stroke-width="2"/>
-        <line x1="0" y1="0" x2="11" y2="-4" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <line class="wall-clock-sec" x1="0" y1="4" x2="0" y2="-19" stroke="var(--sc-stroke)" stroke-width="1" stroke-dasharray="2 1"/>
-        <circle cx="0" cy="0" r="2.2" fill="var(--sc-stroke)"/>
-      </g>
-
-      <!-- Right pegboard with T-square, set square & pinned note -->
-      <g transform="translate(876, 44)">
-        <rect x="0" y="0" width="96" height="66" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <!-- Peg holes -->
-        <path d="M12,12 h1 M26,12 h1 M40,12 h1 M54,12 h1 M68,12 h1 M82,12 h1 M12,26 h1 M26,26 h1 M40,26 h1 M54,26 h1 M68,26 h1 M82,26 h1 M12,40 h1 M26,40 h1 M40,40 h1 M54,40 h1 M68,40 h1 M82,40 h1 M12,54 h1 M26,54 h1 M40,54 h1 M54,54 h1 M68,54 h1 M82,54 h1" stroke="var(--sc-soft)" stroke-width="2" stroke-linecap="square"/>
-        <!-- Set square hanging -->
-        <polygon points="14,54 44,54 14,18" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <polygon points="20,48 33,48 20,32" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1"/>
-        <!-- Hanging caliper / ruler -->
-        <rect x="54" y="12" width="10" height="44" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <path d="M54,20 h4 M54,28 h4 M54,36 h4 M54,44 h4" stroke="var(--sc-stroke)" stroke-width="1"/>
-        <!-- Small safety goggles icon -->
-        <rect x="70" y="20" width="20" height="10" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <line x1="80" y1="20" x2="80" y2="30" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      </g>
-
-      <!-- Far right shelf with beaker & binder -->
-      <g transform="translate(1078, 56)">
-        <rect x="0" y="48" width="96" height="6" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <path d="M12,54 v14 l12,-14 M84,54 v14 l-12,-14" fill="none" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="10" y="16" width="12" height="32" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="24" y="20" width="12" height="28" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="38" y="14" width="11" height="34" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <!-- Beaker -->
-        <path d="M62,24 h22 v24 h-22 z" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-        <rect x="63" y="35" width="20" height="12" fill="var(--sc-soft)"/>
-        <path d="M60,24 h26" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      </g>
+export function renderRoofScenery() {
+  return `<div class="building-roof" aria-hidden="true">
+    <svg viewBox="0 0 1280 54" preserveAspectRatio="xMidYMax meet">
+      <!-- Industrial skylight dome -->
+      <polygon points="480,46 514,14 766,14 800,46" fill="var(--win-sky)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+      <path d="M514,14 L526,46 M578,14 V46 M640,14 V46 M702,14 V46 M766,14 L754,46" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      <line x1="496" y1="30" x2="784" y2="30" stroke="var(--sc-stroke)" stroke-width="1.4" opacity="0.6"/>
+      <!-- Left ventilation chimney -->
+      <rect x="130" y="18" width="26" height="28" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <polygon points="122,18 143,8 164,18" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <path class="sc-puff" d="M143,6 q-5,-4 1,-8 M149,4 q4,-4 -1,-7" fill="none" stroke="var(--sc-soft)" stroke-width="1.6"/>
+      <!-- Right rooftop weathervane / anemometer -->
+      <line x1="1120" y1="46" x2="1120" y2="12" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+      <line x1="1102" y1="20" x2="1138" y2="20" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <circle cx="1102" cy="20" r="3.5" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      <circle cx="1138" cy="20" r="3.5" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      <polygon points="1114,32 1126,32 1120,25" fill="var(--sc-stroke)"/>
+      <!-- Heavy roof cornice beam -->
+      <rect x="0" y="44" width="1280" height="10" fill="var(--wall-slab)" stroke="var(--ink)" stroke-width="2.5"/>
     </svg>
   </div>`;
 }
 
 /**
- * Small muted wall ornament strip rendered on the right side of a bench's header rail.
- * Gives each table zone distinct laboratory wall clutter without competing with stations.
+ * Reusable arched/gridded laboratory window showing drifting daytime clouds (light mode)
+ * or twinkling stars + crescent moon (dark mode).
  */
-export function renderBenchWallDecor(kind) {
-  const svgs = {
-    mechanics: `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Slotted mass weights -->
-      <rect x="18" y="20" width="12" height="16" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="34" y="24" width="10" height="12" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="48" y="27" width="8" height="9" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Hanging coiled spring -->
-      <polyline points="82,6 82,12 77,15 87,19 77,23 87,27 82,30 82,34" fill="none" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Small wrench & plumb-bob -->
-      <path d="M116,12 v20 M112,12 h8 M112,32 h8" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M148,8 v14 l-6,10 h12 l-6,-10" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-    </svg>`,
-
-    motion: `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Meter ruler -->
-      <rect x="14" y="26" width="66" height="10" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M24,26 v4 M34,26 v6 M44,26 v4 M54,26 v6 M64,26 v4 M74,26 v6" stroke="var(--sc-stroke)" stroke-width="1"/>
-      <!-- Stopwatch -->
-      <circle cx="108" cy="24" r="11" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="105" y="9" width="6" height="4" fill="var(--sc-stroke)"/>
-      <line x1="108" y1="24" x2="113" y2="18" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Protractor -->
-      <path d="M134,36 A16,16 0 0 1 166,36 Z" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M142,36 A8,8 0 0 1 158,36" fill="none" stroke="var(--sc-soft)" stroke-width="1"/>
-    </svg>`,
-
-    modern: `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Optical prism -->
-      <polygon points="20,36 34,12 48,36" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="8" y1="26" x2="26" y2="24" stroke="var(--sc-soft)" stroke-width="1.5" stroke-dasharray="3 2"/>
-      <line x1="42" y1="24" x2="62" y2="29" stroke="var(--sc-soft)" stroke-width="1.5" stroke-dasharray="3 2"/>
-      <!-- Vacuum bottle / flask -->
-      <path d="M84,14 h8 v8 l8,14 h-24 l8,-14 z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Coiled BNC cable -->
-      <circle cx="136" cy="22" r="11" fill="none" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <circle cx="136" cy="22" r="7" fill="none" stroke="var(--sc-soft)" stroke-width="1.5"/>
-      <rect x="156" y="18" width="12" height="18" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-    </svg>`,
-
-    geometry: `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Compass -->
-      <path d="M28,10 L18,36 M28,10 L38,36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <circle cx="28" cy="10" r="3" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Set square -->
-      <polygon points="56,36 86,36 56,12" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Stacked graph notebooks -->
-      <rect x="104" y="26" width="44" height="10" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="108" y="17" width="38" height="9" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Pencil cup -->
-      <rect x="156" y="20" width="12" height="16" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="159" y1="20" x2="157" y2="10" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="165" y1="20" x2="167" y2="11" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-    </svg>`,
-
-    "xr-surfaces": `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Tracking sensor bar -->
-      <rect x="16" y="20" width="42" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="37" y1="28" x2="37" y2="36" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <circle cx="24" cy="24" r="2" fill="var(--sc-stroke)"/>
-      <circle cx="50" cy="24" r="2" fill="var(--sc-stroke)"/>
-      <!-- Wireframe octahedron model -->
-      <polygon points="94,8 108,22 94,36 80,22" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="80" y1="22" x2="108" y2="22" stroke="var(--sc-soft)" stroke-width="1"/>
-      <line x1="94" y1="8" x2="94" y2="36" stroke="var(--sc-soft)" stroke-width="1"/>
-      <!-- Headset case -->
-      <rect x="128" y="18" width="38" height="18" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="128" y1="27" x2="166" y2="27" stroke="var(--sc-stroke)" stroke-width="1"/>
-    </svg>`,
-
-    "xr-functions": `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Vertical binders -->
-      <rect x="18" y="12" width="11" height="24" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="31" y="15" width="11" height="21" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="44" y="10" width="11" height="26" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Mini pinned axis card -->
-      <rect x="74" y="8" width="44" height="24" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M82,26 H112 M88,28 V12" stroke="var(--sc-stroke)" stroke-width="1"/>
-      <path d="M84,24 Q98,12 110,16" fill="none" stroke="var(--sc-soft)" stroke-width="1.5"/>
-      <!-- Stylus tray -->
-      <rect x="134" y="28" width="34" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="138" y1="24" x2="164" y2="24" stroke="var(--sc-stroke)" stroke-width="2"/>
-    </svg>`,
-
-    arrivals: `<svg viewBox="0 0 180 42" aria-hidden="true">
-      <line x1="6" y1="36" x2="174" y2="36" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <rect x="24" y="14" width="34" height="22" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <line x1="24" y1="14" x2="58" y2="36" stroke="var(--sc-soft)" stroke-width="1"/>
-      <rect x="74" y="20" width="26" height="16" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-    </svg>`,
-  };
-  return `<div class="bench-wall-decor" aria-hidden="true">${svgs[kind] || svgs.arrivals}</div>`;
+function labWindow(x, y, w = 136, h = 112) {
+  return `<g transform="translate(${x}, ${y})">
+    <rect x="0" y="0" width="${w}" height="${h}" fill="var(--win-sky)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+    <!-- Daytime clouds (visible in light mode) -->
+    <g class="win-day">
+      <g class="sc-cloud">
+        <rect x="14" y="24" width="38" height="10" fill="var(--win-cloud)"/>
+        <rect x="22" y="18" width="22" height="8" fill="var(--win-cloud)"/>
+      </g>
+      <g class="sc-cloud-slow">
+        <rect x="74" y="54" width="42" height="10" fill="var(--win-cloud)"/>
+        <rect x="84" y="47" width="20" height="9" fill="var(--win-cloud)"/>
+      </g>
+    </g>
+    <!-- Night sky stars & moon (visible in dark mode) -->
+    <g class="win-night">
+      <path d="M98,22 A11,11 0 1 0 112,35 A8,8 0 1 1 98,22 Z" fill="var(--win-moon)"/>
+      <path class="sc-twinkle" d="M26,28 h6 M29,25 v6 M56,18 h4 M58,16 v4 M74,64 h6 M77,61 v6 M34,78 h4 M36,76 v4" stroke="var(--win-star)" stroke-width="1.6"/>
+    </g>
+    <!-- Subtle diagonal window glass gleam -->
+    <polygon points="6,6 32,6 6,42" fill="var(--win-gleam)"/>
+    <!-- Window muntins / frame bars -->
+    <line x1="${w / 2}" y1="0" x2="${w / 2}" y2="${h}" stroke="var(--sc-stroke)" stroke-width="2"/>
+    <line x1="0" y1="${h * 0.48}" x2="${w}" y2="${h * 0.48}" stroke="var(--sc-stroke)" stroke-width="2"/>
+    <!-- Windowsill -->
+    <rect x="-6" y="${h}" width="${w + 12}" height="7" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+  </g>`;
 }
 
 /**
- * Non-clickable tabletop clutter prop placed in spare bench slots (when a table has fewer than 4 apps)
- * so the table still looks richly populated, with unmistakable non-clickable muted styling.
+ * Overhead pendant workshop lamp with geometric light cone descending toward the bench.
  */
-export function renderTableClutterProp(variant = 0) {
+function pendantLamp(cx) {
+  return `<g>
+    <polygon points="${cx - 22},34 ${cx + 22},34 ${cx + 96},230 ${cx - 96},230" fill="var(--lamp-cone)"/>
+    <line x1="${cx}" y1="0" x2="${cx}" y2="20" stroke="var(--sc-stroke)" stroke-width="2"/>
+    <path d="M${cx - 24},34 L${cx - 12},20 H${cx + 12} L${cx + 24},34 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2"/>
+    <rect x="${cx - 10}" y="34" width="20" height="4" fill="var(--lamp-bulb)"/>
+  </g>`;
+}
+
+/**
+ * Wooden vertical access ladder on the side of the room linking floors like a 2D platformer lab.
+ */
+function sideLadder(x) {
+  const rungs = [];
+  for (let y = 18; y <= 218; y += 24) {
+    rungs.push(`<line x1="${x + 2}" y1="${y}" x2="${x + 32}" y2="${y}" stroke="var(--sc-stroke)" stroke-width="2.4"/>`);
+  }
+  return `<g opacity="0.72">
+    <line x1="${x}" y1="0" x2="${x}" y2="234" stroke="var(--sc-stroke)" stroke-width="3"/>
+    <line x1="${x + 34}" y1="0" x2="${x + 34}" y2="234" stroke="var(--sc-stroke)" stroke-width="3"/>
+    ${rungs.join("")}
+  </g>`;
+}
+
+/**
+ * Full-bleed 2D room back-wall interior SVG behind the workbench & apparatuses.
+ * ViewBox 1280 × 234 aligns flush to the top of the workbench surface.
+ */
+export function renderFloorBackdrop(theme, index) {
+  const ladderX = index % 2 === 0 ? 1222 : 24;
+
+  const themes = {
+    mechanics: `
+      ${labWindow(84, 48, 134, 114)}
+      <!-- Classroom chalkboard -->
+      <g transform="translate(360, 44)">
+        <rect x="0" y="0" width="380" height="110" fill="var(--sc-board)" stroke="var(--sc-stroke)" stroke-width="2.4"/>
+        <rect x="6" y="6" width="368" height="98" fill="none" stroke="var(--sc-chalk)" stroke-width="1" opacity="0.22"/>
+        <g fill="var(--sc-chalk)" font-family="Space Mono, monospace" font-size="11.5" opacity="0.62">
+          <text x="18" y="30">F = m · a</text>
+          <text x="18" y="56">Δp = ∫ F(t) dt</text>
+          <text x="18" y="82">T = 2π √(L / g)</text>
+          <text x="224" y="30">p₁ + p₂ = const</text>
+        </g>
+        <g fill="none" stroke="var(--sc-chalk)" stroke-width="1.5" opacity="0.48">
+          <path d="M210,84 H348 M222,90 V44"/>
+          <path d="M222,84 Q256,42 290,84 T342,60"/>
+          <circle cx="290" cy="64" r="7" stroke-dasharray="3 2"/>
+        </g>
+        <rect x="-8" y="110" width="396" height="8" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <rect x="34" y="104" width="28" height="6" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      </g>
+      <!-- Wall shelf with calibration weights & flasks -->
+      <g transform="translate(860, 62)">
+        <rect x="0" y="54" width="184" height="7" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <path d="M18,61 v16 l14,-16 M166,61 v16 l-14,-16" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <rect x="14" y="34" width="16" height="20" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <rect x="34" y="40" width="12" height="14" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M84,20 h10 v12 l12,22 h-34 l12,-22 z" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M77,44 h24 l5,10 h-34 z" fill="var(--sc-soft)"/>
+        <rect x="124" y="16" width="14" height="38" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <rect x="142" y="22" width="14" height="32" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      </g>
+      ${pendantLamp(290)}
+      ${pendantLamp(640)}
+      ${pendantLamp(990)}
+    `,
+
+    motion: `
+      <!-- Wide laboratory pegboard with hanging instruments -->
+      <g transform="translate(110, 48)">
+        <rect x="0" y="0" width="230" height="114" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <path d="M18,18 h2 M42,18 h2 M66,18 h2 M90,18 h2 M114,18 h2 M138,18 h2 M162,18 h2 M186,18 h2 M210,18 h2 M18,44 h2 M42,44 h2 M66,44 h2 M90,44 h2 M114,44 h2 M138,44 h2 M162,44 h2 M186,44 h2 M210,44 h2 M18,70 h2 M42,70 h2 M66,70 h2 M90,70 h2 M114,70 h2 M138,70 h2 M162,70 h2 M186,70 h2 M210,70 h2 M18,96 h2 M42,96 h2 M66,96 h2 M90,96 h2 M114,96 h2 M138,96 h2 M162,96 h2 M186,96 h2 M210,96 h2" stroke="var(--sc-soft)" stroke-width="2.5"/>
+        <!-- Hanging meter stick -->
+        <rect x="22" y="22" width="16" height="78" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M22,34 h6 M22,46 h8 M22,58 h6 M22,70 h8 M22,82 h6" stroke="var(--sc-stroke)" stroke-width="1.2"/>
+        <!-- Hanging set square -->
+        <polygon points="62,94 114,94 62,32" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <polygon points="72,84 96,84 72,54" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.2"/>
+        <!-- Hanging stopwatch -->
+        <circle cx="152" cy="56" r="18" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <line x1="152" y1="56" x2="160" y2="46" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <!-- Clipboard -->
+        <rect x="184" y="34" width="32" height="48" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M190,48 h20 M190,56 h16 M190,64 h20" stroke="var(--sc-soft)" stroke-width="1.4"/>
+      </g>
+      ${labWindow(500, 46, 150, 116)}
+      <!-- Ticking analog wall clock -->
+      <g transform="translate(744, 92)">
+        <circle cx="0" cy="0" r="32" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <path d="M0,-25 v5 M25,0 h-5 M0,25 v-5 M-25,0 h5" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <line x1="0" y1="0" x2="0" y2="-15" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <line x1="0" y1="0" x2="12" y2="-4" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <line class="wall-clock-sec" x1="0" y1="5" x2="0" y2="-22" stroke="var(--sc-stroke)" stroke-width="1.2"/>
+        <circle cx="0" cy="0" r="2.5" fill="var(--sc-stroke)"/>
+      </g>
+      <!-- Pinned kinematics chart poster -->
+      <g transform="translate(864, 52)">
+        <rect x="0" y="0" width="166" height="106" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <path d="M16,86 H148 M24,92 V18" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M24,86 Q76,84 136,24" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8" stroke-dasharray="4 3"/>
+        <path d="M24,86 L136,36" fill="none" stroke="var(--sc-soft)" stroke-width="2"/>
+        <circle cx="10" cy="10" r="3" fill="var(--sc-stroke)"/>
+        <circle cx="156" cy="10" r="3" fill="var(--sc-stroke)"/>
+      </g>
+      ${pendantLamp(340)}
+      ${pendantLamp(960)}
+    `,
+
+    modern: `
+      <!-- Observatory circular porthole window -->
+      <g transform="translate(178, 100)">
+        <circle cx="0" cy="0" r="56" fill="var(--win-sky)" stroke="var(--sc-stroke)" stroke-width="3.5"/>
+        <g class="win-day">
+          <rect x="-34" y="-16" width="44" height="10" fill="var(--win-cloud)"/>
+          <rect x="4" y="14" width="34" height="9" fill="var(--win-cloud)"/>
+        </g>
+        <g class="win-night">
+          <circle cx="-12" cy="-14" r="10" fill="none" stroke="var(--win-moon)" stroke-width="2"/>
+          <ellipse cx="-12" cy="-14" rx="20" ry="6" transform="rotate(-18 -12 -14)" fill="none" stroke="var(--win-moon)" stroke-width="1.6"/>
+          <path class="sc-twinkle" d="M18,-22 h6 M21,-25 v6 M14,18 h4 M16,16 v4 M-26,18 h6 M-23,15 v6" stroke="var(--win-star)" stroke-width="1.6"/>
+        </g>
+        <circle cx="0" cy="0" r="46" fill="none" stroke="var(--sc-stroke)" stroke-width="1.4" stroke-dasharray="6 6"/>
+      </g>
+      <!-- Overhead conduit pipes & laser junction box -->
+      <path d="M280,26 H1180 M280,34 H920" stroke="var(--sc-stroke)" stroke-width="2" fill="none"/>
+      <rect x="580" y="18" width="54" height="24" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <!-- Star chart & optics diagram pinboard -->
+      <g transform="translate(460, 56)">
+        <rect x="0" y="0" width="210" height="104" fill="var(--sc-board)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <ellipse cx="105" cy="52" rx="72" ry="30" fill="none" stroke="var(--sc-chalk)" stroke-width="1.4" stroke-dasharray="4 4" opacity="0.5"/>
+        <circle cx="76" cy="52" r="10" fill="none" stroke="var(--sc-chalk)" stroke-width="1.6" opacity="0.6"/>
+        <circle cx="152" cy="36" r="4" fill="var(--sc-chalk)" opacity="0.6"/>
+        <path d="M18,22 h4 M20,20 v4 M186,78 h4 M188,76 v4 M174,24 h4 M176,22 v4" stroke="var(--sc-chalk)" stroke-width="1.4" opacity="0.5"/>
+      </g>
+      <!-- Optical shelf with prism & coiled cable -->
+      <g transform="translate(830, 66)">
+        <rect x="0" y="54" width="220" height="7" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <polygon points="24,54 44,20 64,54" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <line x1="6" y1="40" x2="34" y2="38" stroke="var(--sc-soft)" stroke-width="1.8" stroke-dasharray="3 2"/>
+        <line x1="54" y1="38" x2="86" y2="44" stroke="var(--sc-soft)" stroke-width="1.8" stroke-dasharray="3 2"/>
+        <circle cx="132" cy="34" r="16" fill="none" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <circle cx="132" cy="34" r="10" fill="none" stroke="var(--sc-soft)" stroke-width="1.6"/>
+        <rect x="172" y="20" width="26" height="34" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+      </g>
+      ${pendantLamp(340)}
+      ${pendantLamp(760)}
+      ${pendantLamp(1080)}
+    `,
+
+    geometry: `
+      <!-- Tall math library bookcase on left -->
+      <g transform="translate(106, 36)">
+        <rect x="0" y="0" width="160" height="196" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <rect x="8" y="10" width="144" height="44" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+        <rect x="8" y="64" width="144" height="44" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+        <rect x="8" y="118" width="144" height="44" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+        <!-- Books rows -->
+        <g fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.3">
+          <rect x="14" y="20" width="12" height="34"/><rect x="28" y="16" width="14" height="38"/><rect x="44" y="24" width="11" height="30"/><rect x="57" y="18" width="15" height="36"/><rect x="96" y="22" width="12" height="32"/><rect x="110" y="16" width="14" height="38"/>
+          <rect x="16" y="72" width="14" height="36"/><rect x="32" y="78" width="12" height="30"/><rect x="46" y="70" width="16" height="38"/><rect x="88" y="76" width="14" height="32"/><rect x="104" y="72" width="12" height="36"/><rect x="118" y="80" width="18" height="28"/>
+        </g>
+      </g>
+      ${labWindow(420, 44, 140, 114)}
+      <!-- Potted fern on windowsill -->
+      <g transform="translate(524, 132)">
+        <polygon points="4,26 24,26 20,12 8,12" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M14,12 q-10,-12 -4,-20 M14,12 q10,-12 4,-20 M14,12 v-18" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+      </g>
+      <!-- Framed geometric proof & Euler board -->
+      <g transform="translate(720, 48)">
+        <rect x="0" y="0" width="240" height="106" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <circle cx="58" cy="54" r="32" fill="none" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <polygon points="58,22 86,70 30,70" fill="none" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+        <g fill="var(--sc-stroke)" font-family="Space Mono, monospace" font-size="11.5" opacity="0.72">
+          <text x="112" y="42">e^(iπ) + 1 = 0</text>
+          <text x="112" y="68">Σ 1/n² = π²/6</text>
+        </g>
+      </g>
+      ${pendantLamp(340)}
+      ${pendantLamp(650)}
+      ${pendantLamp(1040)}
+    `,
+
+    "xr-surfaces": `
+      <!-- High-tech XR tracking bar & studio acoustic wall panels -->
+      <g transform="translate(100, 46)">
+        <rect x="0" y="0" width="84" height="110" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M14,0 V110 M28,0 V110 M42,0 V110 M56,0 V110 M70,0 V110" stroke="var(--sc-soft)" stroke-width="1.4"/>
+      </g>
+      ${labWindow(280, 44, 146, 112)}
+      <!-- Blueprint wireframe poster -->
+      <g transform="translate(540, 48)">
+        <rect x="0" y="0" width="210" height="108" fill="var(--sc-board)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <path d="M24,22 H186 M24,86 H186 M42,22 L168,86 M168,22 L42,86" stroke="var(--sc-chalk)" stroke-width="1.1" opacity="0.28"/>
+        <ellipse cx="105" cy="54" rx="54" ry="20" fill="none" stroke="var(--sc-chalk)" stroke-width="1.6" opacity="0.58"/>
+        <ellipse cx="105" cy="54" rx="20" ry="38" fill="none" stroke="var(--sc-chalk)" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.5"/>
+      </g>
+      <!-- XR equipment locker on right -->
+      <g transform="translate(910, 42)">
+        <rect x="0" y="0" width="110" height="190" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <line x1="55" y1="0" x2="55" y2="190" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <path d="M14,20 h26 M14,28 h26 M14,36 h26 M70,20 h26 M70,28 h26 M70,36 h26" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <rect x="40" y="92" width="6" height="18" fill="var(--sc-stroke)"/>
+        <rect x="64" y="92" width="6" height="18" fill="var(--sc-stroke)"/>
+      </g>
+      ${pendantLamp(480)}
+      ${pendantLamp(840)}
+    `,
+
+    "xr-functions": `
+      ${labWindow(130, 44, 148, 114)}
+      <!-- Framed coordinate planes poster -->
+      <g transform="translate(420, 48)">
+        <rect x="0" y="0" width="220" height="106" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+        <path d="M24,34 H196 M24,74 H196" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+        <path d="M46,34 L72,74 M90,34 L126,74 M134,34 L168,74 M174,34 L154,74" stroke="var(--sc-soft)" stroke-width="1.6" stroke-dasharray="3 3"/>
+        <text x="24" y="24" fill="var(--sc-stroke)" font-family="Space Mono, monospace" font-size="11" opacity="0.7">g ∘ f : X → Z</text>
+      </g>
+      <!-- Studio shelf with binders & potted plant -->
+      <g transform="translate(770, 64)">
+        <rect x="0" y="54" width="210" height="7" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="2"/>
+        <rect x="16" y="18" width="14" height="36" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <rect x="34" y="22" width="14" height="32" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <rect x="52" y="16" width="14" height="38" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <!-- Tiny wireframe dodecahedron / cube -->
+        <rect x="96" y="24" width="28" height="28" fill="none" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <rect x="106" y="16" width="28" height="28" fill="none" stroke="var(--sc-soft)" stroke-width="1.4"/>
+        <!-- Potted succulent -->
+        <polygon points="164,54 188,54 184,38 168,38" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+        <path d="M176,38 c-10,-8 -12,-18 -2,-20 c4,4 2,12 2,20 c10,-8 12,-18 2,-20" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+      </g>
+      ${pendantLamp(360)}
+      ${pendantLamp(860)}
+    `,
+
+    arrivals: `
+      ${labWindow(140, 46, 136, 110)}
+      <g transform="translate(460, 56)">
+        <rect x="0" y="0" width="240" height="96" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="120" y="54" text-anchor="middle" fill="var(--sc-stroke)" font-family="Space Mono, monospace" font-size="13" opacity="0.7">NEW BENCH</text>
+      </g>
+      ${pendantLamp(640)}
+    `,
+  };
+
+  return `<div class="floor-backdrop" aria-hidden="true">
+    <svg viewBox="0 0 1280 234" preserveAspectRatio="xMidYMax slice">
+      <!-- Subtle wainscoting / dado rail along back wall -->
+      <rect x="0" y="168" width="1280" height="66" fill="var(--wall-wainscot)"/>
+      <line x1="0" y1="168" x2="1280" y2="168" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+      <!-- Room-specific architectural scenery -->
+      ${themes[theme] || themes.arrivals}
+      <!-- Vertical ladder connecting floor to floor -->
+      ${sideLadder(ladderX)}
+    </svg>
+  </div>`;
+}
+
+/**
+ * Muted non-clickable tabletop prop sitting directly on the workbench in spare slots
+ * (2- or 3-station floors) so every bench looks authentically lived-in.
+ */
+export function renderTableProp(variant = 0) {
   const props = [
-    // Variant 0: glassware cluster + stacked lab notebooks + coffee mug
-    `<svg viewBox="0 0 220 156" aria-hidden="true">
-      <!-- Lab notebook stack -->
+    // Steaming lab coffee mug + stacked notebooks + Erlenmeyer flask + graduated cylinder
+    `<svg class="prop-svg" viewBox="0 0 220 156" aria-hidden="true">
       <rect x="18" y="132" width="66" height="16" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <rect x="24" y="118" width="58" height="14" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-      <line x1="30" y1="125" x2="74" y2="125" stroke="var(--sc-soft)" stroke-width="1.2"/>
-      <!-- Coffee mug on top of books -->
       <rect x="40" y="96" width="22" height="22" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <path d="M62,101 h6 v11 h-6" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-      <path d="M47,91 q-2,-5 2,-9 M55,91 q-2,-5 2,-9" fill="none" stroke="var(--sc-soft)" stroke-width="1.4"/>
-      <!-- Erlenmeyer flask -->
+      <path class="sc-steam" d="M47,91 q-3,-6 2,-11 M55,91 q-3,-6 2,-11" fill="none" stroke="var(--sc-soft)" stroke-width="1.5"/>
       <path d="M122,82 h12 v18 l18,48 h-48 l18,-48 z" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <path d="M112,126 h32 l8,22 h-48 z" fill="var(--sc-soft)"/>
       <line x1="119" y1="82" x2="137" y2="82" stroke="var(--sc-stroke)" stroke-width="2.2"/>
-      <!-- Graduated cylinder -->
       <rect x="172" y="76" width="16" height="72" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <rect x="167" y="144" width="26" height="4" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M172,92 h6 M172,104 h8 M172,116 h6 M172,128 h8" stroke="var(--sc-stroke)" stroke-width="1.2"/>
     </svg>`,
 
-    // Variant 1: calibration weight box + vernier caliper + bench lamp
-    `<svg viewBox="0 0 220 156" aria-hidden="true">
-      <!-- Articulated desk lamp (muted scenery) -->
-      <rect x="26" y="140" width="38" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-      <polyline points="45,140 30,96 68,66" fill="none" stroke="var(--sc-stroke)" stroke-width="2.2"/>
-      <circle cx="30" cy="96" r="4" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <path d="M62,58 L82,70 L70,82 L56,72 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-      <!-- Wooden weight box + brass weights -->
+    // Articulated bench lamp + wooden weight box + leaning clipboard
+    `<svg class="prop-svg" viewBox="0 0 220 156" aria-hidden="true">
+      <rect x="24" y="140" width="38" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+      <polyline points="43,140 28,96 66,66" fill="none" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+      <circle cx="28" cy="96" r="4" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+      <path d="M60,58 L80,70 L68,82 L54,72 Z" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <rect x="96" y="122" width="54" height="26" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <rect x="104" y="106" width="12" height="16" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
       <rect x="120" y="110" width="10" height="12" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
       <rect x="134" y="114" width="8" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Clipboard leaning -->
       <rect x="164" y="96" width="36" height="52" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
       <rect x="174" y="92" width="16" height="7" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
       <path d="M170,110 h24 M170,118 h20 M170,126 h24 M170,134 h16" stroke="var(--sc-soft)" stroke-width="1.4"/>
     </svg>`,
   ];
-  return `<div class="bench-clutter" aria-hidden="true">
-    <div class="clutter-bay">${props[variant % props.length]}</div>
-    <div class="table-strip clutter-strip"></div>
-    <div class="clutter-apron"></div>
-  </div>`;
+  return `<div class="bench-prop" aria-hidden="true">${props[variant % props.length]}</div>`;
 }
 
 /**
- * Sturdy lab table legs, crossbar and floor scenery (stool, storage crate, coiled cord) under each bench.
+ * Under-bench cutaway furniture: drawers, cabinet doors, lab stools, power strips, crates,
+ * floor tiles, and a cozy sleeping lab cat curled up on the top floor!
  */
-export function renderBenchUnderframe(index = 0) {
-  const floorDecor =
-    index % 2 === 0
-      ? `<!-- Tucked-in laboratory stool -->
-         <g transform="translate(150, 2)">
-           <rect x="0" y="10" width="56" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-           <line x1="10" y1="18" x2="4" y2="54" stroke="var(--sc-stroke)" stroke-width="2"/>
-           <line x1="46" y1="18" x2="52" y2="54" stroke="var(--sc-stroke)" stroke-width="2"/>
-           <line x1="28" y1="18" x2="28" y2="54" stroke="var(--sc-soft)" stroke-width="1.6"/>
-           <line x1="7" y1="38" x2="49" y2="38" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-         </g>
-         <!-- Floor equipment crate -->
-         <g transform="translate(920, 18)">
-           <rect x="0" y="0" width="84" height="36" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-           <line x1="0" y1="12" x2="84" y2="12" stroke="var(--sc-soft)" stroke-width="1.2"/>
-           <line x1="0" y1="24" x2="84" y2="24" stroke="var(--sc-soft)" stroke-width="1.2"/>
-           <rect x="28" y="14" width="28" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.2"/>
-         </g>`
-      : `<!-- Power strip & coiled floor cord -->
-         <g transform="translate(210, 32)">
-           <rect x="0" y="12" width="64" height="10" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
-           <rect x="8" y="15" width="6" height="4" fill="var(--sc-stroke)"/>
-           <rect x="20" y="15" width="6" height="4" fill="var(--sc-stroke)"/>
-           <rect x="32" y="15" width="6" height="4" fill="var(--sc-stroke)"/>
-           <rect x="44" y="15" width="6" height="4" fill="var(--sc-stroke)"/>
-           <path d="M64,17 c18,0 24,-10 42,-10 s24,12 44,12" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-         </g>
-         <!-- Tucked-in laboratory stool on right -->
-         <g transform="translate(960, 2)">
-           <rect x="0" y="10" width="56" height="8" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
-           <line x1="10" y1="18" x2="4" y2="54" stroke="var(--sc-stroke)" stroke-width="2"/>
-           <line x1="46" y1="18" x2="52" y2="54" stroke="var(--sc-stroke)" stroke-width="2"/>
-           <line x1="28" y1="18" x2="28" y2="54" stroke="var(--sc-soft)" stroke-width="1.6"/>
-           <line x1="7" y1="38" x2="49" y2="38" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-         </g>`;
+export function renderFloorUnderbench(index, isLastFloor = false) {
+  const stoolLeft = `<g transform="translate(310, 12)">
+    <rect x="0" y="6" width="58" height="9" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+    <line x1="10" y1="15" x2="4" y2="62" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+    <line x1="48" y1="15" x2="54" y2="62" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+    <line x1="29" y1="15" x2="29" y2="62" stroke="var(--sc-soft)" stroke-width="1.8"/>
+    <line x1="7" y1="42" x2="51" y2="42" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+  </g>`;
 
-  return `<div class="bench-underframe" aria-hidden="true">
-    <svg viewBox="0 0 1200 58" preserveAspectRatio="none">
-      <!-- Crossbar -->
-      <rect x="42" y="28" width="1116" height="6" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
-      <!-- Left steel leg -->
-      <rect x="26" y="0" width="18" height="54" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <rect x="22" y="50" width="26" height="6" fill="var(--sc-stroke)"/>
-      <!-- Right steel leg -->
-      <rect x="1156" y="0" width="18" height="54" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="2"/>
-      <rect x="1152" y="50" width="26" height="6" fill="var(--sc-stroke)"/>
-      <!-- Floor decor -->
-      ${floorDecor}
-      <!-- Lab floor line -->
-      <line x1="0" y1="56" x2="1200" y2="56" stroke="var(--sc-stroke)" stroke-width="2"/>
+  const stoolRight = `<g transform="translate(880, 12)">
+    <rect x="0" y="6" width="58" height="9" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+    <line x1="10" y1="15" x2="4" y2="62" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+    <line x1="48" y1="15" x2="54" y2="62" stroke="var(--sc-stroke)" stroke-width="2.2"/>
+    <line x1="29" y1="15" x2="29" y2="62" stroke="var(--sc-soft)" stroke-width="1.8"/>
+    <line x1="7" y1="42" x2="51" y2="42" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+  </g>`;
+
+  const crateWithCat = `<g transform="translate(590, 26)">
+    <!-- Wooden equipment crate -->
+    <rect x="0" y="16" width="94" height="32" fill="var(--wall-trim)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+    <line x1="0" y1="32" x2="94" y2="32" stroke="var(--sc-soft)" stroke-width="1.4"/>
+    <!-- Sleeping lab cat curled on top of crate (gentle breathing animation) -->
+    <g class="sc-cat">
+      <ellipse cx="46" cy="12" rx="18" ry="9" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+      <circle cx="32" cy="11" r="7" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+      <polygon points="27,6 29,0 33,5" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+      <polygon points="34,5 38,0 39,6" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.5"/>
+      <path d="M62,14 c10,0 14,-6 8,-9" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+    </g>
+  </g>`;
+
+  const powerStrip = `<g transform="translate(560, 50)">
+    <rect x="0" y="12" width="70" height="12" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.6"/>
+    <rect x="10" y="16" width="7" height="4" fill="var(--sc-stroke)"/>
+    <rect x="24" y="16" width="7" height="4" fill="var(--sc-stroke)"/>
+    <rect x="38" y="16" width="7" height="4" fill="var(--sc-stroke)"/>
+    <rect x="52" y="16" width="7" height="4" fill="var(--sc-stroke)"/>
+    <path d="M70,18 c24,0 30,-10 56,-10 s28,12 52,12" fill="none" stroke="var(--sc-stroke)" stroke-width="1.8"/>
+  </g>`;
+
+  return `<div class="floor-underbench" aria-hidden="true">
+    <svg viewBox="0 0 1280 80" preserveAspectRatio="none">
+      <!-- Recessed dark under-bench cavity -->
+      <rect x="28" y="0" width="1224" height="74" fill="var(--under-cavity)"/>
+      <!-- Left drawer bank cabinet -->
+      <rect x="44" y="0" width="166" height="74" fill="var(--table-apron)" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <rect x="54" y="8" width="146" height="18" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.4"/>
+      <rect x="114" y="15" width="26" height="4" fill="var(--sc-stroke)"/>
+      <rect x="54" y="32" width="146" height="34" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.4"/>
+      <rect x="114" y="46" width="26" height="4" fill="var(--sc-stroke)"/>
+
+      <!-- Right cabinet doors -->
+      <rect x="1070" y="0" width="166" height="74" fill="var(--table-apron)" stroke="var(--sc-stroke)" stroke-width="2"/>
+      <rect x="1080" y="8" width="70" height="58" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.4"/>
+      <rect x="1156" y="8" width="70" height="58" fill="var(--sc-fill)" stroke="var(--sc-stroke)" stroke-width="1.4"/>
+      <rect x="1138" y="30" width="5" height="14" fill="var(--sc-stroke)"/>
+      <rect x="1163" y="30" width="5" height="14" fill="var(--sc-stroke)"/>
+
+      <!-- Center under-bench stretcher bar -->
+      <rect x="210" y="28" width="860" height="7" fill="var(--sc-fill-2)" stroke="var(--sc-stroke)" stroke-width="1.4"/>
+
+      <!-- Alternating floor props (stools, power strip, sleeping lab cat) -->
+      ${index % 2 === 0 ? stoolLeft : stoolRight}
+      ${isLastFloor ? crateWithCat : powerStrip}
+
+      <!-- Heavy concrete floor slab dividing this floor from the next -->
+      <rect x="0" y="72" width="1280" height="8" fill="var(--wall-slab)" stroke="var(--ink)" stroke-width="2.2"/>
     </svg>
   </div>`;
 }

@@ -1,79 +1,52 @@
 // Labs · home/main.js
-// Renders the crowded laboratory landing page from apps.json: benches, animated stations,
-// non-clickable scenery, filters, search, bench jump bar, compact index view, theme & i18n.
+// Renders the 2D cutaway laboratory game scene from apps.json: multi-floor rooms,
+// integrated animated apparatuses on continuous workbenches, diegetic titles, instant search,
+// theme palette injection, IT/EN support and offscreen animation pausing.
 
-import { initKit, t, getLang, onLang, icon } from "../kit/kit.js";
-import { buildBenchTables, benchIdForApp, BENCHES, NEW_ARRIVALS_BENCH } from "./benches.js";
+import { initKit, t, getLang, onLang } from "../kit/kit.js";
+import { buildLabFloors } from "./benches.js";
 import { renderStationSVG } from "./stations.js";
 import {
-  renderRoomCeilingScenery,
-  renderBenchWallDecor,
-  renderTableClutterProp,
-  renderBenchUnderframe,
+  renderRoofScenery,
+  renderFloorBackdrop,
+  renderTableProp,
+  renderFloorUnderbench,
 } from "./scenery.js";
 
 const strings = {
   it: {
-    intro:
-      "Esplora i banchi del laboratorio: ogni apparato animato è un esperimento interattivo pronto da aprire, anche offline.",
-    filter: "Filtra per materia",
-    view: "Modalità di vista",
-    "view.room": "Laboratorio",
-    "view.list": "Indice",
-    "f.all": "Tutti",
-    "f.physics": "Fisica",
-    "f.math": "Matematica",
-    "f.xr": "XR",
-    searchPlaceholder: "Cerca un laboratorio…",
+    searchPlaceholder: "Cerca un esperimento… (es. urti, orbita, XR, frattali)",
     searchLabel: "Cerca tra i laboratori",
     searchClear: "Cancella ricerca",
-    benchesLabel: "Banchi:",
-    physics: "fisica",
-    mathematics: "matematica",
-    xr: "XR",
-    wipTag: "in aggiornamento",
-    openLab: "Apri",
-    empty: "Nessun apparato corrisponde ai filtri selezionati.",
-    resetFilters: "Mostra tutto il laboratorio",
+    countAll: "{n} apparati",
+    countFiltered: "{shown} di {total}",
+    swipe: "↔ scorri",
+    empty: "Nessun apparato trovato per questa ricerca.",
+    resetSearch: "Mostra tutto il laboratorio",
     foot: "Codice libero (MIT) su",
-    footHint: "Ogni apparato colorato con targhetta apre il laboratorio.",
+    footHint: "Fai clic su qualsiasi apparato colorato per aprire il laboratorio.",
     title: "Laboratori di matematica e fisica",
     about:
       "Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.",
     aboutRoom:
-      "Gli strumenti animati sui banchi sono interattivi: fai clic su un apparato o sulla sua targhetta per aprire l'esperimento. Gli oggetti sullo sfondo (lavagna, lampade, mensole e sgabelli) sono solo scenografia.",
-    wip: "I tag tratteggiati indicano i laboratori non ancora allineati al nuovo stile.",
+      "Esplora i piani del laboratorio: gli apparati colorati e animati sui banchi aprono i singoli esperimenti. Lampade, finestre, lavagna, mensole e sgabelli sono solo scenografia.",
   },
   en: {
-    intro:
-      "Explore the lab benches: every animated apparatus is an interactive experiment ready to open, even offline.",
-    filter: "Filter by subject",
-    view: "View mode",
-    "view.room": "Lab room",
-    "view.list": "Index",
-    "f.all": "All",
-    "f.physics": "Physics",
-    "f.math": "Mathematics",
-    "f.xr": "XR",
-    searchPlaceholder: "Search labs…",
+    searchPlaceholder: "Search an experiment… (e.g. orbit, collision, XR, fractal)",
     searchLabel: "Search labs",
     searchClear: "Clear search",
-    benchesLabel: "Benches:",
-    physics: "physics",
-    mathematics: "mathematics",
-    xr: "XR",
-    wipTag: "being updated",
-    openLab: "Open",
-    empty: "No apparatus matches the current filters.",
-    resetFilters: "Show the whole lab",
+    countAll: "{n} apparatuses",
+    countFiltered: "{shown} of {total}",
+    swipe: "↔ swipe",
+    empty: "No apparatus matches your search.",
+    resetSearch: "Show the whole lab",
     foot: "Open source (MIT) at",
-    footHint: "Every coloured apparatus with a bench plaque opens a lab.",
+    footHint: "Click any coloured apparatus on a bench to open its lab.",
     title: "Math and physics labs",
     about:
       "Each lab is a small app that opens in the browser and can be installed. Everything runs on the device: no data is sent anywhere.",
     aboutRoom:
-      "The animated instruments on the benches are interactive: click any apparatus or its plaque to open the experiment. Background props (chalkboard, lamps, shelves and stools) are scenery only.",
-    wip: "Dashed tags mark the labs not yet updated to the new style.",
+      "Explore the floors of the laboratory: the coloured animated apparatuses on the benches open each experiment. Lamps, windows, chalkboard, shelves and stools are scenery only.",
   },
 };
 
@@ -87,9 +60,7 @@ initKit({
 });
 
 let apps = [];
-let filter = "all";
 let query = "";
-let viewMode = "room"; // "room" | "list"
 let observer = null;
 
 const esc = (s) =>
@@ -105,11 +76,6 @@ function resolvePalette(app, allApps) {
   return { light, dark };
 }
 
-/**
- * Generates CSS variables per lab slug for both light and dark modes directly from apps.json.
- * --st-brand stays the lab's vivid signature hue in both themes so equipment remains immediately
- * recognizable against both the light and dark laboratory walls.
- */
 function injectStationPalettes(allApps) {
   let styleEl = document.getElementById("station-palettes");
   if (!styleEl) {
@@ -142,23 +108,17 @@ function injectStationPalettes(allApps) {
   ].join("\n");
 }
 
-function matchesFilter(app, f) {
-  if (f === "all") return true;
-  if (f === "xr") return app.kind === "xr";
-  return app.subject === f;
-}
-
 function matchesQuery(app, q) {
   if (!q) return true;
   const hay = [
     app.name,
     app.slug,
     app.subject,
+    app.subject === "physics" ? "fisica" : "matematica",
     app.kind,
+    app.kind === "xr" ? "xr vr ar virtual reality realtà virtuale aumentata" : "",
     app.description?.it,
     app.description?.en,
-    t(app.subject),
-    app.kind === "xr" ? "xr vr ar" : "",
   ]
     .filter(Boolean)
     .join(" ")
@@ -169,109 +129,58 @@ function matchesQuery(app, q) {
     .every((word) => hay.includes(word));
 }
 
-function renderTags(app) {
-  const tags = [`<span class="tag">${esc(t(app.subject))}</span>`];
-  if (app.kind === "xr") tags.push(`<span class="tag xr">${esc(t("xr"))}</span>`);
-  if (app.kit !== true) tags.push(`<span class="tag wip">${esc(t("wipTag"))}</span>`);
-  return tags.join("");
-}
-
 function renderStation(app, lang) {
   const desc = app.description?.[lang] || app.description?.en || "";
   return `<a class="station" data-slug="${esc(app.slug)}" href="${esc(app.slug)}/" aria-label="${esc(app.name)} — ${esc(desc)}">
-    <div class="apparatus-bay">
+    <div class="apparatus-stage">
+      <div class="game-reticle" aria-hidden="true">
+        <span class="game-pointer"></span>
+        <i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i>
+      </div>
       ${renderStationSVG(app)}
     </div>
-    <div class="table-strip" aria-hidden="true"></div>
-    <div class="station-apron">
-      <div class="plaque">
-        <div class="plaque-head">
-          <h3 class="plaque-title"><span class="plaque-swatch" aria-hidden="true"></span><span>${esc(app.name)}</span></h3>
-          <span class="plaque-go" aria-hidden="true" title="${esc(t("openLab"))}">↗</span>
-        </div>
-        <p class="plaque-desc">${esc(desc)}</p>
-        <div class="plaque-tags">${renderTags(app)}</div>
-      </div>
+    <div class="station-tag-slot">
+      <span class="station-tag">
+        <span class="station-pip" aria-hidden="true"></span>
+        <span class="station-name">${esc(app.name)}</span>
+        <span class="station-arrow" aria-hidden="true">↗</span>
+      </span>
     </div>
   </a>`;
 }
 
-function renderBench(table, index, lang) {
-  const count = table.apps.length;
-  // On desktop, tables with 2 or 3 stations get a muted non-clickable tabletop clutter bay
-  // so every bench looks authentically lived-in while keeping clickability unmistakably clear.
-  const hasClutter = count === 2 || count === 3;
-  const surfaceCls =
-    count === 3
-      ? "bench-surface has-clutter-3"
-      : count === 2
-        ? "bench-surface has-clutter-2"
-        : count === 1
-          ? "bench-surface cols-1"
-          : "bench-surface";
+function renderFloor(room, index, total, lang) {
+  const count = room.apps.length;
+  const title = room.title?.[lang] || room.title?.en || room.id;
+  const stationsHtml = room.apps.map((a) => renderStation(a, lang)).join("");
+  // Add a muted non-clickable tabletop prop on floors with 2 or 3 stations for lived-in balance
+  const propHtml = count === 2 || count === 3 ? renderTableProp(index) : "";
+  const isLast = index === total - 1;
 
-  const title = table.title?.[lang] || table.title?.en || table.id;
-  const note = table.note?.[lang] || table.note?.en || "";
-  const stationsHtml = table.apps.map((a) => renderStation(a, lang)).join("");
-  const clutterHtml = hasClutter ? renderTableClutterProp(index) : "";
-
-  return `<section class="bench" id="${esc(table.anchorId)}" aria-labelledby="title-${esc(table.tableId)}">
-    <div class="bench-wall">
-      <div class="bench-sign">
-        <span class="bench-code">${esc(table.displayCode)}</span>
-        <div class="bench-heading">
-          <h2 class="bench-title" id="title-${esc(table.tableId)}">${esc(title)}</h2>
-          <p class="bench-note">${esc(note)}</p>
+  return `<section class="lab-floor" aria-label="${esc(room.displayCode)} ${esc(title)}">
+    <div class="room-sign" aria-hidden="true">
+      <b>${esc(room.displayCode)}</b>
+      <span>${esc(title)}</span>
+      ${count > 1 ? `<span class="room-swipe-hint">${esc(t("swipe"))}</span>` : ""}
+    </div>
+    <div class="floor-scroll">
+      <div class="floor-scene count-${count}">
+        ${renderFloorBackdrop(room.roomTheme, index)}
+        <div class="floor-benchtop-bar" aria-hidden="true"></div>
+        <div class="floor-stations">
+          ${stationsHtml}
+          ${propHtml}
         </div>
+        ${renderFloorUnderbench(index, isLast)}
       </div>
-      ${renderBenchWallDecor(table.scenery)}
     </div>
-    <div class="${surfaceCls}">
-      ${stationsHtml}
-      ${clutterHtml}
-    </div>
-    ${renderBenchUnderframe(index)}
   </section>`;
-}
-
-function renderCompactList(filteredApps, lang) {
-  const benchLookup = new Map([...BENCHES, NEW_ARRIVALS_BENCH].map((b) => [b.id, b]));
-  return `<div class="lab-list">${filteredApps
-    .map((app) => {
-      const desc = app.description?.[lang] || app.description?.en || "";
-      const b = benchLookup.get(benchIdForApp(app));
-      const bTitle = b ? `${b.code} · ${b.title?.[lang] || b.title?.en}` : "";
-      return `<a class="list-item card" data-slug="${esc(app.slug)}" href="${esc(app.slug)}/">
-        <div class="list-head">
-          <h2>${esc(app.name)}</h2>
-          <span class="plaque-go" aria-hidden="true">↗</span>
-        </div>
-        ${bTitle ? `<span class="list-bench">${esc(bTitle)}</span>` : ""}
-        <p>${esc(desc)}</p>
-        <div class="plaque-tags">${renderTags(app)}</div>
-      </a>`;
-    })
-    .join("")}</div>`;
-}
-
-function updateFilterCounts() {
-  const counts = {
-    all: apps.length,
-    physics: apps.filter((a) => matchesFilter(a, "physics")).length,
-    mathematics: apps.filter((a) => matchesFilter(a, "mathematics")).length,
-    xr: apps.filter((a) => matchesFilter(a, "xr")).length,
-  };
-  for (const btn of document.querySelectorAll("#filter button")) {
-    const v = btn.dataset.v;
-    const key = v === "mathematics" ? "f.math" : `f.${v}`;
-    btn.innerHTML = `${esc(t(key))}<span class="count-badge">(${counts[v] ?? 0})</span>`;
-  }
 }
 
 function setupAnimationObserver() {
   if (observer) observer.disconnect();
-  const stations = document.querySelectorAll(".station");
-  if (!stations.length || typeof IntersectionObserver === "undefined") return;
+  const floors = document.querySelectorAll(".lab-floor");
+  if (!floors.length || typeof IntersectionObserver === "undefined") return;
 
   observer = new IntersectionObserver(
     (entries) => {
@@ -279,96 +188,50 @@ function setupAnimationObserver() {
         entry.target.classList.toggle("paused", !entry.isIntersecting);
       }
     },
-    { rootMargin: "140px 0px" },
+    { rootMargin: "160px 0px" },
   );
-  for (const el of stations) observer.observe(el);
+  for (const el of floors) observer.observe(el);
 }
 
 function render() {
   const lang = getLang();
-  updateFilterCounts();
-
   const q = query.trim().toLowerCase();
-  const filtered = apps.filter((a) => matchesFilter(a, filter) && matchesQuery(a, q));
-  const tables = buildBenchTables(filtered);
+  const filtered = apps.filter((a) => matchesQuery(a, q));
 
-  const jumpEl = document.getElementById("benchJump");
-  if (viewMode === "room" && tables.length > 1) {
-    jumpEl.hidden = false;
-    jumpEl.innerHTML =
-      `<span class="bench-jump-label">${esc(t("benchesLabel"))}</span>` +
-      tables
-        .map(
-          (tb) =>
-            `<a class="jump-pill" href="#${esc(tb.anchorId)}"><b>${esc(tb.displayCode)}</b>${esc(tb.title?.[lang] || tb.title?.en)}</a>`,
-        )
-        .join("");
-  } else {
-    jumpEl.hidden = true;
-    jumpEl.innerHTML = "";
+  const statusEl = document.getElementById("hudCount");
+  if (statusEl) {
+    statusEl.textContent = q
+      ? t("countFiltered", { shown: filtered.length, total: apps.length })
+      : t("countAll", { n: apps.length });
   }
 
-  const stage = document.getElementById("labStage");
+  const building = document.getElementById("labBuilding");
   if (!filtered.length) {
-    stage.innerHTML = `<div class="empty-state card">
+    building.innerHTML = `<div class="empty-state">
       <p>${esc(t("empty"))}</p>
-      <button type="button" class="btn primary" id="resetFiltersBtn">${esc(t("resetFilters"))}</button>
+      <button type="button" class="btn primary" id="resetSearchBtn">${esc(t("resetSearch"))}</button>
     </div>`;
-    document.getElementById("resetFiltersBtn")?.addEventListener("click", () => {
-      filter = "all";
+    document.getElementById("resetSearchBtn")?.addEventListener("click", () => {
       query = "";
       const input = document.getElementById("searchInput");
       if (input) input.value = "";
       document.getElementById("searchClear").hidden = true;
-      for (const b of document.querySelectorAll("#filter button")) {
-        b.classList.toggle("on", b.dataset.v === "all");
-        b.setAttribute("aria-pressed", String(b.dataset.v === "all"));
-      }
       render();
     });
     return;
   }
 
-  if (viewMode === "list") {
-    stage.innerHTML = renderCompactList(filtered, lang);
-  } else {
-    stage.innerHTML = `<div class="lab-room">${tables.map((tb, i) => renderBench(tb, i, lang)).join("")}</div>`;
-    setupAnimationObserver();
-  }
+  const floors = buildLabFloors(filtered);
+  building.innerHTML = floors
+    .map((room, i) => renderFloor(room, i, floors.length, lang))
+    .join("");
+  setupAnimationObserver();
 }
 
 function wireUI() {
-  // Overhead lab wall scenery (lamps, chalkboard, wall clock, shelves)
-  const wallHost = document.getElementById("roomWallHost");
-  if (wallHost) wallHost.innerHTML = renderRoomCeilingScenery();
+  const roofHost = document.getElementById("roofHost");
+  if (roofHost) roofHost.innerHTML = renderRoofScenery();
 
-  // Filter buttons
-  const filterGroup = document.getElementById("filter");
-  filterGroup.addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    filter = btn.dataset.v;
-    for (const x of filterGroup.querySelectorAll("button")) {
-      x.classList.toggle("on", x === btn);
-      x.setAttribute("aria-pressed", String(x === btn));
-    }
-    render();
-  });
-
-  // View mode toggle (Lab room vs Compact index)
-  const viewGroup = document.getElementById("viewToggle");
-  viewGroup.addEventListener("click", (e) => {
-    const btn = e.target.closest("button");
-    if (!btn) return;
-    viewMode = btn.dataset.v;
-    for (const x of viewGroup.querySelectorAll("button")) {
-      x.classList.toggle("on", x === btn);
-      x.setAttribute("aria-pressed", String(x === btn));
-    }
-    render();
-  });
-
-  // Instant search
   const searchInput = document.getElementById("searchInput");
   const searchClear = document.getElementById("searchClear");
   searchInput.addEventListener("input", () => {
@@ -384,16 +247,9 @@ function wireUI() {
     render();
   });
 
-  // Pause animations when tab is hidden
   document.addEventListener("visibilitychange", () => {
     document.body.classList.toggle("tab-hidden", document.hidden);
   });
-
-  // Populate small icons on view mode toggle buttons
-  const roomBtn = viewGroup.querySelector('[data-v="room"]');
-  const listBtn = viewGroup.querySelector('[data-v="list"]');
-  if (roomBtn) roomBtn.insertAdjacentHTML("afterbegin", icon("layers"));
-  if (listBtn) listBtn.insertAdjacentHTML("afterbegin", icon("table"));
 }
 
 wireUI();

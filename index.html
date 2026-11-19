@@ -6,7 +6,7 @@
 <title>Labs</title>
 <meta name="description" content="Interactive math and physics labs for the classroom, in Italian and English, by matephis.com.">
 <meta name="theme-color" content="#C9D3DD">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111A22">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0F171F">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="kit/kit.css">
 <link rel="stylesheet" href="home/home.css">
@@ -20,40 +20,29 @@
   </div>
 </header>
 <main class="home">
-  <div id="roomWallHost"></div>
-
-  <section class="lab-bar card" aria-label="Controlli del laboratorio">
-    <div class="lab-bar-top">
-      <p class="intro" data-i18n="intro">Esplora i banchi del laboratorio: ogni apparato animato è un esperimento interattivo pronto da aprire, anche offline.</p>
-      <div class="seg small" id="viewToggle" role="group" data-i18n-aria="view">
-        <button type="button" data-v="room" class="on" aria-pressed="true"><span data-i18n="view.room">Laboratorio</span></button><button type="button" data-v="list" aria-pressed="false"><span data-i18n="view.list">Indice</span></button>
-      </div>
+  <div class="hud-bar">
+    <div class="search-wrap">
+      <input class="field" id="searchInput" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="searchPlaceholder" data-i18n-aria="searchLabel" placeholder="Cerca un esperimento… (es. urti, orbita, XR, frattali)">
+      <button class="search-clear" id="searchClear" type="button" hidden data-i18n-aria="searchClear" aria-label="Cancella ricerca">✕</button>
     </div>
-    <div class="lab-controls">
-      <div class="seg small" id="filter" role="group" data-i18n-aria="filter">
-        <button type="button" data-v="all" class="on" aria-pressed="true" data-i18n="f.all">Tutti</button><button type="button" data-v="physics" aria-pressed="false" data-i18n="f.physics">Fisica</button><button type="button" data-v="mathematics" aria-pressed="false" data-i18n="f.math">Matematica</button><button type="button" data-v="xr" aria-pressed="false" data-i18n="f.xr">XR</button>
-      </div>
-      <div class="search-wrap">
-        <input class="field" id="searchInput" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="searchPlaceholder" data-i18n-aria="searchLabel" placeholder="Cerca un laboratorio…">
-        <button class="search-clear" id="searchClear" type="button" hidden data-i18n-aria="searchClear" aria-label="Cancella ricerca">✕</button>
-      </div>
+    <div class="hud-status">
+      <span class="hud-pill" id="hudCount"></span>
     </div>
-    <nav class="bench-jump" id="benchJump" aria-label="Banchi del laboratorio" hidden></nav>
-  </section>
+  </div>
 
-  <div id="labStage"></div>
+  <div id="roofHost"></div>
+  <div class="lab-building" id="labBuilding"></div>
 
   <footer class="foot">
     <span><span data-i18n="foot">Codice libero (MIT) su</span> <a href="https://github.com/Bradwave/labs">github.com/Bradwave/labs</a> · <a href="https://matephis.com">matephis.com</a></span>
-    <span data-i18n="footHint">Ogni apparato colorato con targhetta apre il laboratorio.</span>
+    <span data-i18n="footHint">Fai clic su qualsiasi apparato colorato per aprire il laboratorio.</span>
   </footer>
 </main>
 <dialog id="info">
   <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
   <h2 data-i18n="title">Laboratori di matematica e fisica</h2>
   <p data-i18n="about">Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.</p>
-  <p data-i18n="aboutRoom">Gli strumenti animati sui banchi sono interattivi: fai clic su un apparato o sulla sua targhetta per aprire l'esperimento. Gli oggetti sullo sfondo (lavagna, lampade, mensole e sgabelli) sono solo scenografia.</p>
-  <p data-i18n="wip">I tag tratteggiati indicano i laboratori non ancora allineati al nuovo stile.</p>
+  <p data-i18n="aboutRoom">Esplora i piani del laboratorio: gli apparati colorati e animati sui banchi aprono i singoli esperimenti. Lampade, finestre, lavagna, mensole e sgabelli sono solo scenografia.</p>
   <p class="meta kit-meta"></p>
 </dialog>
 <script type="module" src="home/main.js"></script>
