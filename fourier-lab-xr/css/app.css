@@ -1,0 +1,68 @@
+/* Fourier Lab XR · app.css
+   Brand tokens (from apps.json) and styles that only this app needs. Shared components are in kit/kit.css. */
+:root {
+  --bg: #E0B98A;
+  --bgline: rgba(43, 26, 10, 0.12);
+  --surface: #FCF7EE;
+  --ink: #2B1A0A;
+  --muted: color-mix(in srgb, #2B1A0A 66%, #FCF7EE);
+  --accent: #E8681F;
+  --onaccent: #2B1A0A;
+  --tile2: #FFD23F;
+  --gridline: color-mix(in srgb, #2B1A0A 16%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #22160A;
+    --bgline: rgba(224, 185, 138, 0.07);
+    --surface: #33220F;
+    --ink: #FBEBD3;
+    --muted: color-mix(in srgb, #FBEBD3 65%, #33220F);
+    --accent: #FF8A4D;
+    --onaccent: #22160A;
+    --tile2: #E9B92A;
+    --gridline: color-mix(in srgb, #FBEBD3 14%, transparent);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #22160A;
+  --bgline: rgba(224, 185, 138, 0.07);
+  --surface: #33220F;
+  --ink: #FBEBD3;
+  --muted: color-mix(in srgb, #FBEBD3 65%, #33220F);
+  --accent: #FF8A4D;
+  --onaccent: #22160A;
+  --tile2: #E9B92A;
+  --gridline: color-mix(in srgb, #FBEBD3 14%, transparent);
+}
+/* the accent orange is too light for text on the light surface: headings use a darker orange */
+:root:not([data-theme="dark"]) h3.grp,
+:root:not([data-theme="dark"]) dialog h3 { color: #B84A0E; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) h3.grp,
+  :root:not([data-theme="light"]) dialog h3 { color: var(--accent); }
+}
+
+/* ---------- app-specific styles below ---------- */
+/* XR suffix after the lab badge (as in the other XR labs) */
+.word .xr { width: auto; padding: 0 0.25em; margin-left: 6px; border: 2px solid var(--ink); background: var(--ink); color: var(--surface); font-size: 0.6em; height: 1.6em; align-self: flex-end; display: grid; place-items: center; }
+#cv { cursor: grab; touch-action: none; }
+#cv.held { cursor: grabbing; }
+.side { padding: 12px 14px 16px; overflow: auto; }
+body.inxr .top, body.inxr .layout { visibility: hidden; }
+/* x: the four examples in a 2 x 2 grid (the kit segmented control is one row) */
+.seg.x-presets { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+.seg.x-presets button { min-height: 40px; white-space: normal; }
+canvas.mini, canvas.plot { display: block; width: 100%; border: 1.5px solid var(--ink); background: var(--surface); touch-action: none; }
+canvas.mini { height: 120px; }
+canvas.plot { height: 200px; margin-top: 10px; margin-bottom: 14px; cursor: ew-resize; }
+.meter { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.meter .bar { flex: 1; height: 12px; border: 1.5px solid var(--ink); background: var(--surface); }
+.meter .bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+.x-wheelctl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.x-adv { margin-top: 14px; border-top: 1.5px solid var(--ink); padding-top: 8px; }
+.x-adv > summary { cursor: pointer; font-weight: 700; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px; color: var(--accent); }
+.x-adv > summary::-webkit-details-marker { display: none; }
+.x-adv > summary::before { content: "+ "; }
+.x-adv[open] > summary::before { content: "\2212  "; }
+.x-adv .seg { margin-bottom: 4px; }

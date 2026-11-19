@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fourier Lab XR</title>
+<meta name="description" content="Wind a signal around the frequency axis in augmented or virtual reality: grab the handle, slide it along the axis and watch the Fourier transform appear as a trail.">
+<meta name="theme-color" content="#E0B98A">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#22160A">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="../kit/kit.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="word" aria-label="Fourier Lab XR"><span class="k">f</span><span>o</span><span class="a">u</span><span>r</span><span class="b">i</span><span>e</span><span class="a">r</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <div class="top-actions">
+    <button class="icon-btn" id="infoBtn" type="button"></button>
+    <button class="icon-btn" id="settingsBtn" type="button"></button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage">
+    <div class="toolbar card">
+      <button class="btn" type="button" id="arBtn" disabled><span class="lbl" data-i18n="ar">Realtà aumentata</span></button>
+      <button class="btn" type="button" id="vrBtn" disabled><span class="lbl" data-i18n="vr">Entra in VR</span></button>
+      <span class="grow"></span>
+      <button class="btn primary" type="button" id="windBtn" data-ic="layers"><span class="lbl" id="windLbl" data-i18n="wind">Avvolgi</span></button>
+      <button class="btn" type="button" id="playBtn"><span id="playIcon"></span><span class="lbl" id="playLbl" data-i18n="sweep">Spazza</span></button>
+      <button class="btn" type="button" id="resetBtn" data-ic="reset"><span class="lbl" data-i18n="reset">Azzera</span></button>
+    </div>
+    <div class="canvas-wrap card" id="view">
+      <canvas id="cv" tabindex="0" data-i18n-aria="stage">Scena 3D</canvas>
+      <div class="hint" data-i18n="hint">Trascina la maniglia gialla lungo l'asse f</div>
+      <div class="readout" id="readout"></div>
+    </div>
+    <p class="note" id="xrnote"></p>
+  </section>
+
+  <aside class="panel">
+    <div class="card side">
+      <canvas id="sigcv" class="mini" role="img" data-i18n-aria="sig.canvas"></canvas>
+      <canvas id="gcv" class="plot" role="img" data-i18n-aria="g.canvas"></canvas>
+      <div class="ctl"><label for="fR"><span data-i18n="p.f">Frequenza di avvolgimento f</span> <b id="fL"></b></label><input type="range" id="fR" min="0" max="6" step="0.01" value="0"></div>
+      <h3 class="grp" data-i18n="in.label">Ingresso</h3>
+      <div class="seg full" id="inSeg" role="group" data-i18n-aria="in.label"><button type="button" data-v="direct" class="on" data-i18n="in.direct">Diretto</button><button type="button" data-v="wheel" data-i18n="in.wheel">Ruota</button><button type="button" data-v="radio" data-i18n="in.radio">Radio</button></div>
+      <div class="row x-wheelctl" id="wheelCtl" hidden>
+        <span class="note" data-i18n="w.k">Rapporto κ</span>
+        <div class="seg small" id="kSeg" role="group" data-i18n-aria="w.k"><button type="button" data-v="1">×1</button><button type="button" data-v="2" class="on">×2</button><button type="button" data-v="4">×4</button><button type="button" data-v="8">×8</button></div>
+        <button class="btn" id="brakeBtn" type="button" data-ic="pause"><span class="lbl" data-i18n="w.brake">Frena</span></button>
+      </div>
+      <h3 class="grp" data-i18n="snd.label">Suono</h3>
+      <div class="seg full" id="sndSeg" role="group" data-i18n-aria="snd.label"><button type="button" data-v="off" class="on" data-i18n="snd.off">Spento</button><button type="button" data-v="sum" data-i18n="snd.sum">Battimenti</button><button type="button" data-v="mixer" data-i18n="snd.mixer">Mixer</button><button type="button" data-v="probe" data-i18n="snd.probe">Sonda</button></div>
+      <p class="note" id="sndNote"></p>
+      <h3 class="grp" data-i18n="p.preset">Esempio</h3>
+      <div class="seg full x-presets" id="presetSeg" role="group" data-i18n-aria="p.preset">
+        <button type="button" data-v="one" class="on" data-i18n="preset.one">Una sinusoide</button>
+        <button type="button" data-v="two" data-i18n="preset.two">Due sinusoidi</button>
+        <button type="button" data-v="mean" data-i18n="preset.mean">Con valore medio</button>
+        <button type="button" data-v="noisy" data-i18n="preset.noisy">Nascosta nel rumore</button>
+      </div>
+      <h3 class="grp" data-i18n="g.show">Mostra</h3>
+      <button class="tg" type="button" id="tgGhost" aria-pressed="false"><span class="txt"><span data-i18n="tg.ghost">Curva intera</span></span><span class="box"></span></button>
+      <button class="tg" type="button" id="tgPlane" aria-pressed="true"><span class="txt"><span data-i18n="tg.plane">Piano di avvolgimento</span></span><span class="box"></span></button>
+      <button class="tg" type="button" id="tgRing" aria-pressed="true"><span class="txt"><span data-i18n="tg.ring">Manopola</span></span><span class="box"></span></button>
+      <details class="x-adv" id="adv">
+        <summary data-i18n="adv.title">Avanzate</summary>
+        <p class="note" data-i18n="adv.note">Altri modi di vedere l'integrale.</p>
+        <button class="tg" type="button" id="tgWalk" aria-pressed="false"><span class="txt"><span data-i18n="adv.walk">Cammino</span><small data-i18n="adv.walkHint">l'integrale parziale, passo dopo passo</small></span><span class="box"></span></button>
+        <button class="tg" type="button" id="tgPhase" aria-pressed="false"><span class="txt"><span data-i18n="adv.phase">Traccia colorata dalla fase</span><small data-i18n="adv.phaseHint">tinta = arg c</small></span><span class="box"></span></button>
+        <button class="tg" type="button" id="tgShadows" aria-pressed="false"><span class="txt"><span data-i18n="adv.shadows">Ombre sulle pareti</span><small data-i18n="adv.shadowsHint">Re(f) sul pavimento, Im(f) sul fondo</small></span><span class="box"></span></button>
+        <button class="tg" type="button" id="tgEpi" aria-pressed="false"><span class="txt"><span data-i18n="adv.epi">Epicicli</span><small data-i18n="adv.epiHint">la direzione inversa: i picchi ricostruiscono g(t)</small></span><span class="box"></span></button>
+        <h3 class="grp" data-i18n="adv.plot">Grafico del segnale</h3>
+        <div class="seg full" id="plotSeg" role="group" data-i18n-aria="adv.plot"><button type="button" data-v="signal" class="on" data-i18n="plot.signal">g(t)</button><button type="button" data-v="product" data-i18n="plot.product">Prodotto</button><button type="button" data-v="scatter" data-i18n="plot.scatter">Correlazione</button></div>
+      </details>
+      <div class="meter"><span class="note" data-i18n="explored">Esplorato</span><div class="bar"><i id="expBar"></i></div><b id="expTxt"></b></div>
+    </div>
+  </aside>
+</main>
+
+<dialog id="info">
+  <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
+  <h1 class="word" aria-hidden="true"><span class="k">f</span><span>o</span><span class="a">u</span><span>r</span><span class="b">i</span><span>e</span><span class="a">r</span><b class="lab">lab</b><span class="xr">XR</span></h1>
+  <p data-i18n="info.about"></p>
+  <h3 data-i18n="info.how">Come funziona</h3>
+  <ul>
+    <li data-i18n="info.how1"></li>
+    <li data-i18n="info.how2"></li>
+    <li data-i18n="info.how3"></li>
+  </ul>
+  <h3 data-i18n="info.ctrl">Comandi nel visore</h3>
+  <ul>
+    <li data-i18n="info.c1"></li>
+    <li data-i18n="info.c2"></li>
+    <li data-i18n="info.c3"></li>
+    <li data-i18n="info.c4"></li>
+    <li data-i18n="info.c5"></li>
+  </ul>
+  <h3 data-i18n="info.keys">Sullo schermo</h3>
+  <p data-i18n="info.k1"></p>
+  <h3 data-i18n="info.snd">Suono</h3>
+  <p data-i18n="info.snd1"></p>
+  <h3 data-i18n="info.adv">Opzioni avanzate</h3>
+  <p data-i18n="info.adv1"></p>
+  <p class="note" data-i18n="info.unverified"></p>
+  <p class="meta kit-meta"></p>
+</dialog>
+
+<script src="js/three.min.js"></script>
+<script src="js/fourier.js"></script>
+<script src="js/grab.js"></script>
+<script src="js/audio.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
