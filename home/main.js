@@ -8,10 +8,10 @@
 //   and automatic pixel-CRT fallback consoles for future apps.
 
 import { initKit, t, getLang, onLang, isDark, onTheme } from "../kit/kit.js";
-import { ROOMS, appsInRoom, locateApp, buildRoomLayout } from "./benches.js?v=0.5.1";
-import { createApparatus3D } from "./apparatus3d.js?v=0.5.1";
-import { buildLabRoom3D } from "./room3d.js?v=0.5.1";
-import { createPixelPipeline } from "./pixelpass.js?v=0.5.1";
+import { ROOMS, appsInRoom, locateApp, buildRoomLayout } from "./benches.js";
+import { createApparatus3D } from "./apparatus3d.js";
+import { buildLabRoom3D } from "./room3d.js";
+import { createPixelPipeline } from "./pixelpass.js";
 
 const strings = {
   it: {

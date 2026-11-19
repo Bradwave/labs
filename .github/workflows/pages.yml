@@ -45,6 +45,18 @@ jobs:
             --exclude 'tools' --exclude 'template' --exclude 'tests' --exclude 'node_modules' --exclude '*.md' --exclude '.DS_Store'
           # the one-file starter for prototyping stays downloadable
           mkdir -p _site/template && cp template/single-file.html _site/template/
+          # stamp landing-page assets with the commit short SHA so browsers never mix cached JS/CSS across deploys
+          V="${GITHUB_SHA:0:7}" node -e '
+            const fs = require("fs"), path = require("path"), v = process.env.V;
+            const stamp = (s) => s.replace(/((?:href|src)=")((?:home|kit)\/(?!three\.min\.js)[^"?#]+\.(?:css|js))(")/g, `$1$2?v=${v}$3`);
+            const stampJs = (s) => s.replace(/(from\s+["\x27])(\.\.?\/(?:kit\/)?[^"\x27?#]+\.js)(["\x27])/g, `$1$2?v=${v}$3`);
+            fs.writeFileSync("_site/index.html", stamp(fs.readFileSync("_site/index.html", "utf8")));
+            for (const f of fs.readdirSync("_site/home")) {
+              if (!f.endsWith(".js") || f === "three.min.js") continue;
+              const p = path.join("_site/home", f);
+              fs.writeFileSync(p, stampJs(fs.readFileSync(p, "utf8")));
+            }
+          '
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
