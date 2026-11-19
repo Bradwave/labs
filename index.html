@@ -26,9 +26,12 @@
     </div>
   </header>
   <div class="hud-search-row">
-    <div class="search-wrap">
-      <input class="field" id="searchInput" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="searchPlaceholder" data-i18n-aria="searchLabel" placeholder="Cerca un esperimento… (es. urti, orbita, XR, frattali)">
-      <button class="search-clear" id="searchClear" type="button" hidden data-i18n-aria="searchClear" aria-label="Cancella ricerca">✕</button>
+    <div class="search-col">
+      <div class="search-wrap">
+        <input class="field" id="searchInput" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="searchPlaceholder" data-i18n-aria="searchLabel" placeholder="Cerca in tutto il lab… (es. urti, orbita, XR, frattali)">
+        <button class="search-clear" id="searchClear" type="button" hidden data-i18n-aria="searchClear" aria-label="Cancella ricerca">✕</button>
+      </div>
+      <div class="search-results" id="searchResults" hidden></div>
     </div>
     <span class="hud-pill" id="hudCount"></span>
   </div>
@@ -36,15 +39,19 @@
 
 <div class="bottom-hud">
   <div class="bottom-row">
-    <nav class="zone-bar" id="zoneBar" aria-label="Banchi del laboratorio"></nav>
+    <div class="room-nav-group">
+      <div class="seg small room-tabs" id="roomTabs" role="group" aria-label="Sale del laboratorio"></div>
+      <nav class="zone-bar" id="zoneBar" aria-label="Banchi della sala"></nav>
+    </div>
     <div class="orbit-controls">
+      <button class="orbit-btn px-btn" id="pxScaleBtn" type="button" data-i18n-aria="pixelScale" data-i18n-title="pixelScale" aria-label="Dimensione pixel" title="Dimensione pixel">PX</button>
       <button class="orbit-btn" id="rotLeftBtn" type="button" data-i18n-aria="rotateLeft" data-i18n-title="rotateLeft" aria-label="Ruota a sinistra" title="Ruota a sinistra">⟲</button>
       <button class="orbit-btn" id="rotRightBtn" type="button" data-i18n-aria="rotateRight" data-i18n-title="rotateRight" aria-label="Ruota a destra" title="Ruota a destra">⟳</button>
     </div>
   </div>
   <div class="controls-bar">
-    <span class="controls-hint desktop" data-i18n="controlsHint">Trascina per esplorare · Scorri per zoom · Clicca un apparato per aprirlo</span>
-    <span class="controls-hint touch" data-i18n="controlsTouch">Trascina per esplorare · Pizzica per zoom · Tocca un apparato</span>
+    <span class="controls-hint desktop" data-i18n="controlsHint">Trascina per esplorare · Scorri per zoom · Clicca un banco o un apparato</span>
+    <span class="controls-hint touch" data-i18n="controlsTouch">Trascina per esplorare · Pizzica per zoom · Tocca un banco o un apparato</span>
     <span class="mini-foot"><span data-i18n="foot">Codice libero (MIT) su</span> <a href="https://github.com/Bradwave/labs">github.com/Bradwave/labs</a> · <a href="https://matephis.com">matephis.com</a></span>
   </div>
 </div>
@@ -53,7 +60,7 @@
   <button class="icon-btn dlg-close" type="button" data-close data-i18n-aria="kit.close">✕</button>
   <h2 data-i18n="title">Laboratori di matematica e fisica</h2>
   <p data-i18n="about">Ogni laboratorio è una piccola app che si apre nel browser e si può installare. Tutto avviene sul dispositivo: nessun dato viene inviato.</p>
-  <p data-i18n="aboutRoom">Esplora il laboratorio 3D: trascina per muoverti tra i banchi, ruota con tasto destro o i pulsanti in basso, usa la ricerca per volare subito a un esperimento, e fai clic su qualsiasi apparato colorato per aprirlo.</p>
+  <p data-i18n="aboutRoom">Il laboratorio è organizzato in sale tematiche (Fisica, Matematica, XR Studio). Fai clic su un banco o scorri per avvicinarti e vedere i titoli degli apparati, usa la ricerca globale per volare in qualsiasi sala, e clicca qualsiasi apparato colorato per aprirlo.</p>
   <p class="meta kit-meta"></p>
 </dialog>
 <script src="home/three.min.js"></script>

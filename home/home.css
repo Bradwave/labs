@@ -68,6 +68,9 @@ body {
   display: block;
   cursor: grab;
   touch-action: none;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 /* ---------- floating top chrome (kit header + search HUD) ---------- */
@@ -94,17 +97,76 @@ body {
 
 .hud-search-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   margin-top: 2px;
   pointer-events: none;
 }
+.search-col {
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100vw - 124px));
+  pointer-events: auto;
+}
 .search-wrap {
   position: relative;
-  width: min(360px, calc(100vw - 120px));
-  pointer-events: auto;
+  width: 100%;
+}
+.search-results {
+  margin-top: 6px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  max-height: min(300px, 46vh);
+  overflow-y: auto;
+}
+.sr-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  border-bottom: 1px dotted var(--gridline);
+}
+.sr-item:last-child {
+  border-bottom: none;
+}
+.sr-item:hover,
+.sr-item:focus-visible {
+  background: var(--tile2);
+  color: #14202b;
+}
+.sr-pip {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border: 1.5px solid var(--ink);
+}
+.sr-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sr-room {
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1.5px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.sr-go {
+  font-size: 11px;
+  opacity: 0.7;
 }
 .search-wrap input.field {
   min-height: 36px;
@@ -156,6 +218,10 @@ body {
   z-index: 15;
   pointer-events: none;
   overflow: hidden;
+  transition: opacity 0.14s ease-out;
+}
+.pin-layer.swapping {
+  opacity: 0;
 }
 .lab-pin {
   position: absolute;
@@ -231,7 +297,67 @@ body {
   pointer-events: none !important;
 }
 
-/* ---------- bottom game camera & minimap zone bar ---------- */
+/* Crisp diegetic bench nameplates mounted on the front apron of each 3D workbench */
+.bench-pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 7px 2px 2px;
+  background: var(--hud-glass);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+  will-change: transform, opacity;
+  transition: background-color 0.12s ease-out, color 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+.bench-pin b {
+  display: inline-block;
+  padding: 2px 5px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 10px;
+}
+.bench-pin.compact {
+  font-size: 9px;
+  padding: 1px 5px 1px 1px;
+  border-width: 1.5px;
+  box-shadow: 1.5px 1.5px 0 var(--ink);
+  opacity: 0.88;
+}
+.bench-pin.compact b {
+  padding: 1px 4px;
+  font-size: 8.5px;
+}
+.bench-pin:hover,
+.bench-pin:focus-visible,
+.bench-pin.active {
+  background: var(--tile2);
+  color: #14202b;
+  box-shadow: 3px 3px 0 var(--ink);
+  opacity: 1;
+}
+.bench-pin.hidden-lod,
+.lab-pin.hidden-lod {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.lab-pin:focus-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ---------- bottom game camera & wing switcher bar ---------- */
 .bottom-hud {
   position: fixed;
   left: 0;
@@ -248,20 +374,45 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.room-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 2px 2px 4px;
+  scrollbar-width: none;
+}
+.room-nav-group::-webkit-scrollbar {
+  display: none;
+}
+.room-tabs {
+  pointer-events: auto;
+  flex: none;
+  box-shadow: 3px 3px 0 var(--ink);
+  background: var(--hud-glass);
+}
+.room-tabs button {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+}
+.r-cnt {
+  font-size: 10px;
+  opacity: 0.72;
+  margin-left: 3px;
+  font-variant-numeric: tabular-nums;
 }
 .zone-bar {
   pointer-events: auto;
   display: flex;
   align-items: center;
   gap: 6px;
-  overflow-x: auto;
-  max-width: calc(100vw - 124px);
-  padding: 2px 2px 4px;
-  scrollbar-width: none;
-}
-.zone-bar::-webkit-scrollbar {
-  display: none;
+  flex: none;
 }
 .zone-btn {
   display: inline-flex;
@@ -306,18 +457,25 @@ body {
   flex: none;
 }
 .orbit-btn {
-  width: 36px;
+  min-width: 36px;
   height: 36px;
+  padding: 0 7px;
   border: 2px solid var(--ink);
   background: var(--hud-glass);
   color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: grid;
   place-items: center;
   touch-action: manipulation;
+}
+.orbit-btn.px-btn {
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  background: var(--tile2);
+  color: #14202b;
 }
 .orbit-btn:active {
   transform: translate(2px, 2px);
@@ -382,15 +540,12 @@ body {
     padding-left: max(10px, env(safe-area-inset-left, 0px));
     padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
-  .search-wrap {
+  .search-col {
     flex: 1;
     width: auto;
   }
   .bottom-hud {
     padding: 6px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
-  }
-  .zone-bar {
-    max-width: calc(100vw - 104px);
   }
   .controls-bar {
     display: none;

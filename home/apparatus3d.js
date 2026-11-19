@@ -77,8 +77,12 @@ function makeScreenTexture(drawFn, w = 256, h = 160) {
   c.width = w;
   c.height = h;
   const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
   drawFn(ctx, w, h);
   const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
   tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
@@ -1121,17 +1125,103 @@ const BUILDERS = {
 };
 
 /**
- * Fallback 3D modular lab console for any future app added to apps.json.
+ * Fallback 3D pixel-art benchtop CRT lab terminal for any future app added to apps.json
+ * whose bespoke 3D model is pending. Paints a live monogram boot screen immediately and
+ * automatically upgrades the glowing CRT display with the lab's favicon.svg once loaded.
  */
-function buildFallback3D(root, m) {
-  addBox(root, 1.06, 0.76, 0.5, m.brand, 0, 0.4, 0);
-  addBox(root, 0.68, 0.5, 0.06, m.surface, -0.1, 0.46, 0.24, false);
-  const dial = addCyl(root, 0.08, 0.08, 0.06, m.tile2, 0.36, 0.56, 0.26, 14);
-  dial.rotation.x = Math.PI / 2;
-  const bar = addBox(root, 0.48, 0.08, 0.06, m.accent, -0.1, 0.46, 0.28, false);
+function buildFallback3D(root, m, app) {
+  // Base deck + sloped keyboard console
+  addBox(root, 1.18, 0.12, 0.74, m.brand, 0, 0.06, 0.04);
+  const deck = addBox(root, 0.96, 0.08, 0.24, m.surface, 0, 0.15, 0.26);
+  deck.rotation.x = 0.24;
+  // Little pixel keys on console
+  addBox(root, 0.56, 0.04, 0.12, m.ink, -0.12, 0.19, 0.27, false);
+  const ledMat = makeMat(hexNum(m.accentHex), { emissive: hexNum(m.accentHex), emissiveIntensity: 0.9 });
+  addBox(root, 0.09, 0.05, 0.08, ledMat, 0.34, 0.19, 0.27, false);
+
+  // Swivel pedestal + chunky retro CRT monitor casing
+  addCyl(root, 0.16, 0.22, 0.14, sharedDarkMetal, 0, 0.19, -0.06, 12);
+  addBox(root, 0.92, 0.72, 0.54, m.brand, 0, 0.62, -0.08);
+  addBox(root, 0.74, 0.56, 0.22, m.brand, 0, 0.62, -0.34);
+
+  // Side tuning dial & antenna rod
+  const dial = addCyl(root, 0.075, 0.075, 0.07, m.tile2, 0.49, 0.52, 0.04, 12);
+  dial.rotation.z = Math.PI / 2;
+  addCyl(root, 0.016, 0.016, 0.28, sharedChrome, -0.32, 1.1, -0.18, 8);
+  const tip = addSphere(root, 0.045, m.accent, -0.32, 1.25, -0.18, 10);
+
+  // Pixel-art CRT screen canvas (48x48 NearestFilter)
+  const mono = String(app?.name || "LAB")
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+  const scrCanvas = document.createElement("canvas");
+  scrCanvas.width = 48;
+  scrCanvas.height = 48;
+  const sctx = scrCanvas.getContext("2d");
+  sctx.imageSmoothingEnabled = false;
+
+  const paintPlaceholder = () => {
+    sctx.fillStyle = m.surfHex;
+    sctx.fillRect(0, 0, 48, 48);
+    sctx.strokeStyle = m.inkHex;
+    sctx.lineWidth = 2;
+    sctx.strokeRect(2, 2, 44, 44);
+    // Oscilloscope grid + accent wave
+    sctx.fillStyle = m.brandHex;
+    sctx.fillRect(5, 5, 38, 22);
+    sctx.fillStyle = m.accentHex;
+    for (let x = 7; x < 41; x += 2) {
+      const y = Math.round(16 + Math.sin(x * 0.35) * 6);
+      sctx.fillRect(x, y, 2, 2);
+    }
+    sctx.fillStyle = m.inkHex;
+    sctx.font = "bold 12px 'Space Mono', monospace";
+    sctx.textAlign = "center";
+    sctx.textBaseline = "middle";
+    sctx.fillText(mono, 24, 37);
+  };
+  paintPlaceholder();
+
+  const screenTex = new THREE.CanvasTexture(scrCanvas);
+  screenTex.minFilter = THREE.NearestFilter;
+  screenTex.magFilter = THREE.NearestFilter;
+  screenTex.generateMipmaps = false;
+  screenTex.encoding = THREE.sRGBEncoding;
+
+  // Progressively load the lab's favicon.svg onto the pixel CRT screen if available
+  if (app?.slug && typeof Image !== "undefined") {
+    const img = new Image();
+    img.onload = () => {
+      sctx.clearRect(0, 0, 48, 48);
+      sctx.fillStyle = m.surfHex;
+      sctx.fillRect(0, 0, 48, 48);
+      sctx.drawImage(img, 3, 3, 42, 42);
+      screenTex.needsUpdate = true;
+    };
+    img.src = `${app.slug}/favicon.svg`;
+  }
+
+  const screenMat = toonMat(0xffffff, {
+    map: screenTex,
+    emissive: 0xffffff,
+    emissiveMap: screenTex,
+    emissiveIntensity: 0.24,
+  });
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.68, 0.56), screenMat);
+  screen.position.set(0, 0.62, 0.195);
+  root.add(screen);
+
+  // Subtle moving scan highlight bar across CRT bezel
+  const scanBar = addBox(root, 0.64, 0.032, 0.02, m.tile2, 0, 0.62, 0.205, false);
+
   return (t) => {
-    bar.position.y = 0.46 + Math.sin(t * 3) * 0.14;
-    dial.rotation.y = t * 1.8;
+    dial.rotation.x = t * 1.4;
+    ledMat.emissiveIntensity = Math.sin(t * 4.5) > 0 ? 1.15 : 0.2;
+    tip.position.y = 1.25 + Math.sin(t * 3.2) * 0.025;
+    scanBar.position.y = 0.38 + ((t * 0.35) % 1) * 0.48;
   };
 }
 
@@ -1154,7 +1244,7 @@ export function createApparatus3D(app, allApps) {
   group.add(machine);
 
   const builder = BUILDERS[app.slug];
-  const animFn = builder ? builder(machine, m) : buildFallback3D(machine, m);
+  const animFn = builder ? builder(machine, m) : buildFallback3D(machine, m, app);
 
   // 3D selection ring on the tabletop mat (glows when hovered or matched by search)
   const ringMat = new THREE.MeshBasicMaterial({
@@ -1162,11 +1252,13 @@ export function createApparatus3D(app, allApps) {
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0,
+    depthWrite: false,
   });
   const selectRing = new THREE.Mesh(new THREE.RingGeometry(0.68, 0.82, 4), ringMat);
   selectRing.rotation.x = -Math.PI / 2;
   selectRing.rotation.z = Math.PI / 4;
   selectRing.position.y = 0.038;
+  selectRing.userData.noPixelEdge = true;
   group.add(selectRing);
 
   // Floating bouncing 3D target crystal beacon above apparatus (revealed on hover / search highlight)

@@ -13,6 +13,11 @@ import {
   roomCreaseMat,
   setCelTheme,
 } from "./cel.js";
+import {
+  createStackedMonstera,
+  createStackedLabCat,
+  createStackedBenchClutter,
+} from "./spritestack.js";
 
 function mat(color, opts = {}) {
   return toonMat(color, opts);
@@ -38,130 +43,171 @@ function box(parent, w, h, d, m, x = 0, y = 0, z = 0, edged = true, shelled = fa
 }
 
 function makeFloorTexture(dark) {
+  // Harmonized with Matephis kit graph-paper drafting surface (DESIGN.md §3)
   const c = document.createElement("canvas");
-  c.width = 256;
-  c.height = 256;
+  c.width = 64;
+  c.height = 64;
   const ctx = c.getContext("2d");
-  ctx.fillStyle = dark ? "#18242f" : "#d7dfe7";
-  ctx.fillRect(0, 0, 256, 256);
-  ctx.fillStyle = dark ? "#1c2a36" : "#ced8e2";
-  ctx.fillRect(0, 0, 128, 128);
-  ctx.fillRect(128, 128, 128, 128);
-  ctx.strokeStyle = dark ? "rgba(210,224,236,0.08)" : "rgba(20,32,43,0.12)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1, 1, 254, 254);
-  ctx.beginPath();
-  ctx.moveTo(128, 0);
-  ctx.lineTo(128, 256);
-  ctx.moveTo(0, 128);
-  ctx.lineTo(256, 128);
-  ctx.stroke();
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = dark ? "#16212c" : "#dde4eb";
+  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = dark ? "#1a2733" : "#d4dde6";
+  ctx.fillRect(0, 0, 32, 32);
+  ctx.fillRect(32, 32, 32, 32);
+  // Crisp 1px drafting graph-paper grid lines
+  ctx.fillStyle = dark ? "rgba(201,211,221,0.1)" : "rgba(20,32,43,0.14)";
+  ctx.fillRect(0, 0, 64, 1);
+  ctx.fillRect(0, 0, 1, 64);
+  ctx.fillRect(0, 32, 64, 1);
+  ctx.fillRect(32, 0, 1, 64);
   const tex = new THREE.CanvasTexture(c);
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(9, 8);
+  tex.repeat.set(11, 10);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
   tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
 
-function makeChalkboardTexture() {
+function makeChalkboardTexture(theme = "physics") {
   const c = document.createElement("canvas");
   c.width = 1024;
   c.height = 420;
   const ctx = c.getContext("2d");
-  ctx.fillStyle = "#233936";
+  ctx.fillStyle = theme === "xr" ? "#18283b" : "#233936";
   ctx.fillRect(0, 0, 1024, 420);
 
-  // Subtle dusty chalk haze
   ctx.fillStyle = "rgba(235,245,240,0.04)";
   ctx.fillRect(26, 22, 972, 376);
   ctx.strokeStyle = "rgba(235,245,240,0.22)";
   ctx.lineWidth = 3;
   ctx.strokeRect(20, 20, 984, 380);
 
-  ctx.fillStyle = "rgba(238,246,242,0.82)";
+  ctx.fillStyle = "rgba(238,246,242,0.85)";
   ctx.font = "bold 36px 'Space Mono', monospace";
-  ctx.fillText("F = m · a", 64, 110);
-  ctx.fillText("Δp = ∫ F(t) dt", 64, 195);
-  ctx.fillText("T = 2π √(L / g)", 64, 280);
-  ctx.fillText("p₁ + p₂ = const", 64, 355);
 
-  ctx.fillText("e^(iπ) + 1 = 0", 620, 110);
-  ctx.fillText("x(t) = x₀ + v₀t + ½at²", 550, 355);
+  if (theme === "math") {
+    ctx.fillText("e^(iπ) + 1 = 0", 60, 112);
+    ctx.fillText("Σ 1/n² = π² / 6", 60, 198);
+    ctx.fillText("d₁(A,B) = |Δx| + |Δy|", 60, 286);
+    ctx.fillText("Sₙ → L", 60, 360);
 
-  // Chalk physics sketches (wave + parabola + orbit)
-  ctx.strokeStyle = "rgba(238,246,242,0.68)";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(410, 275);
-  ctx.lineTo(660, 275);
-  ctx.moveTo(430, 295);
-  ctx.lineTo(430, 130);
-  ctx.stroke();
+    // Geometric inscribed circle + triangle
+    ctx.strokeStyle = "#ffd23f";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(690, 200, 96, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(140,203,235,0.85)";
+    ctx.beginPath();
+    ctx.moveTo(690, 104);
+    ctx.lineTo(774, 248);
+    ctx.lineTo(606, 248);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (theme === "xr") {
+    ctx.fillText("g ∘ f : X → Z", 60, 112);
+    ctx.fillText("F(ω) = ∫ f(t)e^(-iωt)dt", 60, 202);
+    ctx.fillText("x²/a² + y²/b² = z", 60, 294);
+    ctx.fillText("WebXR · 3D", 60, 362);
 
-  ctx.strokeStyle = "#ffd23f";
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  for (let i = 0; i <= 40; i++) {
-    const x = 430 + i * 5.4;
-    const y = 220 - Math.sin(i * 0.35) * 44;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    // Wireframe quadric + axes
+    ctx.strokeStyle = "rgba(140,203,235,0.85)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(790, 140, 95, 28, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(790, 290, 95, 28, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = "#ffd23f";
+    ctx.beginPath();
+    ctx.moveTo(695, 140);
+    ctx.lineTo(885, 290);
+    ctx.moveTo(885, 140);
+    ctx.lineTo(695, 290);
+    ctx.stroke();
+  } else {
+    ctx.fillText("F = m · a", 64, 110);
+    ctx.fillText("Δp = ∫ F(t) dt", 64, 195);
+    ctx.fillText("T = 2π √(L / g)", 64, 280);
+    ctx.fillText("p₁ + p₂ = const", 64, 355);
+    ctx.fillText("x(t) = x₀ + v₀t + ½at²", 530, 355);
+
+    ctx.strokeStyle = "rgba(238,246,242,0.68)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(410, 275);
+    ctx.lineTo(660, 275);
+    ctx.moveTo(430, 295);
+    ctx.lineTo(430, 130);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#ffd23f";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    for (let i = 0; i <= 40; i++) {
+      const x = 430 + i * 5.4;
+      const y = 220 - Math.sin(i * 0.35) * 44;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(140,203,235,0.8)";
+    ctx.setLineDash([10, 8]);
+    ctx.beginPath();
+    ctx.ellipse(830, 220, 110, 56, -0.18, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#ffd23f";
+    ctx.beginPath();
+    ctx.arc(800, 224, 16, 0, Math.PI * 2);
+    ctx.fill();
   }
-  ctx.stroke();
-
-  // Chalk orbit ellipse on right
-  ctx.strokeStyle = "rgba(140,203,235,0.8)";
-  ctx.setLineDash([10, 8]);
-  ctx.beginPath();
-  ctx.ellipse(830, 220, 110, 56, -0.18, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = "#ffd23f";
-  ctx.beginPath();
-  ctx.arc(800, 224, 16, 0, Math.PI * 2);
-  ctx.fill();
 
   const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
   tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
 
 function makeWindowSkyTexture(dark) {
   const c = document.createElement("canvas");
-  c.width = 256;
-  c.height = 320;
+  c.width = 128;
+  c.height = 160;
   const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
   if (!dark) {
     ctx.fillStyle = "#9ad2f4";
-    ctx.fillRect(0, 0, 256, 320);
+    ctx.fillRect(0, 0, 128, 160);
     ctx.fillStyle = "#bfe3fa";
-    ctx.fillRect(0, 190, 256, 130);
-    // Crisp blocky game clouds
+    ctx.fillRect(0, 96, 128, 64);
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(28, 64, 96, 26);
-    ctx.fillRect(48, 46, 56, 22);
-    ctx.fillRect(126, 146, 102, 26);
-    ctx.fillRect(150, 128, 54, 22);
+    ctx.fillRect(14, 32, 48, 14);
+    ctx.fillRect(24, 22, 28, 12);
+    ctx.fillRect(64, 74, 52, 14);
+    ctx.fillRect(76, 64, 28, 12);
   } else {
     ctx.fillStyle = "#0b1428";
-    ctx.fillRect(0, 0, 256, 320);
-    // Crescent moon
+    ctx.fillRect(0, 0, 128, 160);
     ctx.fillStyle = "#ffd86b";
-    ctx.beginPath();
-    ctx.arc(178, 86, 28, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(82, 30, 16, 18);
     ctx.fillStyle = "#0b1428";
-    ctx.beginPath();
-    ctx.arc(192, 78, 24, 0, Math.PI * 2);
-    ctx.fill();
-    // Crisp star crosses
+    ctx.fillRect(88, 28, 14, 14);
     ctx.fillStyle = "#eaf2ff";
-    for (const [sx, sy, s] of [[44, 52, 6], [96, 110, 4], [62, 190, 6], [198, 210, 5], [134, 62, 4], [148, 256, 6]]) {
-      ctx.fillRect(sx - s, sy - 1.5, s * 2, 3);
-      ctx.fillRect(sx - 1.5, sy - s, 3, s * 2);
+    for (const [sx, sy] of [[22, 26], [48, 56], [30, 96], [98, 106], [68, 32], [74, 128]]) {
+      ctx.fillRect(sx - 3, sy, 7, 2);
+      ctx.fillRect(sx, sy - 3, 2, 7);
     }
   }
   const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
   tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
@@ -190,6 +236,9 @@ function makeBenchSignTexture(code, title) {
   ctx.textAlign = "left";
   ctx.fillText(title.toUpperCase(), 118, 50);
   const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
   tex.encoding = THREE.sRGBEncoding;
   return tex;
 }
@@ -223,66 +272,34 @@ function buildStool(parent, x, z, woodMat, metalMat) {
 }
 
 /**
- * Muted non-clickable tabletop clutter placed on spare bench slots so every table feels lived-in.
+ * Sprite-stacked non-clickable tabletop clutter placed on spare bench slots (1 draw call + tiny steam pixels).
  */
 function buildTableClutter(parent, x, y, z, variant) {
   const g = new THREE.Group();
   g.position.set(x, y, z);
-  const mBook1 = mat(0x9fb0bf);
-  const mBook2 = mat(0xb8c6d2);
-  const mMug = mat(0xdde4ea);
-  const mGlass = mat(0xcfe8f4, { transparent: true, opacity: 0.45, roughness: 0.2 });
-  const mLiquid = mat(0x88a8b8, { transparent: true, opacity: 0.55 });
-  const steamRings = [];
+  const stack = createStackedBenchClutter();
+  stack.rotation.y = variant % 2 === 0 ? 0.12 : -0.18;
+  g.add(stack);
 
-  // Stacked lab notebooks
-  box(g, 0.48, 0.07, 0.36, mBook1, -0.26, 0.035, 0.1);
-  const b2 = box(g, 0.44, 0.06, 0.32, mBook2, -0.24, 0.1, 0.08);
-  b2.rotation.y = 0.14;
-
-  // Coffee mug with gently rising steam wisps
-  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.16, 12), mMug);
-  mug.position.set(-0.22, 0.21, 0.08);
-  mug.castShadow = true;
-  addShell(mug, detailShellMat);
-  g.add(mug);
-
+  // Subtle floating pixel steam cubes rising above the stacked coffee mug
+  const steamCubes = [];
   for (let i = 0; i < 2; i++) {
     const puff = new THREE.Mesh(
-      new THREE.TorusGeometry(0.035, 0.008, 6, 12),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 }),
+      new THREE.BoxGeometry(0.055, 0.055, 0.055),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false }),
     );
-    puff.rotation.x = Math.PI / 2;
-    puff.position.set(-0.22, 0.34 + i * 0.1, 0.08);
+    puff.position.set(-0.22, 0.42 + i * 0.12, 0.12);
+    puff.userData.noPixelEdge = true;
     g.add(puff);
-    steamRings.push({ mesh: puff, phase: i * 1.5 });
-  }
-
-  // Erlenmeyer flask & beaker (muted blueprint glassware)
-  const flask = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.28, 14), mGlass);
-  flask.position.set(0.26, 0.14, -0.06);
-  g.add(flask);
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.048, 0.14, 12), mGlass);
-  neck.position.set(0.26, 0.32, -0.06);
-  g.add(neck);
-  const liq = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.12, 12), mLiquid);
-  liq.position.set(0.26, 0.07, -0.06);
-  g.add(liq);
-
-  if (variant % 2 === 1) {
-    // Graduated cylinder beside flask
-    const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.38, 12), mGlass);
-    cyl.position.set(0.46, 0.19, 0.14);
-    g.add(cyl);
+    steamCubes.push({ mesh: puff, phase: i * 0.5 });
   }
 
   parent.add(g);
   return (t) => {
-    for (const s of steamRings) {
-      const u = ((t * 0.55 + s.phase) % 1);
-      s.mesh.position.y = 0.31 + u * 0.26;
-      s.mesh.scale.setScalar(0.75 + u * 0.65);
-      s.mesh.material.opacity = Math.sin(u * Math.PI) * 0.32;
+    for (const s of steamCubes) {
+      const u = (t * 0.45 + s.phase) % 1;
+      s.mesh.position.y = 0.36 + u * 0.28;
+      s.mesh.material.opacity = Math.sin(u * Math.PI) * 0.5;
     }
   };
 }
@@ -337,24 +354,26 @@ export function buildLabRoom3D(scene, layout, lang) {
   box(root, 0.08, 1.55, roomDepth, wainscotMat, -halfW + 0.04, 0.775, 0, false);
   box(root, 0.14, 0.1, roomDepth, trimMat, -halfW + 0.07, 1.58, 0);
 
-  // ── GIANT CLASSROOM CHALKBOARD ON BACK WALL ──
-  const boardW = 7.4;
-  const boardH = 3.0;
+  // ── GIANT CLASSROOM CHALKBOARD ON BACK WALL (scaled cleanly to room width) ──
+  const roomTheme = layout.room?.theme || "physics";
+  const boardW = Math.min(7.2, Math.max(5.2, roomWidth * 0.44));
+  const boardH = 2.9;
+  const chalkTex = makeChalkboardTexture(roomTheme);
   box(root, boardW + 0.3, boardH + 0.3, 0.16, oakMat, 0, 3.65, -halfD + 0.1);
   const chalkMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(boardW, boardH),
-    toonMat(0xffffff, { map: makeChalkboardTexture() }),
+    toonMat(0xffffff, { map: chalkTex }),
   );
   chalkMesh.position.set(0, 3.65, -halfD + 0.19);
   root.add(chalkMesh);
   // Chalk tray + eraser + chalk sticks
   box(root, boardW + 0.5, 0.12, 0.28, oakMat, 0, 2.08, -halfD + 0.22);
-  box(root, 0.36, 0.1, 0.14, mat(0xc46b54), -1.8, 2.19, -halfD + 0.24);
-  box(root, 0.22, 0.04, 0.04, mat(0xf4f8f6), -1.1, 2.16, -halfD + 0.24, false);
+  box(root, 0.36, 0.1, 0.14, mat(0xc46b54), -boardW * 0.24, 2.19, -halfD + 0.24);
+  box(root, 0.22, 0.04, 0.04, mat(0xf4f8f6), -boardW * 0.14, 2.16, -halfD + 0.24, false);
 
   // ── TICKING 3D WALL CLOCK ON BACK WALL ──
   const clockGrp = new THREE.Group();
-  clockGrp.position.set(5.4, 4.7, -halfD + 0.14);
+  clockGrp.position.set(Math.min(5.2, halfW - 1.7), 4.7, -halfD + 0.14);
   root.add(clockGrp);
   const clockBody = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.66, 0.14, 24), trimMat);
   clockBody.rotation.x = Math.PI / 2;
@@ -384,7 +403,8 @@ export function buildLabRoom3D(scene, layout, lang) {
 
   // ── WALL BOOKSHELVES FLANKING THE CHALKBOARD ──
   const bookColors = [0x8b9eb0, 0xa8927c, 0x7d998c, 0xb28787, 0x8e8aa8, 0xa3a987];
-  for (const bx of [-6.8, 6.8]) {
+  const shelfXs = roomWidth > 17 ? [-halfW + 3.2, halfW - 3.6] : [-halfW + 1.8];
+  for (const bx of shelfXs) {
     const shelf = new THREE.Group();
     shelf.position.set(bx, 0, -halfD + 0.5);
     root.add(shelf);
@@ -427,55 +447,36 @@ export function buildLabRoom3D(scene, layout, lang) {
     box(wg, 0.08, wH, 0.1, trimMat, 0, 0, 0.09, false);
     box(wg, wW, 0.08, 0.1, trimMat, 0, 0.1, 0.09, false);
 
-    // Potted window succulent on alternate sills
+    // Sprite-stacked windowsill Monstera deliciosa on alternate sills
     if (i % 2 === 0) {
-      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.1, 0.2, 10), mat(0xb87a5e));
-      pot.position.set(0.75, -wH / 2 + 0.02, 0.2);
-      pot.castShadow = true;
-      addShell(pot, detailShellMat);
-      wg.add(pot);
-      const plant = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), mat(0x5b8a64));
-      plant.position.set(0.75, -wH / 2 + 0.2, 0.2);
-      plant.castShadow = true;
-      addShell(plant, detailShellMat);
-      wg.add(plant);
+      const miniPlant = createStackedMonstera(0.62);
+      miniPlant.position.set(0.72, -wH / 2 - 0.08, 0.22);
+      wg.add(miniPlant);
     }
   }
 
-  // ── COZY SLEEPING 3D LAB CAT ON A CORNER CRATE ──
+  // ── HERO SPRITE-STACKED MONSTERA PLANT ON FRONT-LEFT CORNER STAND ──
+  const plantStand = new THREE.Group();
+  plantStand.position.set(-halfW + 1.45, 0, halfD - 1.45);
+  root.add(plantStand);
+  box(plantStand, 0.96, 0.62, 0.96, oakMat, 0, 0.31, 0);
+  const heroMonstera = createStackedMonstera(1.38);
+  heroMonstera.position.set(0, 0.62, 0);
+  plantStand.add(heroMonstera);
+  animUpdaters.push((t) => {
+    heroMonstera.rotation.y = Math.sin(t * 0.45) * 0.08;
+  });
+
+  // ── COZY SPRITE-STACKED SLEEPING LAB CAT ON A CORNER CRATE ──
   const catCrate = new THREE.Group();
   catCrate.position.set(halfW - 1.5, 0, -halfD + 1.5);
   root.add(catCrate);
   box(catCrate, 1.35, 0.72, 1.05, oakMat, 0, 0.36, 0, true, true);
-  const catMat = mat(0xd89358);
-  const cat = new THREE.Group();
-  cat.position.set(0, 0.74, 0);
-  catCrate.add(cat);
-  const catBody = new THREE.Mesh(new THREE.SphereGeometry(0.28, 14, 12), catMat);
-  catBody.scale.set(1.25, 0.62, 0.95);
-  catBody.position.set(0, 0.14, 0);
-  catBody.castShadow = true;
-  addShell(catBody, detailShellMat);
-  cat.add(catBody);
-  const catHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), catMat);
-  catHead.position.set(-0.28, 0.18, 0.08);
-  catHead.castShadow = true;
-  addShell(catHead, detailShellMat);
-  cat.add(catHead);
-  for (const ez of [-0.07, 0.07]) {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.1, 4), catMat);
-    ear.position.set(-0.28, 0.33, 0.08 + ez);
-    addShell(ear, detailShellMat);
-    cat.add(ear);
-  }
-  const catTail = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.024, 0.42, 8), catMat);
-  catTail.rotation.z = Math.PI / 2.2;
-  catTail.position.set(0.36, 0.14, 0.14);
-  addShell(catTail, detailShellMat);
-  cat.add(catTail);
+  const catStack = createStackedLabCat();
+  catStack.position.set(0, 0.72, 0);
+  catCrate.add(catStack);
   animUpdaters.push((t) => {
-    catBody.scale.y = 0.62 + Math.sin(t * 1.9) * 0.05;
-    catTail.rotation.y = Math.sin(t * 1.4) * 0.25;
+    catStack.scale.y = 1 + Math.sin(t * 1.9) * 0.07;
   });
 
   // ── 3D LABORATORY ISLAND WORKBENCHES + OVERHEAD PENDANT LAMPS ──
@@ -506,14 +507,8 @@ export function buildLabRoom3D(scene, layout, lang) {
       box(bg, 0.28, 0.05, 0.06, brassMat, dx, 0.46, (tb.depth - 0.34) / 2 + 0.03, false);
     }
 
-    // Front Bench Zone Signboard mounted on center front apron
-    const signMat = toonMat(0xffffff, {
-      map: makeBenchSignTexture(tb.displayCode, tb.title?.[lang] || tb.title?.en || tb.id),
-    });
-    const signPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 0.44), signMat);
-    signPlane.position.set(0, 0.64, tb.depth / 2 - 0.14);
-    bg.add(signPlane);
-    signMeshes.push({ mat: signMat, bench: tb });
+    // Clean recessed metal rail on front bench apron (crisp projected bench nameplate mounts here)
+    box(bg, 2.3, 0.34, 0.08, steelMat, 0, 0.64, tb.depth / 2 - 0.16, false);
 
     // Tucked-in lab stool next to bench
     buildStool(root, tb.x + (idx % 2 === 0 ? -1.4 : 1.4), tb.z + tb.depth / 2 + 0.52, oakMat, steelMat);
@@ -551,6 +546,7 @@ export function buildLabRoom3D(scene, layout, lang) {
     });
     const cone = new THREE.Mesh(new THREE.ConeGeometry(2.5, 3.6, 16, 1, true), coneMat);
     cone.position.y = -1.96;
+    cone.userData.noPixelEdge = true;
     lampGrp.add(cone);
     lampCones.push(coneMat);
 
@@ -584,6 +580,7 @@ export function buildLabRoom3D(scene, layout, lang) {
     depthWrite: false,
   });
   const motes = new THREE.Points(moteGeo, moteMat);
+  motes.userData.noPixelEdge = true;
   root.add(motes);
   animUpdaters.push((t) => {
     const pos = moteGeo.attributes.position.array;
@@ -595,15 +592,15 @@ export function buildLabRoom3D(scene, layout, lang) {
     moteGeo.attributes.position.needsUpdate = true;
   });
 
-  // ── SCENE LIGHTS (updated live between Daytime & Late-Night themes) ──
+  // ── SCENE LIGHTS (attached to root so switching rooms cleans them up automatically) ──
   const hemiLight = new THREE.HemisphereLight(0xebf4ff, 0x7b8996, 0.78);
-  scene.add(hemiLight);
+  root.add(hemiLight);
 
   const keyLight = new THREE.DirectionalLight(0xfff6e5, 0.92);
   keyLight.position.set(-10, 18, 12);
   keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;
-  keyLight.shadow.mapSize.height = 2048;
+  keyLight.shadow.mapSize.width = 1024;
+  keyLight.shadow.mapSize.height = 1024;
   keyLight.shadow.camera.near = 2;
   keyLight.shadow.camera.far = 52;
   const sc = Math.max(roomWidth, roomDepth) * 0.72;
@@ -611,12 +608,12 @@ export function buildLabRoom3D(scene, layout, lang) {
   keyLight.shadow.camera.right = sc;
   keyLight.shadow.camera.top = sc;
   keyLight.shadow.camera.bottom = -sc;
-  keyLight.shadow.bias = -0.0005;
-  scene.add(keyLight);
+  keyLight.shadow.bias = -0.0012;
+  root.add(keyLight);
 
   const fillLight = new THREE.DirectionalLight(0xaad0f5, 0.32);
   fillLight.position.set(14, 10, -8);
-  scene.add(fillLight);
+  root.add(fillLight);
 
   let floorTex = null;
   let winTex = null;
@@ -633,9 +630,9 @@ export function buildLabRoom3D(scene, layout, lang) {
       pm.needsUpdate = true;
     }
 
-    const bgHex = dark ? 0x0f171f : 0xc9d3dd;
+    const bgHex = dark ? 0x111a22 : 0xc9d3dd;
     scene.background = new THREE.Color(bgHex);
-    scene.fog = new THREE.Fog(bgHex, 28, 62);
+    scene.fog = null;
 
     wallMat.color.setHex(dark ? 0x1b2834 : 0xe4ebf1);
     wainscotMat.color.setHex(dark ? 0x141e28 : 0xcfd9e3);
@@ -670,10 +667,19 @@ export function buildLabRoom3D(scene, layout, lang) {
     }
   }
 
+  function dispose() {
+    if (floorTex) floorTex.dispose();
+    if (winTex) winTex.dispose();
+    if (chalkTex) chalkTex.dispose();
+    if (root.parent) root.parent.remove(root);
+    else scene.remove(root);
+  }
+
   return {
     root,
     applyTheme,
     updateLanguage,
+    dispose,
     update(t, reducedMotion) {
       if (reducedMotion) return;
       for (const fn of animUpdaters) fn(t);
