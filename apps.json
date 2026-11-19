@@ -228,6 +228,142 @@
       }
     },
     {
+      "slug": "fourier-lab-xr",
+      "test": "node tests/fourier.test.mjs",
+      "name": "Fourier Lab XR",
+      "kind": "xr",
+      "subject": "mathematics",
+      "port": 8118,
+      "kit": true,
+      "description": {
+        "it": "Avvolgi un segnale attorno all'asse delle frequenze in realtà aumentata: afferra la maniglia e guarda nascere la trasformata di Fourier come una scia.",
+        "en": "Wind a signal around the frequency axis in augmented reality: grab the handle and watch the Fourier transform appear as a trail."
+      },
+      "palette": {
+        "light": {
+          "bg": "#E0B98A",
+          "surface": "#FCF7EE",
+          "ink": "#2B1A0A",
+          "muted": "#7A6652",
+          "accent": "#E8681F",
+          "onaccent": "#2B1A0A",
+          "tile2": "#FFD23F"
+        },
+        "dark": {
+          "bg": "#22160A",
+          "surface": "#33220F",
+          "ink": "#FBEBD3",
+          "muted": "#B9A58C",
+          "accent": "#FF8A4D",
+          "onaccent": "#22160A",
+          "tile2": "#E9B92A"
+        },
+        "note": "sand; orange accent (the centre of mass), from the Fourier Lab prototype (proposed palette, to review)"
+      }
+    },
+    {
+      "slug": "parameter-lab-xr",
+      "test": "node tests/engine.test.mjs",
+      "name": "Parameter Lab XR",
+      "kind": "xr",
+      "subject": "mathematics",
+      "port": 8119,
+      "kit": true,
+      "description": {
+        "it": "Equazioni e disequazioni parametriche in realtà aumentata: il piano si estrude lungo k, le curve diventano superfici e una fetta mostra il grafico per ogni valore di k.",
+        "en": "Parametric equations and inequalities in augmented reality: the plane is extruded along k, curves become surfaces and a slice shows the plot for any value of k."
+      },
+      "palette": {
+        "light": {
+          "bg": "#FFB9CE",
+          "surface": "#FFF6F9",
+          "ink": "#2E1020",
+          "muted": "#7A5266",
+          "accent": "#6B2FD6",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD23F"
+        },
+        "dark": {
+          "bg": "#2B1220",
+          "surface": "#3B1B2E",
+          "ink": "#FFE3EE",
+          "muted": "#C79AB0",
+          "accent": "#B79CFF",
+          "onaccent": "#2B1220",
+          "tile2": "#E9B92A"
+        },
+        "note": "rose; violet accent = the solution set; curves A blue and B orange (colour-blind safe pair) (2026-11-18, prototype)"
+      }
+    },
+    {
+      "slug": "composition-lab-xr",
+      "test": "node tests/compose.test.mjs",
+      "name": "Composition Lab XR",
+      "kind": "xr",
+      "subject": "mathematics",
+      "port": 8120,
+      "kit": true,
+      "description": {
+        "it": "Composizione di funzioni in realtà aumentata: sposti x con la mano, f sul piano xy, g sul piano yz e g∘f sul piano xz.",
+        "en": "Function composition in augmented reality: move x with your hand; f lives on the xy plane, g on the yz plane and g∘f on the xz plane."
+      },
+      "palette": {
+        "light": {
+          "bg": "#ECEEF2",
+          "surface": "#FFFFFF",
+          "ink": "#15161A",
+          "muted": "#5B6070",
+          "accent": "#2449D6",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD84D"
+        },
+        "dark": {
+          "bg": "#13151A",
+          "surface": "#1D2028",
+          "ink": "#EEF0F4",
+          "muted": "#9AA1AE",
+          "accent": "#8AA4FF",
+          "onaccent": "#13151A",
+          "tile2": "#E9B92A"
+        },
+        "note": "cool grey from the Composition Lab prototype; f orange, g green, g∘f violet (2026-11-18, prototype, to be reviewed with check-palettes)"
+      }
+    },
+    {
+      "slug": "dynagraph-xr",
+      "test": "node tests/dyna.test.mjs",
+      "name": "Dynagraph XR",
+      "kind": "xr",
+      "subject": "mathematics",
+      "port": 8121,
+      "kit": true,
+      "description": {
+        "it": "Dynagraph in realtà aumentata: funzioni disegnate tra assi paralleli; muovi gli ingressi con le mani e guarda f, g e la composizione h(f(x)).",
+        "en": "Dynagraphs in augmented reality: functions drawn between parallel axes; move the inputs with your hands and watch f, g and the composition h(f(x))."
+      },
+      "palette": {
+        "light": {
+          "bg": "#68C945",
+          "surface": "#FFFFFF",
+          "ink": "#15161A",
+          "muted": "#5B6070",
+          "accent": "#0F6FC2",
+          "onaccent": "#FFFFFF",
+          "tile2": "#FFD84D"
+        },
+        "dark": {
+          "bg": "#13151A",
+          "surface": "#1D2028",
+          "ink": "#EEF0F4",
+          "muted": "#9AA1AE",
+          "accent": "#6DB4FF",
+          "onaccent": "#13151A",
+          "tile2": "#E9B92A"
+        },
+        "note": "lime page (the h colour of the web app, hue 104°, clear of Composition Lab XR's grey); blue accent from the Dynagraph web app (#1484e6, darkened for contrast); f orange, g green, h violet by default, user-selectable (2026-11-18, prototype)"
+      }
+    },
+    {
       "slug": "impulse-lab",
       "test": "node --test 'tests/**/*.test.*'",
       "name": "Impulse Lab",
