@@ -1,9 +1,16 @@
 // Labs · home/apparatus3d.js
 // 21 bespoke, physically accurate 3D animated lab apparatuses + modular fallback console.
-// Built for Three.js r128 with matte stylized shading, ink edge outlines, tabletop mats,
-// hover/search 3D selection rings and bouncing crystal beacons.
+// Built for Three.js r128 with stepped cel/toon shading, watertight inverted-hull shell ink
+// silhouettes, sharp box creases, tabletop mats, 3D selection rings and bouncing beacons.
 
-const INK_COLOR = 0x14202b;
+import {
+  toonMat,
+  addShell,
+  addCreases,
+  apparatusShellMat,
+  detailShellMat,
+  apparatusCreaseMat,
+} from "./cel.js";
 
 function hexNum(cssHex, fallback = 0x8ccbeb) {
   if (!cssHex || typeof cssHex !== "string") return fallback;
@@ -12,27 +19,17 @@ function hexNum(cssHex, fallback = 0x8ccbeb) {
 }
 
 function makeMat(color, opts = {}) {
-  return new THREE.MeshStandardMaterial({
-    color,
-    roughness: opts.roughness ?? 0.76,
-    metalness: opts.metalness ?? 0.06,
-    emissive: opts.emissive ?? 0x000000,
-    emissiveIntensity: opts.emissiveIntensity ?? 0,
-    transparent: opts.transparent ?? false,
-    opacity: opts.opacity ?? 1,
-    side: opts.side ?? THREE.FrontSide,
-  });
+  return toonMat(color, opts);
 }
 
-const sharedInkLineMat = new THREE.LineBasicMaterial({ color: INK_COLOR });
-const sharedDarkMetal = makeMat(0x283542, { roughness: 0.45, metalness: 0.45 });
-const sharedChrome = makeMat(0xd5dee6, { roughness: 0.28, metalness: 0.65 });
-const sharedGlass = makeMat(0xdff4ff, { roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.34 });
+const sharedDarkMetal = makeMat(0x283542);
+const sharedChrome = makeMat(0xd5dee6);
+const sharedGlass = makeMat(0xdff4ff, { transparent: true, opacity: 0.34 });
 
-function addOutline(mesh, threshold = 24) {
-  const edges = new THREE.EdgesGeometry(mesh.geometry, threshold);
-  const line = new THREE.LineSegments(edges, sharedInkLineMat);
-  mesh.add(line);
+function addOutline(mesh, threshold = 24, shellMat = apparatusShellMat) {
+  const mat = mesh.material;
+  if (!mat || !mat.transparent) addShell(mesh, shellMat);
+  addCreases(mesh, apparatusCreaseMat, threshold);
   return mesh;
 }
 
@@ -41,7 +38,10 @@ function addBox(parent, w, h, d, mat, x = 0, y = 0, z = 0, outlined = true) {
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  if (outlined) addOutline(mesh);
+  if (outlined) {
+    const small = Math.min(w, h, d) < 0.09;
+    addOutline(mesh, 24, small ? detailShellMat : apparatusShellMat);
+  }
   parent.add(mesh);
   return mesh;
 }
@@ -51,7 +51,11 @@ function addCyl(parent, rt, rb, h, mat, x = 0, y = 0, z = 0, segs = 16, outlined
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  if (outlined) addOutline(mesh, 32);
+  if (!mat.transparent) {
+    const small = Math.max(rt, rb) < 0.08;
+    addShell(mesh, small ? detailShellMat : apparatusShellMat);
+    if (outlined) addCreases(mesh, apparatusCreaseMat, 32);
+  }
   parent.add(mesh);
   return mesh;
 }
@@ -61,6 +65,9 @@ function addSphere(parent, r, mat, x = 0, y = 0, z = 0, segs = 16) {
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
+  if (!mat.transparent) {
+    addShell(mesh, r < 0.09 ? detailShellMat : apparatusShellMat);
+  }
   parent.add(mesh);
   return mesh;
 }
@@ -309,12 +316,11 @@ const BUILDERS = {
       ctx.lineWidth = 6;
       ctx.stroke();
     });
-    const screenMat = new THREE.MeshStandardMaterial({
+    const screenMat = toonMat(0xffffff, {
       map: screenTex,
-      roughness: 0.4,
       emissive: 0xffffff,
       emissiveMap: screenTex,
-      emissiveIntensity: 0.18,
+      emissiveIntensity: 0.22,
     });
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.54, 0.38), screenMat);
     screen.position.set(0.42, 0.5, 0.195);
@@ -384,7 +390,7 @@ const BUILDERS = {
     }, 256, 160);
     const panel = new THREE.Mesh(
       new THREE.PlaneGeometry(1.28, 0.46),
-      new THREE.MeshStandardMaterial({ map: tex, roughness: 0.45, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.14 }),
+      toonMat(0xffffff, { map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.18 }),
     );
     panel.position.set(0, 0.72, -0.185);
     root.add(panel);
@@ -723,6 +729,7 @@ const BUILDERS = {
     hoop.rotation.y = Math.PI / 2;
     hoop.rotation.x = 0.42;
     hoop.castShadow = true;
+    addShell(hoop, detailShellMat);
     root.add(hoop);
 
     const ball = addSphere(root, 0.075, m.tile2, -0.4, 0.24, 0);
@@ -996,6 +1003,7 @@ const BUILDERS = {
       new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cPts, true), 48, 0.022, 8, true),
       m.pos,
     );
+    addShell(cardioid, detailShellMat);
     rotor.add(cardioid);
     addSphere(rotor, 0.065, m.accent, 0.08, 0, 0.02, 14);
 
@@ -1055,6 +1063,7 @@ const BUILDERS = {
       pts.push(new THREE.Vector3(-0.38 + 0.76 * u, 0.24 + 0.52 * Math.sin(u * Math.PI * 0.55) + 0.08 * Math.sin(u * 5), -0.2));
     }
     const curve = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, 0.024, 8, false), m.mom);
+    addShell(curve, detailShellMat);
     root.add(curve);
 
     // Input x bar + yellow bead & green linked output bead

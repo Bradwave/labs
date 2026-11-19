@@ -1,35 +1,38 @@
 // Labs · home/room3d.js
-// Builds the stylized 3D cutaway laboratory hall: tiled floor, back & left architectural walls,
-// day/night windows, classroom chalkboard, bookshelves, ticking wall clock, overhead pendant lamps,
-// scalable island workbenches with bilingual zone signs, stools, tabletop clutter, dust motes & lab cat.
+// Builds the stylized cel/shell-shaded 3D cutaway laboratory hall: tiled floor, back & left
+// architectural walls, day/night windows, classroom chalkboard, bookshelves, ticking wall clock,
+// overhead pendant lamps, scalable island workbenches with bilingual zone signs, stools,
+// tabletop clutter, dust motes & sleeping lab cat.
 
-const INK = 0x14202b;
-const inkLineMat = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.72 });
+import {
+  toonMat,
+  addShell,
+  addCreases,
+  roomShellMat,
+  detailShellMat,
+  roomCreaseMat,
+  setCelTheme,
+} from "./cel.js";
 
 function mat(color, opts = {}) {
-  return new THREE.MeshStandardMaterial({
-    color,
-    roughness: opts.roughness ?? 0.85,
-    metalness: opts.metalness ?? 0.04,
-    emissive: opts.emissive ?? 0x000000,
-    emissiveIntensity: opts.emissiveIntensity ?? 0,
-    transparent: opts.transparent ?? false,
-    opacity: opts.opacity ?? 1,
-    side: opts.side ?? THREE.FrontSide,
-  });
+  return toonMat(color, opts);
 }
 
-function outline(mesh, deg = 24) {
-  mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, deg), inkLineMat));
+function outline(mesh, deg = 24, shelled = false) {
+  if (shelled && (!mesh.material || !mesh.material.transparent)) {
+    addShell(mesh, roomShellMat);
+  }
+  addCreases(mesh, roomCreaseMat, deg);
   return mesh;
 }
 
-function box(parent, w, h, d, m, x = 0, y = 0, z = 0, edged = true) {
+function box(parent, w, h, d, m, x = 0, y = 0, z = 0, edged = true, shelled = false) {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  if (edged) outline(mesh);
+  if (edged) outline(mesh, 24, shelled);
+  else if (shelled) addShell(mesh, roomShellMat);
   parent.add(mesh);
   return mesh;
 }
@@ -201,7 +204,7 @@ function buildStool(parent, x, z, woodMat, metalMat) {
   seat.position.y = 0.62;
   seat.castShadow = true;
   seat.receiveShadow = true;
-  outline(seat, 30);
+  outline(seat, 30, true);
   g.add(seat);
   for (let i = 0; i < 4; i++) {
     const a = (i * Math.PI) / 2 + Math.PI / 4;
@@ -241,7 +244,7 @@ function buildTableClutter(parent, x, y, z, variant) {
   const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.16, 12), mMug);
   mug.position.set(-0.22, 0.21, 0.08);
   mug.castShadow = true;
-  outline(mug, 32);
+  addShell(mug, detailShellMat);
   g.add(mug);
 
   for (let i = 0; i < 2; i++) {
@@ -340,7 +343,7 @@ export function buildLabRoom3D(scene, layout, lang) {
   box(root, boardW + 0.3, boardH + 0.3, 0.16, oakMat, 0, 3.65, -halfD + 0.1);
   const chalkMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(boardW, boardH),
-    new THREE.MeshStandardMaterial({ map: makeChalkboardTexture(), roughness: 0.92 }),
+    toonMat(0xffffff, { map: makeChalkboardTexture() }),
   );
   chalkMesh.position.set(0, 3.65, -halfD + 0.19);
   root.add(chalkMesh);
@@ -355,7 +358,7 @@ export function buildLabRoom3D(scene, layout, lang) {
   root.add(clockGrp);
   const clockBody = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.66, 0.14, 24), trimMat);
   clockBody.rotation.x = Math.PI / 2;
-  outline(clockBody, 32);
+  outline(clockBody, 32, true);
   clockGrp.add(clockBody);
   const clockFace = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.04, 24), mat(0xf7f9fb));
   clockFace.rotation.x = Math.PI / 2;
@@ -429,10 +432,12 @@ export function buildLabRoom3D(scene, layout, lang) {
       const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.1, 0.2, 10), mat(0xb87a5e));
       pot.position.set(0.75, -wH / 2 + 0.02, 0.2);
       pot.castShadow = true;
+      addShell(pot, detailShellMat);
       wg.add(pot);
       const plant = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), mat(0x5b8a64));
       plant.position.set(0.75, -wH / 2 + 0.2, 0.2);
       plant.castShadow = true;
+      addShell(plant, detailShellMat);
       wg.add(plant);
     }
   }
@@ -441,7 +446,7 @@ export function buildLabRoom3D(scene, layout, lang) {
   const catCrate = new THREE.Group();
   catCrate.position.set(halfW - 1.5, 0, -halfD + 1.5);
   root.add(catCrate);
-  box(catCrate, 1.35, 0.72, 1.05, oakMat, 0, 0.36, 0);
+  box(catCrate, 1.35, 0.72, 1.05, oakMat, 0, 0.36, 0, true, true);
   const catMat = mat(0xd89358);
   const cat = new THREE.Group();
   cat.position.set(0, 0.74, 0);
@@ -450,19 +455,23 @@ export function buildLabRoom3D(scene, layout, lang) {
   catBody.scale.set(1.25, 0.62, 0.95);
   catBody.position.set(0, 0.14, 0);
   catBody.castShadow = true;
+  addShell(catBody, detailShellMat);
   cat.add(catBody);
   const catHead = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), catMat);
   catHead.position.set(-0.28, 0.18, 0.08);
   catHead.castShadow = true;
+  addShell(catHead, detailShellMat);
   cat.add(catHead);
   for (const ez of [-0.07, 0.07]) {
     const ear = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.1, 4), catMat);
     ear.position.set(-0.28, 0.33, 0.08 + ez);
+    addShell(ear, detailShellMat);
     cat.add(ear);
   }
   const catTail = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.024, 0.42, 8), catMat);
   catTail.rotation.z = Math.PI / 2.2;
   catTail.position.set(0.36, 0.14, 0.14);
+  addShell(catTail, detailShellMat);
   cat.add(catTail);
   animUpdaters.push((t) => {
     catBody.scale.y = 0.62 + Math.sin(t * 1.9) * 0.05;
@@ -476,7 +485,7 @@ export function buildLabRoom3D(scene, layout, lang) {
     root.add(bg);
 
     // Thick butcher-block oak tabletop (top sits cleanly at y = tb.topY = 1.0)
-    box(bg, tb.width, 0.14, tb.depth, oakMat, 0, tb.topY - 0.07, 0);
+    box(bg, tb.width, 0.14, tb.depth, oakMat, 0, tb.topY - 0.07, 0, true, true);
 
     // Steel H-frame legs
     const lx = tb.width / 2 - 0.26;
@@ -498,9 +507,8 @@ export function buildLabRoom3D(scene, layout, lang) {
     }
 
     // Front Bench Zone Signboard mounted on center front apron
-    const signMat = new THREE.MeshStandardMaterial({
+    const signMat = toonMat(0xffffff, {
       map: makeBenchSignTexture(tb.displayCode, tb.title?.[lang] || tb.title?.en || tb.id),
-      roughness: 0.7,
     });
     const signPlane = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 0.44), signMat);
     signPlane.position.set(0, 0.64, tb.depth / 2 - 0.14);
@@ -525,7 +533,7 @@ export function buildLabRoom3D(scene, layout, lang) {
     lampGrp.add(cord);
     const shade = new THREE.Mesh(new THREE.ConeGeometry(0.56, 0.34, 14), steelMat);
     shade.position.y = 0;
-    outline(shade, 28);
+    outline(shade, 28, true);
     lampGrp.add(shade);
     const bulbMat = mat(0xfff0b8, { emissive: 0xffd56b, emissiveIntensity: 0.8 });
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), bulbMat);
@@ -635,17 +643,17 @@ export function buildLabRoom3D(scene, layout, lang) {
     slabMat.color.setHex(dark ? 0x18232d : 0xa3b3c2);
     oakMat.color.setHex(dark ? 0x6b4f39 : 0xd9b88e);
     drawerMat.color.setHex(dark ? 0x22303e : 0xc5d0db);
-    inkLineMat.color.setHex(dark ? 0x091017 : 0x14202b);
+    setCelTheme(dark);
 
-    hemiLight.color.setHex(dark ? 0x45608a : 0xebf4ff);
+    hemiLight.color.setHex(dark ? 0x45608a : 0xeff6ff);
     hemiLight.groundColor.setHex(dark ? 0x151e28 : 0x7b8996);
-    hemiLight.intensity = dark ? 0.5 : 0.78;
+    hemiLight.intensity = dark ? 0.45 : 0.62;
 
-    keyLight.color.setHex(dark ? 0x8fb4f0 : 0xfff6e5);
-    keyLight.intensity = dark ? 0.45 : 0.92;
-    fillLight.intensity = dark ? 0.22 : 0.34;
+    keyLight.color.setHex(dark ? 0x95b8f5 : 0xfff8ea);
+    keyLight.intensity = dark ? 0.52 : 1.05;
+    fillLight.intensity = dark ? 0.14 : 0.16;
 
-    for (const l of lampLights) l.intensity = dark ? 1.15 : 0.2;
+    for (const l of lampLights) l.intensity = dark ? 1.25 : 0.18;
     for (const c of lampCones) c.opacity = dark ? 0.11 : 0.045;
     for (const b of lampBulbs) b.emissiveIntensity = dark ? 1.5 : 0.75;
     moteMat.opacity = dark ? 0.55 : 0.38;
