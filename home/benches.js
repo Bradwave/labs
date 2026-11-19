@@ -1,105 +1,147 @@
 // Labs · home/benches.js
-// Cutaway laboratory floors, bilingual room signs, app-to-floor grouping and automatic floor chunking.
+// Thematic laboratory benches, bilingual labels, automatic chunking (max 4 stations per bench)
+// and scalable 3D aisle floorplan placement for any number of apps.
 
-export const MAX_STATIONS_PER_FLOOR = 4;
+export const MAX_STATIONS_PER_BENCH = 4;
 
-export const FLOORS = [
+export const BENCH_W = 7.6;
+export const BENCH_D = 2.35;
+export const BENCH_TOP_Y = 1.0;
+
+export const BENCHES = [
   {
     id: "mechanics",
-    code: "F1",
-    roomTheme: "mechanics",
+    code: "01",
     title: { it: "Meccanica e urti", en: "Mechanics & collisions" },
     slugs: ["pendulum-lab", "carts-lab", "collision-lab", "impulse-lab"],
   },
   {
     id: "motion",
-    code: "F2",
-    roomTheme: "motion",
+    code: "02",
     title: { it: "Moto e misura", en: "Motion & measurement" },
     slugs: ["motus1d-lab", "relative-motion-lab", "crackler", "units-lab"],
   },
   {
     id: "modern",
-    code: "F3",
-    roomTheme: "modern",
+    code: "03",
     title: { it: "Orbite, fasci e forza", en: "Orbits, beams & forces" },
     slugs: ["orbit-lab", "orbit-lab-xr", "detach-lab", "force-lab-xr"],
   },
   {
     id: "geometry",
-    code: "F4",
-    roomTheme: "geometry",
+    code: "04",
     title: { it: "Geometria e analisi", en: "Geometry & analysis" },
     slugs: ["quadrature", "metric-lab", "attractor-lab", "series-lab"],
   },
   {
     id: "xr-surfaces",
-    code: "F5",
-    roomTheme: "xr-surfaces",
+    code: "05",
     title: { it: "Superfici e segnali XR", en: "Surfaces & signals XR" },
     slugs: ["surface-lab-xr", "fourier-lab-xr", "parameter-lab-xr"],
   },
   {
     id: "xr-functions",
-    code: "F6",
-    roomTheme: "xr-functions",
+    code: "06",
     title: { it: "Funzioni nello spazio XR", en: "Functions in space XR" },
     slugs: ["composition-lab-xr", "dynagraph-xr"],
   },
 ];
 
-export const NEW_ARRIVALS_FLOOR = {
+export const NEW_ARRIVALS_BENCH = {
   id: "arrivals",
   code: "NEW",
-  roomTheme: "arrivals",
   title: { it: "Nuovi apparati", en: "New arrivals" },
 };
 
-const SLUG_TO_FLOOR = new Map();
-for (const f of FLOORS) {
-  for (const slug of f.slugs) SLUG_TO_FLOOR.set(slug, f.id);
+const SLUG_TO_BENCH = new Map();
+for (const b of BENCHES) {
+  for (const slug of b.slugs) SLUG_TO_BENCH.set(slug, b.id);
 }
 
-export function floorIdForApp(app) {
-  if (app.bench && FLOORS.some((f) => f.id === app.bench)) return app.bench;
-  return SLUG_TO_FLOOR.get(app.slug) || NEW_ARRIVALS_FLOOR.id;
+export function benchIdForApp(app) {
+  if (app.bench && BENCHES.some((b) => b.id === app.bench)) return app.bench;
+  return SLUG_TO_BENCH.get(app.slug) || NEW_ARRIVALS_BENCH.id;
 }
 
 /**
- * Group apps onto cutaway laboratory floors (max MAX_STATIONS_PER_FLOOR per room).
- * Any zone with >4 apps automatically adds an extra wing (e.g. F1A, F1B) so the
- * building scales vertically as the lab collection grows.
+ * Group apps onto physical 3D lab island benches arranged in a 2-column navigable aisle grid.
+ * Automatically adds new rows and expands room bounds as the number of apps grows.
  */
-export function buildLabFloors(apps) {
+export function buildLabLayout(apps) {
   const buckets = new Map();
-  for (const f of FLOORS) buckets.set(f.id, []);
-  buckets.set(NEW_ARRIVALS_FLOOR.id, []);
+  for (const b of BENCHES) buckets.set(b.id, []);
+  buckets.set(NEW_ARRIVALS_BENCH.id, []);
 
-  for (const app of apps) {
-    buckets.get(floorIdForApp(app)).push(app);
-  }
+  for (const app of apps) buckets.get(benchIdForApp(app)).push(app);
 
   const orderIndex = new Map();
-  for (const f of FLOORS) f.slugs.forEach((s, i) => orderIndex.set(s, i));
+  for (const b of BENCHES) b.slugs.forEach((s, i) => orderIndex.set(s, i));
 
-  const rooms = [];
-  const defs = [...FLOORS, NEW_ARRIVALS_FLOOR];
-  for (const def of defs) {
+  const tables = [];
+  for (const def of [...BENCHES, NEW_ARRIVALS_BENCH]) {
     const list = buckets.get(def.id);
     if (!list || !list.length) continue;
     list.sort((a, b) => (orderIndex.get(a.slug) ?? 999) - (orderIndex.get(b.slug) ?? 999));
 
-    const chunks = Math.ceil(list.length / MAX_STATIONS_PER_FLOOR);
+    const chunks = Math.ceil(list.length / MAX_STATIONS_PER_BENCH);
     for (let c = 0; c < chunks; c++) {
-      const slice = list.slice(c * MAX_STATIONS_PER_FLOOR, (c + 1) * MAX_STATIONS_PER_FLOOR);
+      const slice = list.slice(c * MAX_STATIONS_PER_BENCH, (c + 1) * MAX_STATIONS_PER_BENCH);
       const suffix = chunks > 1 ? String.fromCharCode(65 + c) : "";
-      rooms.push({
+      tables.push({
         ...def,
-        roomId: suffix ? `${def.id}-${c + 1}` : def.id,
+        tableId: suffix ? `${def.id}-${c + 1}` : def.id,
         displayCode: `${def.code}${suffix}`,
         apps: slice,
       });
     }
   }
-  return rooms;
+
+  const cols = tables.length === 1 ? 1 : 2;
+  const rows = Math.max(1, Math.ceil(tables.length / cols));
+  const colSpacing = 9.6;
+  const rowSpacing = 5.4;
+
+  const xHalf = ((cols - 1) * colSpacing) / 2;
+  const zHalf = ((rows - 1) * rowSpacing) / 2;
+
+  tables.forEach((tb, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    tb.x = cols === 1 ? 0 : col * colSpacing - xHalf;
+    tb.z = row * rowSpacing - zHalf;
+    tb.width = BENCH_W;
+    tb.depth = BENCH_D;
+    tb.topY = BENCH_TOP_Y;
+
+    // Station world positions along the benchtop (centered cleanly, leaving room for clutter if <4)
+    const n = tb.apps.length;
+    const slotStep = 1.78;
+    const hasClutter = n <= 3;
+    const totalSlots = hasClutter ? n + 1 : n;
+    const startX = -((totalSlots - 1) * slotStep) / 2;
+
+    tb.slots = tb.apps.map((app, i) => ({
+      app,
+      localX: startX + i * slotStep,
+      worldX: tb.x + startX + i * slotStep,
+      worldY: tb.topY,
+      worldZ: tb.z,
+    }));
+    tb.clutterLocalX = hasClutter ? startX + n * slotStep : null;
+  });
+
+  const roomWidth = Math.max(21.6, cols * colSpacing + 4.4);
+  const roomDepth = Math.max(18.6, rows * rowSpacing + 5.2);
+
+  return {
+    benches: tables,
+    roomWidth,
+    roomDepth,
+    bounds: {
+      minX: -roomWidth / 2,
+      maxX: roomWidth / 2,
+      minZ: -roomDepth / 2,
+      maxZ: roomDepth / 2,
+    },
+  };
 }

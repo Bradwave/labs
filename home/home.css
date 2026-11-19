@@ -1,9 +1,7 @@
 /* Labs · home/home.css
-   2D cutaway game-scene laboratory: multi-floor architectural cross-section, day/night windows,
-   pendant lamps, continuous wooden workbenches, vivid foreground animated apparatuses,
-   game-style targeting brackets on hover/focus, compact diegetic title tags, search-only HUD. */
+   Fullscreen 3D game-scene laboratory HUD: floating kit header, search HUD, projected
+   3D-tracked accessible title pins, bottom camera zone bar, light/dark themes & mobile polish. */
 
-/* ---------- daytime lab room palette (light mode) ---------- */
 :root {
   --bg: #c9d3dd;
   --bgline: rgba(20, 32, 43, 0.1);
@@ -14,39 +12,13 @@
   --onaccent: #ffffff;
   --tile2: #ffd23f;
   --gridline: rgba(20, 32, 43, 0.16);
-
-  /* Architectural cutaway & muted scenery tokens */
-  --wall-bg: #dde5ec;
-  --wall-wainscot: #cfd9e3;
-  --wall-trim: #c3ced9;
-  --wall-slab: #b4c1ce;
-  --bench-top: #d8b992;
-  --bench-front: #be9a6f;
-  --table-apron: #c5d0db;
-  --under-cavity: #a5b2be;
-
-  --sc-fill: #d3dde6;
-  --sc-fill-2: #becad6;
-  --sc-stroke: rgba(20, 32, 43, 0.42);
-  --sc-soft: rgba(20, 32, 43, 0.18);
-  --sc-board: #283d3b;
-  --sc-chalk: #e7f0ec;
-
-  --win-sky: #a9d8f4;
-  --win-cloud: rgba(255, 255, 255, 0.85);
-  --win-gleam: rgba(255, 255, 255, 0.28);
-  --win-moon: #ffd86b;
-  --win-star: #e8f1ff;
-
-  --lamp-cone: rgba(255, 224, 128, 0.17);
-  --lamp-bulb: #f7d560;
+  --hud-glass: rgba(247, 249, 251, 0.9);
 }
 
-/* ---------- late-night lab room palette (dark mode) ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f171f;
-    --bgline: rgba(201, 211, 221, 0.055);
+    --bgline: rgba(201, 211, 221, 0.06);
     --surface: #1b2731;
     --ink: #e8eef3;
     --muted: #9fb0bf;
@@ -54,37 +26,13 @@
     --onaccent: #111a22;
     --tile2: #e9b92a;
     --gridline: rgba(232, 238, 243, 0.15);
-
-    --wall-bg: #17232e;
-    --wall-wainscot: #121c25;
-    --wall-trim: #202f3d;
-    --wall-slab: #243342;
-    --bench-top: #59412f;
-    --bench-front: #412f21;
-    --table-apron: #1b2732;
-    --under-cavity: #0b1117;
-
-    --sc-fill: #1b2834;
-    --sc-fill-2: #243442;
-    --sc-stroke: rgba(210, 224, 236, 0.34);
-    --sc-soft: rgba(210, 224, 236, 0.14);
-    --sc-board: #132222;
-    --sc-chalk: #cce0da;
-
-    --win-sky: #0b1426;
-    --win-cloud: rgba(255, 255, 255, 0.1);
-    --win-gleam: rgba(255, 255, 255, 0.06);
-    --win-moon: #ffd86b;
-    --win-star: #e8f1ff;
-
-    --lamp-cone: rgba(255, 206, 94, 0.1);
-    --lamp-bulb: #ffd666;
+    --hud-glass: rgba(27, 39, 49, 0.88);
   }
 }
 
 :root[data-theme="dark"] {
   --bg: #0f171f;
-  --bgline: rgba(201, 211, 221, 0.055);
+  --bgline: rgba(201, 211, 221, 0.06);
   --surface: #1b2731;
   --ink: #e8eef3;
   --muted: #9fb0bf;
@@ -92,73 +40,82 @@
   --onaccent: #111a22;
   --tile2: #e9b92a;
   --gridline: rgba(232, 238, 243, 0.15);
-
-  --wall-bg: #17232e;
-  --wall-wainscot: #121c25;
-  --wall-trim: #202f3d;
-  --wall-slab: #243342;
-  --bench-top: #59412f;
-  --bench-front: #412f21;
-  --table-apron: #1b2732;
-  --under-cavity: #0b1117;
-
-  --sc-fill: #1b2834;
-  --sc-fill-2: #243442;
-  --sc-stroke: rgba(210, 224, 236, 0.34);
-  --sc-soft: rgba(210, 224, 236, 0.14);
-  --sc-board: #132222;
-  --sc-chalk: #cce0da;
-
-  --win-sky: #0b1426;
-  --win-cloud: rgba(255, 255, 255, 0.1);
-  --win-gleam: rgba(255, 255, 255, 0.06);
-  --win-moon: #ffd86b;
-  --win-star: #e8f1ff;
-
-  --lamp-cone: rgba(255, 206, 94, 0.1);
-  --lamp-bulb: #ffd666;
+  --hud-glass: rgba(27, 39, 49, 0.88);
 }
 
-/* Toggle day vs night window sky elements */
-.win-night { display: none; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .win-day { display: none; }
-  :root:not([data-theme="light"]) .win-night { display: inline; }
+/* ---------- fullscreen game viewport ---------- */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background-image: none;
 }
-:root[data-theme="dark"] .win-day { display: none; }
-:root[data-theme="dark"] .win-night { display: inline; }
 
-/* ---------- page container ---------- */
-.home {
+.scene-wrap {
+  position: fixed;
+  inset: 0;
   width: 100%;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 6px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
 }
 
-/* ---------- minimal game-HUD search bar ---------- */
-.hud-bar {
+#labCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* ---------- floating top chrome (kit header + search HUD) ---------- */
+.top-chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+}
+.top-chrome .top {
+  max-width: none;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-bottom: 6px;
+}
+.top-chrome .word,
+.top-chrome .top-actions,
+.top-chrome .hud-search-row {
+  pointer-events: auto;
+}
+
+.hud-search-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin: 6px 0 14px;
+  gap: 8px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  margin-top: 2px;
+  pointer-events: none;
 }
 .search-wrap {
   position: relative;
-  flex: 1 1 260px;
-  max-width: 380px;
+  width: min(360px, calc(100vw - 120px));
+  pointer-events: auto;
 }
 .search-wrap input.field {
-  min-height: 38px;
-  padding: 6px 34px 6px 12px;
-  font-size: 13px;
+  min-height: 36px;
+  padding: 5px 32px 5px 11px;
+  font-size: 12.5px;
+  background: var(--hud-glass);
   box-shadow: 3px 3px 0 var(--ink);
 }
 .search-clear {
   position: absolute;
-  right: 5px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
   width: 28px;
@@ -167,7 +124,6 @@
   background: transparent;
   color: var(--muted);
   font-weight: 700;
-  font-size: 13px;
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -175,908 +131,292 @@
 .search-clear:hover {
   color: var(--ink);
 }
-.hud-status {
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-variant-numeric: tabular-nums;
-}
 .hud-pill {
+  pointer-events: auto;
   display: inline-block;
-  padding: 2px 7px;
+  padding: 4px 8px;
   font-size: 11px;
   font-weight: 700;
-  background: var(--surface);
+  background: var(--hud-glass);
   color: var(--ink);
   border: 2px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.hud-pill.empty {
+  background: var(--accent);
+  color: var(--onaccent);
 }
 
-/* ---------- 2D cutaway laboratory building ---------- */
-.building-roof {
-  width: 100%;
-  line-height: 0;
-  pointer-events: none;
-  user-select: none;
-}
-.building-roof svg {
-  width: 100%;
-  height: auto;
-  max-height: 54px;
-  display: block;
-}
-
-.lab-building {
-  border-left: 5px solid var(--ink);
-  border-right: 5px solid var(--ink);
-  border-bottom: 5px solid var(--ink);
-  box-shadow: 8px 8px 0 var(--ink);
-  background: var(--wall-bg);
-}
-
-/* ---------- individual floor / 2D room ---------- */
-.lab-floor {
-  position: relative;
-  background: var(--wall-bg);
-}
-.floor-scroll {
-  width: 100%;
-  overflow: visible;
-}
-.floor-scene {
-  position: relative;
-  width: 100%;
-  background: var(--wall-bg);
-}
-
-/* Subtle room sign pinned to the upper-left wall (clearly non-clickable) */
-.room-sign {
+/* ---------- projected 3D-tracked accessible title pins ---------- */
+.pin-layer {
   position: absolute;
-  top: 10px;
-  left: 14px;
-  z-index: 3;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lab-pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 2px 8px 2px 3px;
-  background: var(--wall-trim);
-  border: 1.5px solid var(--sc-stroke);
+  gap: 5px;
+  padding: 3px 7px;
+  background: var(--hud-glass);
   color: var(--ink);
+  text-decoration: none;
+  border: 1.5px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  pointer-events: none;
-  user-select: none;
+  line-height: 1.1;
+  white-space: nowrap;
+  will-change: transform, opacity;
+  transition: background-color 0.12s ease-out, color 0.12s ease-out, opacity 0.16s ease-out, box-shadow 0.12s ease-out;
 }
-.room-sign b {
+.pin-pip {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  background: var(--pin-brand, var(--accent));
+  border: 1.5px solid var(--ink);
+}
+.pin-go {
+  font-size: 10px;
+  opacity: 0.65;
+}
+
+/* Compact size when zoomed out to the full room overview */
+.lab-pin.compact {
+  padding: 2px 5px;
+  font-size: 9.5px;
+  box-shadow: 1.5px 1.5px 0 var(--ink);
+}
+.lab-pin.compact .pin-go {
+  display: none;
+}
+
+/* Unmistakable hover / keyboard focus / search match states */
+.lab-pin.hot,
+.lab-pin:hover,
+.lab-pin:focus-visible,
+.lab-pin.match {
+  background: var(--pin-brand, var(--accent));
+  color: var(--pin-ink, var(--ink));
+  border-width: 2px;
+  box-shadow: 4px 4px 0 var(--ink);
+  padding: 4px 8px;
+  font-size: 11.5px;
+  z-index: 35 !important;
+}
+.lab-pin.hot .pin-pip,
+.lab-pin:hover .pin-pip,
+.lab-pin:focus-visible .pin-pip,
+.lab-pin.match .pin-pip {
+  background: var(--surface);
+}
+.lab-pin.hot .pin-go,
+.lab-pin:hover .pin-go,
+.lab-pin:focus-visible .pin-go,
+.lab-pin.match .pin-go {
+  display: inline;
+  opacity: 1;
+}
+.lab-pin.dim {
+  opacity: 0.18 !important;
+  pointer-events: none !important;
+}
+
+/* ---------- bottom game camera & minimap zone bar ---------- */
+.bottom-hud {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.zone-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: calc(100vw - 124px);
+  padding: 2px 2px 4px;
+  scrollbar-width: none;
+}
+.zone-bar::-webkit-scrollbar {
+  display: none;
+}
+.zone-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 4px 9px;
+  border: 2px solid var(--ink);
+  background: var(--hud-glass);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.zone-btn b {
   display: inline-block;
-  padding: 1px 5px;
+  padding: 1px 4px;
   background: var(--ink);
   color: var(--surface);
   font-size: 10px;
 }
-.room-swipe-hint {
-  display: none;
-  font-size: 10px;
-  color: var(--muted);
-  margin-left: 4px;
-}
-
-/* Back-wall interior SVG layer */
-.floor-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 234px;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-}
-.floor-backdrop svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* Continuous unbroken wooden workbench top & front rail spanning the entire room */
-.floor-benchtop-bar {
-  position: absolute;
-  top: 230px;
-  left: 0;
-  right: 0;
-  height: 46px;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    var(--bench-top) 0%,
-    var(--bench-top) 26%,
-    var(--bench-front) 26%,
-    var(--bench-front) 100%
-  );
-  border-top: 2.5px solid var(--ink);
-  border-bottom: 2.5px solid var(--ink);
-  pointer-events: none;
-}
-/* Subtle horizontal plank bevel line on the workbench edge */
-.floor-benchtop-bar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 26%;
-  height: 1.5px;
+.zone-btn.on {
   background: var(--ink);
-  opacity: 0.32;
+  color: var(--surface);
 }
-
-/* Foreground stations row aligned directly onto the workbench top (y = 230px) */
-.floor-stations {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-evenly;
-  gap: 8px;
-  padding: 62px 58px 0;
+.zone-btn.on b {
+  background: var(--tile2);
+  color: #14202b;
 }
-
-/* Under-bench cabinets, stools, power cords, sleeping cat & concrete slab */
-.floor-underbench {
-  position: relative;
-  z-index: 1;
-  height: 80px;
-  pointer-events: none;
-  user-select: none;
-}
-.floor-underbench svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* ---------- clickable game-object apparatus station ---------- */
-.station {
-  flex: 0 1 258px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  position: relative;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Stage directly above the tabletop seam (height 168px + 62px top pad = 230px tabletop!) */
-.apparatus-stage {
-  position: relative;
-  width: 100%;
-  height: 168px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0 6px;
-}
-
-/* Crisp grounded contact shadow bar right under the apparatus base on the wooden bench */
-.apparatus-stage::after {
-  content: "";
-  position: absolute;
-  left: 16%;
-  right: 16%;
-  bottom: -2px;
-  height: 5px;
-  background: var(--ink);
-  opacity: 0.26;
-  transition: transform 0.15s ease-out, opacity 0.15s ease-out;
-}
-
-.app-svg {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 248px;
-  height: auto;
-  aspect-ratio: 260 / 156;
-  display: block;
-  transform: translateY(7px); /* puts SVG y=148 flush onto the wooden tabletop top border */
-  transform-origin: bottom center;
-  transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-/* Classic 2D game selection brackets + bouncing pointer arrow (revealed on hover / focus-visible) */
-.game-reticle {
-  position: absolute;
-  inset: 4px 2px -2px;
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.14s ease-out, transform 0.14s ease-out;
-}
-.game-reticle i {
-  position: absolute;
-  width: 13px;
-  height: 13px;
-  border-color: var(--st-brand, var(--accent));
-  border-style: solid;
-  border-width: 0;
-  filter: drop-shadow(1.5px 1.5px 0 var(--ink));
-}
-.game-reticle .c1 { top: 0; left: 0; border-top-width: 3.5px; border-left-width: 3.5px; }
-.game-reticle .c2 { top: 0; right: 0; border-top-width: 3.5px; border-right-width: 3.5px; }
-.game-reticle .c3 { bottom: 0; left: 0; border-bottom-width: 3.5px; border-left-width: 3.5px; }
-.game-reticle .c4 { bottom: 0; right: 0; border-bottom-width: 3.5px; border-right-width: 3.5px; }
-
-.game-pointer {
-  position: absolute;
-  top: -16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 9px solid var(--st-brand, var(--accent));
-  filter: drop-shadow(0 2px 0 var(--ink));
-  animation: sc-bob 0.65s ease-in-out infinite alternate;
-}
-@keyframes sc-bob {
-  from { transform: translate(-50%, 0); }
-  to { transform: translate(-50%, -5px); }
-}
-
-/* Compact diegetic nameplate tag bolted right onto the wooden front rail of the workbench */
-.station-tag-slot {
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 6px 4px 0;
-}
-.station-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-  padding: 4px 8px;
-  background: var(--surface);
-  color: var(--ink);
-  border: 2px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  font-size: 11.5px;
-  font-weight: 700;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: transform 0.13s ease-out, box-shadow 0.13s ease-out, background-color 0.13s ease-out, color 0.13s ease-out;
-}
-.station-pip {
-  width: 9px;
-  height: 9px;
-  flex: none;
-  background: var(--st-brand, var(--accent));
-  border: 1.5px solid var(--ink);
-}
-.station-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.station-arrow {
-  flex: none;
-  font-size: 11px;
-  opacity: 0.72;
-  transition: transform 0.13s ease-out, opacity 0.13s ease-out;
-}
-
-/* ---------- unmistakable hover / focus / active states ---------- */
-.station:hover .app-svg,
-.station:focus-visible .app-svg {
-  transform: translateY(1px) scale(1.045);
-}
-.station:hover .apparatus-stage::after,
-.station:focus-visible .apparatus-stage::after {
-  transform: scaleX(0.84);
-  opacity: 0.18;
-}
-.station:hover .game-reticle,
-.station:focus-visible .game-reticle {
-  opacity: 1;
-  transform: scale(1);
-}
-.station:hover .station-tag,
-.station:focus-visible .station-tag {
-  background: var(--st-brand, var(--accent));
-  color: var(--st-brand-ink, var(--ink));
-  transform: translate(-1px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
-}
-.station:hover .station-pip,
-.station:focus-visible .station-pip {
-  background: var(--surface);
-}
-.station:hover .station-arrow,
-.station:focus-visible .station-arrow {
-  opacity: 1;
-  transform: translate(2px, -1px);
-}
-.station:focus-visible .station-tag {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-}
-.station:active .app-svg {
-  transform: translateY(6px) scale(0.99);
-}
-.station:active .station-tag {
+.zone-btn:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
+  box-shadow: none;
 }
 
-/* ---------- muted non-clickable tabletop prop on spare bench slots ---------- */
-.bench-prop {
-  flex: 0 1 190px;
-  height: 214px; /* 168px above bench + 46px rail slot (empty below) */
+.orbit-controls {
+  pointer-events: auto;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  gap: 6px;
+  flex: none;
+}
+.orbit-btn {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--ink);
+  background: var(--hud-glass);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  touch-action: manipulation;
+}
+.orbit-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.controls-bar {
+  display: flex;
   align-items: center;
-  padding-top: 26px;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.controls-hint {
   pointer-events: none;
-  user-select: none;
-  opacity: 0.9;
+  background: var(--hud-glass);
+  padding: 2px 7px;
+  border: 1.5px solid var(--gridline);
 }
-.prop-svg {
-  width: 100%;
-  max-width: 184px;
-  height: auto;
-  aspect-ratio: 220 / 156;
-  display: block;
-  transform: translateY(18px);
+.controls-hint.touch {
+  display: none;
 }
-
-/* ---------- empty search state ---------- */
-.empty-state {
-  padding: 36px 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+.mini-foot {
+  pointer-events: auto;
+  background: var(--hud-glass);
+  padding: 2px 7px;
+  border: 1.5px solid var(--gridline);
 }
-.empty-state p {
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--muted);
+.mini-foot a {
+  color: inherit;
 }
 
-/* ---------- footer ---------- */
-.foot {
-  margin-top: 24px;
-  font-size: 11.5px;
-  color: var(--muted);
+/* ---------- WebGL fallback ---------- */
+.webgl-fallback {
+  max-width: 720px;
+  margin: 120px auto 24px;
+  padding: 20px;
+}
+.fb-grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px 16px;
-}
-.foot a {
-  color: inherit;
+  gap: 10px;
+  margin-top: 12px;
 }
 
-/* ==========================================================================
-   AMBIENT GAME-SCENE SCENERY ANIMATIONS (ultra-subtle)
-   ========================================================================== */
-.wall-clock-sec {
-  transform-origin: 0 0;
-  animation: st-spin-360 60s steps(60, end) infinite;
-}
-.sc-cloud {
-  animation: sc-drift 28s linear infinite;
-}
-.sc-cloud-slow {
-  animation: sc-drift 42s linear infinite reverse;
-}
-.sc-twinkle {
-  animation: st-twinkle 3.2s ease-in-out infinite alternate;
-}
-.sc-steam {
-  animation: sc-steam 2.8s ease-in-out infinite;
-}
-.sc-puff {
-  animation: sc-steam 3.6s ease-in-out infinite;
-}
-.sc-cat {
-  transform-box: fill-box;
-  transform-origin: center bottom;
-  animation: sc-breathe 3.4s ease-in-out infinite alternate;
-}
-@keyframes sc-drift {
-  0%, 100% { transform: translateX(-8px); }
-  50% { transform: translateX(12px); }
-}
-@keyframes sc-steam {
-  0% { transform: translateY(3px); opacity: 0.15; }
-  50% { transform: translateY(-2px); opacity: 0.65; }
-  100% { transform: translateY(-6px); opacity: 0.1; }
-}
-@keyframes sc-breathe {
-  from { transform: scaleY(1); }
-  to { transform: scaleY(1.07); }
-}
-
-/* ==========================================================================
-   21 BESPOKE APPARATUS ANIMATIONS (pure CSS keyframes, physically accurate)
-   ========================================================================== */
-
-/* 01 · Pendulum Lab */
-.st-pend-arm {
-  transform-box: view-box;
-  transform-origin: 137px 31px;
-  animation: st-pend-swing 1.2s ease-in-out infinite alternate;
-}
-.st-pend-hand {
-  transform-origin: 19px 24px;
-  animation: st-pend-tick 4.8s linear infinite;
-}
-@keyframes st-pend-swing {
-  from { transform: rotate(-27deg); }
-  to { transform: rotate(27deg); }
-}
-@keyframes st-pend-tick {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 02 · Carts Lab */
-.st-cart-a { animation: st-cart-a 4s linear infinite; }
-.st-cart-b { animation: st-cart-b 4s linear infinite; }
-.st-cart-hit { animation: st-cart-hit 4s linear infinite; opacity: 0; }
-.st-cart-led-l { animation: st-cart-led-l 4s linear infinite; }
-.st-cart-led-r { animation: st-cart-led-r 4s linear infinite; }
-@keyframes st-cart-a {
-  0% { transform: translateX(0); }
-  25%, 75% { transform: translateX(42px); }
-  100% { transform: translateX(0); }
-}
-@keyframes st-cart-b {
-  0%, 25% { transform: translateX(-48px); }
-  50% { transform: translateX(0); }
-  75%, 100% { transform: translateX(-48px); }
-}
-@keyframes st-cart-hit {
-  0%, 23% { opacity: 0; }
-  25% { opacity: 1; }
-  31%, 73% { opacity: 0; }
-  75% { opacity: 1; }
-  81%, 100% { opacity: 0; }
-}
-@keyframes st-cart-led-l {
-  0%, 6%, 94%, 100% { opacity: 1; }
-  10%, 90% { opacity: 0.25; }
-}
-@keyframes st-cart-led-r {
-  0%, 44%, 56%, 100% { opacity: 0.25; }
-  48%, 52% { opacity: 1; }
-}
-
-/* 03 · Collision Lab */
-.st-coll-pa { animation: st-coll-pa 3.4s linear infinite; }
-.st-coll-pb { animation: st-coll-pb 3.4s linear infinite; }
-@keyframes st-coll-pa {
-  0% { transform: translate(0, 0); opacity: 1; }
-  40% { transform: translate(38px, 0); opacity: 1; }
-  82%, 90% { transform: translate(64px, -30px); opacity: 1; }
-  100% { transform: translate(64px, -30px); opacity: 0; }
-}
-@keyframes st-coll-pb {
-  0%, 40% { transform: translate(0, 0); opacity: 1; }
-  82%, 90% { transform: translate(54px, 28px); opacity: 1; }
-  100% { transform: translate(54px, 28px); opacity: 0; }
-}
-
-/* 04 · Impulse Lab */
-.st-imp-ball { animation: st-imp-ball 3.2s infinite; }
-.st-imp-spr {
-  transform-box: view-box;
-  transform-origin: 108px 114px;
-  animation: st-imp-spr 3.2s infinite;
-}
-.st-imp-curve { animation: st-imp-curve 3.2s linear infinite; }
-.st-imp-area { animation: st-imp-area 3.2s linear infinite; }
-@keyframes st-imp-ball {
-  0% { transform: translateX(0); animation-timing-function: linear; }
-  36% { transform: translateX(36px); animation-timing-function: ease-out; }
-  48% { transform: translateX(47px); animation-timing-function: ease-in; }
-  60% { transform: translateX(36px); animation-timing-function: linear; }
-  100% { transform: translateX(0); }
-}
-@keyframes st-imp-spr {
-  0%, 36% { transform: scaleX(1); animation-timing-function: ease-out; }
-  48% { transform: scaleX(0.5); animation-timing-function: ease-in; }
-  60%, 100% { transform: scaleX(1); }
-}
-@keyframes st-imp-curve {
-  0%, 36% { stroke-dashoffset: 100; opacity: 1; }
-  60%, 88% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-@keyframes st-imp-area {
-  0%, 48% { opacity: 0; }
-  62%, 88% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* 05 · Motus 1D Lab */
-.st-m1d-cart { animation: st-m1d-cart 3.4s infinite; }
-.st-m1d-curve { animation: st-m1d-curve 3.4s linear infinite; }
-@keyframes st-m1d-cart {
-  0% { transform: translateX(0); animation-timing-function: cubic-bezier(0.333, 0, 0.667, 0.333); }
-  76%, 94% { transform: translateX(160px); opacity: 1; }
-  100% { transform: translateX(160px); opacity: 0; }
-}
-@keyframes st-m1d-curve {
-  0% { stroke-dashoffset: 100; opacity: 1; }
-  76%, 94% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-/* 06 · Relative Motion Lab */
-.st-rel-train { animation: st-rel-train 3s linear infinite; }
-.st-rel-ball { animation: st-rel-ball 3s infinite; }
-@keyframes st-rel-train {
-  0% { transform: translateX(0); }
-  84%, 100% { transform: translateX(136px); }
-}
-@keyframes st-rel-ball {
-  0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.333, 0.667, 0.667, 1); }
-  42% { transform: translateY(-52px); animation-timing-function: cubic-bezier(0.333, 0, 0.667, 0.333); }
-  84%, 100% { transform: translateY(0); }
-}
-
-/* 07 · Crackler */
-.st-crk-ball { animation: st-crk-fall 3.2s infinite; }
-.st-crk-rec { animation: st-crk-rec 1.2s steps(2, end) infinite; }
-.st-crk-d0 { animation: st-crk-d0 3.2s linear infinite; }
-.st-crk-d1 { animation: st-crk-d1 3.2s linear infinite; }
-.st-crk-d2 { animation: st-crk-d2 3.2s linear infinite; }
-.st-crk-d3 { animation: st-crk-d3 3.2s linear infinite; }
-.st-crk-d4 { animation: st-crk-d4 3.2s linear infinite; }
-@keyframes st-crk-fall {
-  0% { transform: translateY(0); opacity: 1; animation-timing-function: cubic-bezier(0.333, 0, 0.667, 0.333); }
-  78% { transform: translateY(90px); opacity: 1; }
-  80%, 100% { transform: translateY(90px); opacity: 0; }
-}
-@keyframes st-crk-rec {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.25; }
-}
-@keyframes st-crk-d0 { 0%, 92% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes st-crk-d1 { 0%, 19.4% { opacity: 0; } 19.5%, 92% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes st-crk-d2 { 0%, 38.9% { opacity: 0; } 39%, 92% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes st-crk-d3 { 0%, 58.4% { opacity: 0; } 58.5%, 92% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes st-crk-d4 { 0%, 77.9% { opacity: 0; } 78%, 92% { opacity: 1; } 100% { opacity: 0; } }
-
-/* 08 · Units Lab */
-.st-uni-beam {
-  transform-box: view-box;
-  transform-origin: 66px 56px;
-  animation: st-uni-rock 2.8s ease-in-out infinite alternate;
-}
-.st-uni-flag { animation: st-uni-climb 4s infinite; }
-@keyframes st-uni-rock {
-  from { transform: rotate(-9deg); }
-  to { transform: rotate(9deg); }
-}
-@keyframes st-uni-climb {
-  0% { transform: translate(0, 0); animation-timing-function: steps(5, end); }
-  82%, 100% { transform: translate(36px, -68px); }
-}
-
-/* 09 · Orbit Lab */
-.st-orb-ship {
-  transform-box: view-box;
-  transform-origin: 130px 70px;
-  animation: st-spin-360 4.2s linear infinite;
-}
-.st-orb-star { animation: st-twinkle 2.4s ease-in-out infinite alternate; }
-@keyframes st-spin-360 {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes st-twinkle {
-  from { opacity: 0.35; }
-  to { opacity: 1; }
-}
-
-/* 10 · Orbit Lab XR */
-.st-orbxr-spin {
-  transform-box: view-box;
-  transform-origin: 130px 68px;
-  animation: st-spin-360 3.2s linear infinite;
-}
-
-/* 11 · Detach Lab */
-.st-det-a1 { animation: st-det-a1 3.4s linear infinite; }
-.st-det-a2 { animation: st-det-a2 3.4s linear infinite; }
-.st-det-las { animation: st-det-las 3.4s linear infinite; }
-.st-det-mk { animation: st-det-mk 3.4s linear infinite; }
-@keyframes st-det-a1 {
-  0% { transform: translate(0, 0); opacity: 1; }
-  40% { transform: translate(52px, 0); opacity: 1; }
-  82% { transform: translate(138px, -26px); opacity: 1; }
-  84%, 100% { transform: translate(138px, -26px); opacity: 0; }
-}
-@keyframes st-det-a2 {
-  0% { transform: translate(0, 0); opacity: 1; }
-  40% { transform: translate(46px, 0); opacity: 1; }
-  82% { transform: translate(132px, 16px); opacity: 1; }
-  84%, 100% { transform: translate(132px, 16px); opacity: 0; }
-}
-@keyframes st-det-las {
-  0%, 35% { opacity: 0.3; }
-  40% { opacity: 1; }
-  48%, 100% { opacity: 0.3; }
-}
-@keyframes st-det-mk {
-  0%, 80% { opacity: 0; }
-  82%, 96% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* 12 · Force Lab XR */
-.st-fxr-ball { animation: st-fxr-fly 3.4s linear infinite; }
-.st-fxr-arr { animation: st-fxr-arr 1.7s ease-in-out infinite alternate; }
-@keyframes st-fxr-fly {
-  0% { transform: translate(-58px, 14px); opacity: 1; }
-  20% { transform: translate(-30px, 14px); opacity: 1; }
-  32% { transform: translate(-15px, 11.5px); opacity: 1; }
-  44% { transform: translate(-1.5px, 4.5px); opacity: 1; }
-  56% { transform: translate(12px, -7px); opacity: 1; }
-  66% { transform: translate(24px, -24px); opacity: 1; }
-  82% { transform: translate(72px, -64px); opacity: 1; }
-  90% { transform: translate(90px, -82px); opacity: 1; }
-  96%, 100% { transform: translate(90px, -82px); opacity: 0; }
-}
-@keyframes st-fxr-arr {
-  from { transform: translateY(3px); opacity: 0.7; }
-  to { transform: translateY(-3px); opacity: 1; }
-}
-
-/* 13 · Quadrature */
-.st-quad-c { animation: st-quad-fill 4.2s linear infinite; }
-.st-quad-bar {
-  transform-box: view-box;
-  transform-origin: 174px 94px;
-  animation: st-quad-bar 4.2s linear infinite;
-}
-@keyframes st-quad-fill {
-  0% { opacity: 0; }
-  8%, 85% { opacity: 1; }
-  95%, 100% { opacity: 0; }
-}
-@keyframes st-quad-bar {
-  0% { transform: scaleX(0.05); }
-  62%, 88% { transform: scaleX(1); }
-  96%, 100% { transform: scaleX(0.05); }
-}
-
-/* 14 · Metric Lab */
-.st-met-taxi { animation: st-met-taxi 4.2s linear infinite; }
-.st-met-line { animation: st-met-line 4.2s linear infinite; }
-@keyframes st-met-taxi {
-  0% { stroke-dashoffset: 100; opacity: 1; }
-  42%, 90% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-@keyframes st-met-line {
-  0%, 46% { stroke-dashoffset: 100; opacity: 1; }
-  76%, 90% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-
-/* 15 · Attractor Lab */
-.st-att-t { animation: st-att-pop 4.5s linear infinite; }
-.st-att-led { animation: st-crk-rec 1.1s steps(2, end) infinite; }
-@keyframes st-att-pop {
-  0% { opacity: 0; }
-  6%, 86% { opacity: 1; }
-  96%, 100% { opacity: 0; }
-}
-
-/* 16 · Series Lab */
-.st-ser-path {
-  stroke-dasharray: 100;
-  animation: st-ser-grow 4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
-}
-.st-ser-lim { animation: st-ser-lim 4s linear infinite; }
-@keyframes st-ser-grow {
-  0% { stroke-dashoffset: 100; opacity: 1; }
-  70%, 92% { stroke-dashoffset: 0; opacity: 1; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-@keyframes st-ser-lim {
-  0%, 55% { opacity: 0.35; }
-  70%, 95% { opacity: 1; }
-  100% { opacity: 0.35; }
-}
-
-/* 17 · Surface Lab XR */
-.st-sur-slice { animation: st-sur-move 3s ease-in-out infinite alternate; }
-.st-sur-sec {
-  transform-box: view-box;
-  transform-origin: 134px 105px;
-  animation: st-sur-scale 3s ease-in-out infinite alternate;
-}
-@keyframes st-sur-move {
-  from { transform: translateY(10px); }
-  to { transform: translateY(-20px); }
-}
-@keyframes st-sur-scale {
-  from { transform: scale(1.18); }
-  to { transform: scale(0.32); }
-}
-
-/* 18 · Fourier Lab XR */
-.st-fou-wind {
-  transform-box: view-box;
-  transform-origin: 130px 76px;
-  animation: st-spin-360 4.5s linear infinite;
-}
-
-/* 19 · Parameter Lab XR */
-.st-par-slice {
-  transform-box: view-box;
-  transform-origin: 143px 52px;
-  animation: st-par-slide 4.2s ease-in-out infinite alternate;
-}
-.st-par-knob { animation: st-par-knob 4.2s ease-in-out infinite alternate; }
-@keyframes st-par-slide {
-  from { transform: translateY(56px) scale(0.45); }
-  to { transform: translateY(0) scale(1); }
-}
-@keyframes st-par-knob {
-  from { transform: translateY(56px); }
-  to { transform: translateY(0); }
-}
-
-/* 20 · Composition Lab XR */
-.st-cmp-x { animation: st-cmp-x 4.2s ease-in-out infinite alternate; }
-.st-cmp-y { animation: st-cmp-y 4.2s ease-in-out infinite alternate; }
-@keyframes st-cmp-x {
-  from { transform: translateX(-40px); }
-  to { transform: translateX(40px); }
-}
-@keyframes st-cmp-y {
-  from { transform: translateY(32px); }
-  to { transform: translateY(-22px); }
-}
-
-/* 21 · Dynagraph XR */
-.st-dyn-in { animation: st-dyn-in 4.2s ease-in-out infinite alternate; }
-.st-dyn-out { animation: st-dyn-out 4.2s ease-in-out infinite alternate; }
-@keyframes st-dyn-in {
-  from { transform: translateX(-44px); }
-  to { transform: translateX(44px); }
-}
-@keyframes st-dyn-out {
-  from { transform: translateX(-52px); }
-  to { transform: translateX(28px); }
-}
-
-/* Fallback console */
-.st-fb-needle {
-  transform-box: view-box;
-  transform-origin: 188px 58px;
-  animation: st-uni-rock 2.2s ease-in-out infinite alternate;
-}
-.st-fb-led { animation: st-crk-rec 1.5s steps(2, end) infinite; }
-
-/* ---------- pause animations offscreen, on hidden tab, or reduced motion ---------- */
-.lab-floor.paused *,
-body.tab-hidden .lab-building *,
-body.tab-hidden .building-roof * {
-  animation-play-state: paused !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lab-building *,
-  .building-roof * {
-    animation: none !important;
+/* ---------- responsive & touch ---------- */
+@media (max-width: 820px) {
+  .zone-btn .z-lbl {
+    display: none;
   }
-  .station,
-  .app-svg,
-  .game-reticle,
-  .station-tag,
-  .station-arrow {
-    transition: none !important;
+  .zone-btn {
+    padding: 4px 8px;
   }
-}
-
-/* ==========================================================================
-   RESPONSIVE: side-scrolling 2D game floors on tablets & phones
-   ========================================================================== */
-@media (max-width: 940px) {
-  .floor-scroll {
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
-    scrollbar-width: thin;
-  }
-  .floor-scene {
-    min-width: 920px;
-  }
-  .floor-scene.count-2 {
-    min-width: 580px;
-  }
-  .floor-scene.count-1 {
-    min-width: 100%;
-  }
-  .station {
-    scroll-snap-align: center;
-  }
-  .room-swipe-hint {
-    display: inline;
+  .mini-foot {
+    display: none;
   }
 }
 
 @media (max-width: 580px) {
-  .home {
-    padding: 4px max(8px, env(safe-area-inset-right, 0px)) 32px max(8px, env(safe-area-inset-left, 0px));
-  }
-  .lab-building {
-    border-left-width: 3px;
-    border-right-width: 3px;
-    border-bottom-width: 3px;
-    box-shadow: 4px 4px 0 var(--ink);
-  }
-  .hud-bar {
-    margin: 4px 0 10px;
+  .hud-search-row {
+    padding-left: max(10px, env(safe-area-inset-left, 0px));
+    padding-right: max(10px, env(safe-area-inset-right, 0px));
   }
   .search-wrap {
-    max-width: none;
-    flex: 1 1 100%;
+    flex: 1;
+    width: auto;
   }
-  .floor-scene {
-    min-width: 840px;
+  .bottom-hud {
+    padding: 6px max(10px, env(safe-area-inset-right, 0px)) max(10px, env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
   }
-  .floor-scene.count-3 {
-    min-width: 680px;
+  .zone-bar {
+    max-width: calc(100vw - 104px);
   }
-  .floor-scene.count-2 {
-    min-width: 480px;
-  }
-  .floor-stations {
-    padding: 58px 44px 0;
-  }
-  .bench-prop {
+  .controls-bar {
     display: none;
-  }
-  .station {
-    flex: 0 0 212px;
-  }
-  .station-tag {
-    font-size: 11px;
-    padding: 5px 8px;
   }
 }
 
-/* Coarse touch targets */
 @media (pointer: coarse) {
-  .station-tag {
-    min-height: 34px;
-    padding: 6px 9px;
+  .controls-hint.desktop {
+    display: none;
   }
-  .search-clear {
-    width: 36px;
-    height: 36px;
+  .controls-hint.touch {
+    display: inline-block;
+  }
+  .zone-btn {
+    min-height: 40px;
+  }
+  .orbit-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-pin,
+  .zone-btn,
+  .orbit-btn {
+    transition: none !important;
   }
 }
