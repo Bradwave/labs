@@ -1,7 +1,7 @@
 // Labs · home/benches.js
 // Scalable multi-room (Wing) laboratory architecture:
-// Splits the lab into cozy themed rooms (Physics, Mathematics, XR Studio) with automatic
-// bench chunking (max 4 apparatuses per table) and data-driven placement for future apps.
+// Subdivides labs into cozy, uncrowded topical rooms (4–7 apparatuses across 2 benches each)
+// so every room stays intimate and readable, scaling seamlessly to many rooms via the HUD picker.
 
 export const MAX_STATIONS_PER_BENCH = 4;
 
@@ -11,25 +11,38 @@ export const BENCH_TOP_Y = 1.0;
 
 export const ROOMS = [
   {
-    id: "physics",
+    id: "mechanics",
     theme: "physics",
-    title: { it: "Fisica", en: "Physics" },
+    title: { it: "Meccanica e moto", en: "Mechanics & motion" },
     benches: [
       {
-        id: "mechanics",
+        id: "forces-collisions",
         code: "01",
-        title: { it: "Meccanica e urti", en: "Mechanics & collisions" },
+        title: { it: "Forze e urti", en: "Forces & collisions" },
         slugs: ["pendulum-lab", "carts-lab", "collision-lab", "impulse-lab"],
       },
       {
-        id: "motion",
+        id: "kinematics",
         code: "02",
-        title: { it: "Moto e misura", en: "Motion & measurement" },
-        slugs: ["motus1d-lab", "relative-motion-lab", "crackler", "units-lab"],
+        title: { it: "Cinematica", en: "Kinematics" },
+        slugs: ["motus1d-lab", "relative-motion-lab"],
+      },
+    ],
+  },
+  {
+    id: "modern",
+    theme: "physics",
+    title: { it: "Misure, orbite e fasci", en: "Measures, orbits & beams" },
+    benches: [
+      {
+        id: "measurement",
+        code: "01",
+        title: { it: "Videoanalisi e unità", en: "Video analysis & units" },
+        slugs: ["crackler", "units-lab"],
       },
       {
-        id: "modern",
-        code: "03",
+        id: "orbits-beams",
+        code: "02",
         title: { it: "Orbite e fasci", en: "Orbits & beams" },
         slugs: ["orbit-lab", "detach-lab"],
       },
@@ -105,7 +118,7 @@ export function locateApp(app) {
   // Automatic wing assignment for any future app added to apps.json
   if (app.kind === "xr") return { roomId: "xr", benchId: NEW_BENCH_TEMPLATE.id };
   if (app.subject === "mathematics") return { roomId: "math", benchId: NEW_BENCH_TEMPLATE.id };
-  return { roomId: "physics", benchId: NEW_BENCH_TEMPLATE.id };
+  return { roomId: "modern", benchId: NEW_BENCH_TEMPLATE.id };
 }
 
 export function appsInRoom(roomId, allApps) {
@@ -114,7 +127,6 @@ export function appsInRoom(roomId, allApps) {
 
 /**
  * Build a cozy, well-proportioned 3D floorplan for a single laboratory wing.
- * Handles 1, 2, 3, or N benches gracefully while keeping every apparatus large and readable.
  */
 export function buildRoomLayout(roomId, allApps) {
   const room = ROOMS.find((r) => r.id === roomId) || ROOMS[0];
@@ -153,9 +165,6 @@ export function buildRoomLayout(roomId, allApps) {
     }
   }
 
-  // Cozy room layout:
-  // - 1–2 benches: single clean front-to-back column (large, intimate studio!)
-  // - 3–4+ benches: tidy 2-column aisle grid (3rd bench centered cleanly if odd count!)
   const cols = tables.length <= 2 ? 1 : 2;
   const rows = Math.max(1, Math.ceil(tables.length / cols));
   const colSpacing = 9.4;
